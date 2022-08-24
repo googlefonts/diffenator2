@@ -2,7 +2,8 @@
 """
 diffenator2
 """
-from diffenator import DFont, DiffFonts, Reporter, match_fonts
+from diffenator import DiffFonts, Reporter
+from diffenator.font import DFont, match_fonts
 import argparse
 
 
@@ -24,9 +25,8 @@ def main():
             strings = [line.rstrip() for line in file]
 
     diff = DiffFonts(old_font, new_font, strings=strings)
-
     report = Reporter(diff)
-    report.save(args.out, args.old_font, args.new_font)
+    report.save(args.out)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 """
 Check fonts for shaping regressions using real words.
 """
+from diffenator.font import DFont
 from dataclasses import dataclass
-from fontTools.ttLib import TTFont
 from lxml import etree
 from lxml import objectify
 from collections import defaultdict
@@ -111,6 +111,7 @@ def build_words(fp, out, keep_chars=None):
             if keep_chars and all(c in keep_chars for c in word):
                 bank.add(word)
     
+    # Remove sub words
     t = Trie()
     for word in bank:
         t.add_word(word)
@@ -125,7 +126,8 @@ def test_words(
     seen_a, seen_b = defaultdict(set), defaultdict(set)
     with open(word_file) as doc:
         words = doc.read().split("\n")
-        for word in words:
+        print(f"testing {len(words)} words")
+        for i, word in enumerate(words):
             if any(c in word for c in skip_glyphs):
                 continue
             buf_a = hb.Buffer()
@@ -134,8 +136,9 @@ def test_words(
             hb.shape(font_a.hbFont, buf_a)
 
             infos_a = buf_a.glyph_infos
-            for info in infos_a:
-                seen_a[info.codepoint].add(word)
+            pos_a = buf_a.glyph_positions
+            for info, pos in zip(infos_a, pos_a):
+                seen_a[(info.codepoint, pos.position)].add(word)
 
             buf_b = hb.Buffer()
             buf_b.add_str(word)
@@ -143,8 +146,9 @@ def test_words(
             hb.shape(font_b.hbFont, buf_b)
 
             infos_b = buf_b.glyph_infos
-            for info in infos_b:
-                seen_b[info.codepoint].add(word)
+            pos_b = buf_b.glyph_positions
+            for info, pos in zip(infos_b, pos_b):
+                seen_b[(info.codepoint, pos.position)].add(word)
 
     res = set()
     missing = set(seen_a) - set(seen_b)
@@ -192,15 +196,6 @@ def px_diff(font_a, font_b, strings, thresh=0.02):
     return res
 
 
-class Font:
-    def __init__(self, fp):
-        self.path = fp
-        self.ttFont = TTFont(fp)
-        blob = hb.Blob.from_file_path(fp)
-        face = hb.Face(blob)
-        self.hbfont = hb.Font(face)
-
-
 @dataclass
 class GlyphDiff:
     missing: list
@@ -213,12 +208,12 @@ def test_fonts(word_file, font_a, font_b, diff_pixels=False):
     cmap_a = set(
         chr(c)
         for c in font_a.ttFont.getBestCmap()
-        if c not in list(range(33)) + [8203, 160, 6068, 6069, 173, 8204, 8205]
+        if c not in list(range(33)) + [847, 8288, 8203, 160, 6068, 6069, 173, 8204, 8205]
     )
     cmap_b = set(
         chr(c)
         for c in font_b.ttFont.getBestCmap()
-        if c not in list(range(33)) + [8203, 160, 6068, 6069, 173, 8204, 8205]
+        if c not in list(range(33)) + [847, 8288, 8203, 160, 6068, 6069, 173, 8204, 8205]
     )
     missing_glyphs = cmap_a - cmap_b
     new_glyphs = cmap_b - cmap_a
@@ -243,8 +238,11 @@ def test_shaping(font_a, font_b):
     cmap_a = font_a.ttFont.getBestCmap()
     for k in cmap_a:
         data = ucd_data(k)
-        scripts[data["Script"]] += 1
-    
+        try:
+            scripts[data["Script"]] += 1
+        except:
+            continue
+
     res = {}
     for script, count in scripts.items():
         if count < 10:
@@ -296,8 +294,8 @@ def main():
     args = parser.parse_args()
 
     if args.cmd == "test":
-        font_a = Font(args.font_a)
-        font_b = Font(args.font_b)
+        font_a = DFont(args.font_a)
+        font_b = DFont(args.font_b)
         glyph_diff = test_fonts(args.word_file, font_a, font_b, args.px_diff)
         gen_report(font_a, font_b, glyph_diff, args.out)
 

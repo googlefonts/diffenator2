@@ -1,3 +1,4 @@
+# Drop this and use Behdad's visitor pattern scaler
 import argparse
 import sys
 from fontTools.ttLib import TTFont

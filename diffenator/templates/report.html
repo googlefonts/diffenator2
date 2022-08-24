@@ -46,11 +46,14 @@
       </div>
     {% endif %}
     
-    {% if diff.glyph_diff.missing %}
+    {% if diff.glyph_diff %}
+      {% for script in diff.glyph_diff %}
+    
+    {% if diff.glyph_diff[script].missing %}
       <div class="box">
         <div class="box-title">Missing encoded Glyphs</div>
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
-          {% for glyph in diff.glyph_diff.missing %}
+          {% for glyph in diff.glyph_diff[script].missing %}
             <div class="cell">
               {{ glyph }}
             </div>
@@ -59,11 +62,11 @@
       </div>
     {% endif %}
     
-    {% if diff.glyph_diff.modified %}
+    {% if diff.glyph_diff[script].modified %}
       <div class="box">
         <div class="box-title">Modified encoded Glyphs</div>
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
-          {% for glyph in diff.glyph_diff.modified %}
+          {% for glyph in diff.glyph_diff[script].modified %}
             <div class="cell">
               {{ glyph }}
             </div>
@@ -72,16 +75,20 @@
       </div>
     {% endif %}
 
-    {% if diff.glyph_diff.mishaped_words %}
+    {% if diff.glyph_diff[script].mishaped_words %}
       <div class="box">
         <div class="box-title">Misshapen words</div>
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
-          {% for word in diff.glyph_diff.mishaped_words %}
+          {% for word in diff.glyph_diff[script].mishaped_words %}
               {{ word }}<br>
           {% endfor %}
         </span>
       </div>
     {% endif %}
+
+    {% endfor %}  
+    {% endif %}
+    
 
     {% if diff.features %}
       <div class="box">
