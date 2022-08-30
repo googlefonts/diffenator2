@@ -14,7 +14,7 @@ from fontTools.varLib.instancer import instantiateVariableFont
 from diffenator.shape import px_diff
 import numpy as np
 from diffenator.scale import scale_font
-from diffenator.shape import test_shaping
+from diffenator.shape import test_fonts
 from jinja2 import Environment, FileSystemLoader
 from diffenator import html
 from diffenator.font import DFont
@@ -55,7 +55,7 @@ class DiffFonts:
 #                new_fea.split("\n"),
 #            )
         
-        self.glyph_diff = test_shaping(
+        self.glyph_diff = test_fonts(
             self.old_font,
             self.new_font,
         )

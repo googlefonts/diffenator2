@@ -33,11 +33,11 @@
      {{ diff.tables.render() }}
     </div>
     
-    {% if diff.glyph_diff.new %}
+    {% if diff.glyph_diff["glyphs"].new %}
       <div class="box">
         <div class="box-title">New encoded glyphs</div>
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
-          {% for glyph in diff.glyph_diff.new %}
+          {% for glyph in diff.glyph_diff["glyphs"].new %}
             <div class="cell">
               {{ glyph }}
             </div>
@@ -46,14 +46,12 @@
       </div>
     {% endif %}
     
-    {% if diff.glyph_diff %}
-      {% for script in diff.glyph_diff %}
     
-    {% if diff.glyph_diff[script].missing %}
+    {% if diff.glyph_diff["glyphs"].missing %}
       <div class="box">
         <div class="box-title">Missing encoded Glyphs</div>
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
-          {% for glyph in diff.glyph_diff[script].missing %}
+          {% for glyph in diff.glyph_diff["glyphs"].missing %}
             <div class="cell">
               {{ glyph }}
             </div>
@@ -62,11 +60,11 @@
       </div>
     {% endif %}
     
-    {% if diff.glyph_diff[script].modified %}
+    {% if diff.glyph_diff["glyphs"].modified %}
       <div class="box">
         <div class="box-title">Modified encoded Glyphs</div>
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
-          {% for glyph in diff.glyph_diff[script].modified %}
+          {% for glyph in diff.glyph_diff["glyphs"].modified %}
             <div class="cell">
               {{ glyph }}
             </div>
@@ -75,19 +73,16 @@
       </div>
     {% endif %}
 
-    {% if diff.glyph_diff[script].mishaped_words %}
+    {% for script in diff.glyph_diff["words"] %}
       <div class="box">
-        <div class="box-title">Misshapen words</div>
+        <div class="box-title">Misshapen {{ script }} words</div>
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
-          {% for word in diff.glyph_diff[script].mishaped_words %}
+          {% for word in diff.glyph_diff["words"][script] %}
               {{ word }}<br>
           {% endfor %}
         </span>
       </div>
-    {% endif %}
-
     {% endfor %}  
-    {% endif %}
     
 
     {% if diff.features %}

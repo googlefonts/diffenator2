@@ -101,6 +101,23 @@ class Trie:
             self._get(data[k], c, word+c)
 
 
+def remove_seen_pairs(words):
+    """["player", "layer"] --> ["player"]"""
+    new_words = set()
+    seen_pairs = set()
+    for word in words:
+        word_pairs = set(f"{word[i-1]}{word[i]}" for i in range(1, len(word)))
+        if all(p in seen_pairs for p in word_pairs):
+            continue
+        new_words.add(word)
+        seen_pairs |= word_pairs
+    return new_words
+
+
+def remove_dotted_circle(words):
+    return [w for w in words if chr(0x25CC) not in w]
+
+
 def build_words(fp, out, keep_chars=None):
     root = objectify.parse(fp).getroot()
     bank = set()
@@ -116,14 +133,19 @@ def build_words(fp, out, keep_chars=None):
     for word in bank:
         t.add_word(word)
     t.find_words()
+    
+    # Remove pairs which have already been seen
+
     with open(out, "w") as doc:
         doc.write("\n".join(t.words))
+
 
 
 def test_words(
     word_file, font_a, font_b, skip_glyphs=set(), diff_pixels=False
 ):
     seen_a, seen_b = defaultdict(set), defaultdict(set)
+    seen_codepoints = set()
     with open(word_file) as doc:
         words = doc.read().split("\n")
         print(f"testing {len(words)} words")
@@ -137,8 +159,6 @@ def test_words(
 
             infos_a = buf_a.glyph_infos
             pos_a = buf_a.glyph_positions
-            for info, pos in zip(infos_a, pos_a):
-                seen_a[(info.codepoint, pos.position)].add(word)
 
             buf_b = hb.Buffer()
             buf_b.add_str(word)
@@ -147,6 +167,9 @@ def test_words(
 
             infos_b = buf_b.glyph_infos
             pos_b = buf_b.glyph_positions
+
+            for info, pos in zip(infos_a, pos_a):
+                seen_a[(info.codepoint, pos.position)].add(word)
             for info, pos in zip(infos_b, pos_b):
                 seen_b[(info.codepoint, pos.position)].add(word)
 
@@ -179,19 +202,22 @@ def px_diff(font_a, font_b, strings, thresh=0.02):
         with tempfile.NamedTemporaryFile(
             suffix=".png"
         ) as out_a, tempfile.NamedTemporaryFile(suffix=".png") as out_b:
-            renderText(font_a.path, string, out_a.name, fontSize=12, margin=0)
-            renderText(font_b.path, string, out_b.name, fontSize=12, margin=0)
-            img_a = Image.open(out_a.name)
-            img_b = Image.open(out_b.name)
-            width = min([img_a.width, img_b.width])
-            height = min([img_a.height, img_b.height])
-            diff_pixels = 0
-            for x in range(width):
-                for y in range(height):
-                    if img_a.getpixel((x, y)) != img_b.getpixel((x, y)):
-                        diff_pixels += 1
-            if diff_pixels / (width * height) > thresh:
-                res.append(string)
+            try:
+                renderText(font_a.path, string, out_a.name, fontSize=12, margin=0)
+                renderText(font_b.path, string, out_b.name, fontSize=12, margin=0)
+                img_a = Image.open(out_a.name)
+                img_b = Image.open(out_b.name)
+                width = min([img_a.width, img_b.width])
+                height = min([img_a.height, img_b.height])
+                diff_pixels = 0
+                for x in range(width):
+                    for y in range(height):
+                        if img_a.getpixel((x, y)) != img_b.getpixel((x, y)):
+                            diff_pixels += 1
+                if diff_pixels / (width * height) > thresh:
+                    res.append(string)
+            except:
+                print(f"Cannot render string {string}")
     print("done")
     return res
 
@@ -201,10 +227,16 @@ class GlyphDiff:
     missing: list
     new: list
     modified: list
-    mishaped_words: list
 
 
-def test_fonts(word_file, font_a, font_b, diff_pixels=False):
+def test_fonts(font_a, font_b, diff_pixels=True):
+    glyphs = test_font_glyphs(font_a, font_b, diff_pixels=diff_pixels)
+    skip_glyphs = glyphs.missing + glyphs.new
+    words = test_font_words(font_a, font_b, skip_glyphs, diff_pixels=diff_pixels)
+    return {"glyphs": glyphs, "words": words}
+
+
+def test_font_glyphs(font_a, font_b, diff_pixels=True):
     cmap_a = set(
         chr(c)
         for c in font_a.ttFont.getBestCmap()
@@ -221,17 +253,14 @@ def test_fonts(word_file, font_a, font_b, diff_pixels=False):
     skip_glyphs = missing_glyphs | new_glyphs
     modified_glyphs = px_diff(font_a, font_b, list(same_glyphs))
 
-    badly_shaped = test_words(word_file, font_a, font_b, skip_glyphs, diff_pixels)
-
     return GlyphDiff(
         list(sorted(missing_glyphs)),
         list(sorted(new_glyphs)),
         list(sorted(modified_glyphs)),
-        sorted(badly_shaped),
     )
 
 
-def test_shaping(font_a, font_b):
+def test_font_words(font_a, font_b, skip_glyphs=set(),diff_pixels=True):
     from youseedee import ucd_data
     from collections import defaultdict
     scripts = defaultdict(int)
@@ -251,11 +280,11 @@ def test_shaping(font_a, font_b):
         if not os.path.exists(wordlist):
             print(f"No wordlist for {script}")
             continue
-        res[script] = test_fonts(wordlist, font_a, font_b, diff_pixels=True)
+        res[script] = test_words(wordlist, font_a, font_b, skip_glyphs=skip_glyphs, diff_pixels=True)
     return res
 
 
-def gen_report(font_a, font_b, glyph_diff, out):
+def gen_report(font_a, font_b, data, out):
     if os.path.exists(out):
         shutil.rmtree(out)
     os.mkdir(out)
@@ -267,10 +296,10 @@ def gen_report(font_a, font_b, glyph_diff, out):
             TEMPLATE.substitute(
                 font_a=os.path.basename(font_a.fp),
                 font_b=os.path.basename(font_b.fp),
-                missing_glyphs=" ".join(glyph_diff.missing),
-                new_glyphs=" ".join(glyph_diff.new),
-                modified_glyphs="<br>\n".join(glyph_diff.modified),
-                text="<br>\n".join(glyph_diff.mishaped_words),
+                missing_glyphs=" ".join(data["glyphs"].missing),
+                new_glyphs=" ".join(data["glyphs"].new),
+                modified_glyphs="<br>\n".join(data["glyphs"].modified),
+                text="<br>\n".join(data.mishaped_words),
             )
         )
 
@@ -296,8 +325,8 @@ def main():
     if args.cmd == "test":
         font_a = DFont(args.font_a)
         font_b = DFont(args.font_b)
-        glyph_diff = test_fonts(args.word_file, font_a, font_b, args.px_diff)
-        gen_report(font_a, font_b, glyph_diff, args.out)
+        data = test_fonts(args.word_file, font_a, font_b, args.px_diff)
+        gen_report(font_a, font_b, data, args.out)
 
     elif args.cmd == "build":
         glyphs = None if not args.glyphs else set(args.glyphs)
