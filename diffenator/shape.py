@@ -135,10 +135,8 @@ def build_words(fp, out, keep_chars=None):
     t.find_words()
     
     # Remove pairs which have already been seen
-
     with open(out, "w") as doc:
         doc.write("\n".join(t.words))
-
 
 
 def test_words(
@@ -185,7 +183,7 @@ def test_words(
         words_b = seen_b[idx]
         missing = words_a - words_b
         if missing:
-            res |= set(list(missing)[:100])
+            res |= set(list(missing)[:1])
 
     if diff_pixels:
         print(f"Pixel diffing results. This may take a while.")
@@ -193,7 +191,7 @@ def test_words(
     return res
 
 
-def px_diff(font_a, font_b, strings, thresh=0.02):
+def px_diff(font_a, font_b, strings, thresh=0.000000005):
     res = []
     quant = len(strings)
     print(f"px diffing {quant}")
@@ -212,14 +210,20 @@ def px_diff(font_a, font_b, strings, thresh=0.02):
                 diff_pixels = 0
                 for x in range(width):
                     for y in range(height):
-                        if img_a.getpixel((x, y)) != img_b.getpixel((x, y)):
-                            diff_pixels += 1
-                if diff_pixels / (width * height) > thresh:
-                    res.append(string)
+                        px_a = img_a.getpixel((x, y)) 
+                        px_b = img_b.getpixel((x, y))
+                        if px_a != px_b:
+                            diff_pixels += abs(px_a[0] - px_b[0])
+                            diff_pixels += abs(px_a[1] - px_b[1])
+                            diff_pixels += abs(px_a[2] - px_b[2])
+                            diff_pixels += abs(px_a[3] - px_b[3])
+                pc = diff_pixels / (width * height * 255 * 255 * 255 * 255)
+                if pc > thresh:
+                    res.append((pc, string))
             except:
-                print(f"Cannot render string {string}")
+                all
     print("done")
-    return res
+    return [i[1] for i in sorted(res, key=lambda k: k[0], reverse=True)]
 
 
 @dataclass
