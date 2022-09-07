@@ -15,6 +15,7 @@ import tempfile
 from blackrenderer.render import renderText
 from PIL import Image
 from pkg_resources import resource_filename
+import ahocorasick
 
 
 TEMPLATE = Template(
@@ -79,64 +80,45 @@ TEMPLATE = Template(
 )
 
 
-class Trie:
-    def __init__(self):
-        self.root = {"": {}}
-        self.words = []
-    
-    def add_word(self, word):
-        head = self.root[""]
-        for c in word:
-            if c not in head:
-                head[c] = {}
-            head = head[c]
-    
-    def find_words(self):
-        self._get(self.root, "", "")
-    
-    def _get(self, data, k, word):
-        for c in data[k]:
-            if not data[k][c]:
-                self.words.append(word+c)
-            self._get(data[k], c, word+c)
-
-
-def remove_seen_pairs(words):
-    """["player", "layer"] --> ["player"]"""
-    new_words = set()
-    seen_pairs = set()
+def remove_substring_words(words):
+    res = set()
+    auto = ahocorasick.Automaton()
     for word in words:
-        word_pairs = set(f"{word[i-1]}{word[i]}" for i in range(1, len(word)))
-        if all(p in seen_pairs for p in word_pairs):
-            continue
-        new_words.add(word)
-        seen_pairs |= word_pairs
-    return new_words
+        auto.add_word(word, word)
+        res.add(word)
+    auto.make_automaton()
 
-
-def remove_dotted_circle(words):
-    return [w for w in words if chr(0x25CC) not in w]
+    for word in words:
+        for end_ind, found in auto.iter(word):
+            if word != found:
+                try:
+                    res.remove(found)
+                except:
+                    all
+    return res
 
 
 def build_words(fp, out, keep_chars=None):
     root = objectify.parse(fp).getroot()
     bank = set()
+    word_freq = defaultdict(int)
     for page in root.page:
         page_text = etree.tostring(page.revision, encoding="unicode")
         words = page_text.split()
         for word in words:
+            word_freq[word] += 1
             if keep_chars and all(c in keep_chars for c in word):
                 bank.add(word)
     
-    # Remove sub words
-    t = Trie()
-    for word in bank:
-        t.add_word(word)
-    t.find_words()
-    
+    words = remove_substring_words(bank)
     # Remove pairs which have already been seen
+    res = set()
+    for word in words:
+        if word_freq[word] <= 2:
+            continue
+        res.add(word)
     with open(out, "w") as doc:
-        doc.write("\n".join(t.words))
+        doc.write("\n".join(res))
 
 
 def test_words(
@@ -183,7 +165,7 @@ def test_words(
         words_b = seen_b[idx]
         missing = words_a - words_b
         if missing:
-            res |= set(list(missing)[:1])
+            res |= missing
 
     if diff_pixels:
         print(f"Pixel diffing results. This may take a while.")
