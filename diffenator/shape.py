@@ -173,7 +173,7 @@ def test_words(
     return res
 
 
-def px_diff(font_a, font_b, strings, thresh=0.000000005):
+def px_diff(font_a, font_b, strings, thresh=0.005):
     res = []
     quant = len(strings)
     print(f"px diffing {quant}")
@@ -199,13 +199,14 @@ def px_diff(font_a, font_b, strings, thresh=0.000000005):
                             diff_pixels += abs(px_a[1] - px_b[1])
                             diff_pixels += abs(px_a[2] - px_b[2])
                             diff_pixels += abs(px_a[3] - px_b[3])
-                pc = diff_pixels / (width * height * 255 * 255 * 255 * 255)
+                pc = diff_pixels  / (width * height * 256 * 3 * 3 * 3)
                 if pc > thresh:
                     res.append((pc, string))
             except:
                 all
     print("done")
-    return [i[1] for i in sorted(res, key=lambda k: k[0], reverse=True)]
+    s = [i[1] for i in sorted(res, key=lambda k: k[0], reverse=True)]
+    return s
 
 
 @dataclass
@@ -242,7 +243,7 @@ def test_font_glyphs(font_a, font_b, diff_pixels=True):
     return GlyphDiff(
         list(sorted(missing_glyphs)),
         list(sorted(new_glyphs)),
-        list(sorted(modified_glyphs)),
+        modified_glyphs,
     )
 
 
