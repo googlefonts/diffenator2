@@ -173,7 +173,7 @@ def test_words(
     return res
 
 
-def px_diff(font_a, font_b, strings, thresh=0.005):
+def px_diff(font_a, font_b, strings, thresh=0.00005):
     res = []
     quant = len(strings)
     print(f"px diffing {quant}")
