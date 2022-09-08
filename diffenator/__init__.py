@@ -13,7 +13,6 @@ from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 from diffenator.shape import px_diff
 import numpy as np
-from diffenator.scale import scale_font
 from diffenator.shape import test_fonts
 from jinja2 import Environment, FileSystemLoader
 from diffenator import html

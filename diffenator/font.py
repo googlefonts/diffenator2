@@ -1,6 +1,6 @@
 from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
-from diffenator.scale import scale_font
+from fontTools.ttLib.scaleUpem import scale_upem
 import os
 from diffenator import jfont
 import uharfbuzz as hb
@@ -56,7 +56,7 @@ def match_fonts(old_font: DFont, new_font: DFont, variations: dict = None, scale
         ratio = new_font.ttFont["head"].unitsPerEm / old_font.ttFont["head"].unitsPerEm
         if ratio != 1.0:
             # TODO use scaler in font tools
-            old_font.ttFont = scale_font(old_font.ttFont, ratio)
+            scale_upem(old_font.ttFont, ratio)
 
     if old_font.is_variable() and new_font.is_variable():
         # todo allow user to specify coords
