@@ -3,7 +3,6 @@
 {% block style %}
 {{ super() }}
 .cell{
-  position: relative;
   z-index: -100;
   float: left;
   display: block;
@@ -11,6 +10,15 @@
   padding: 5pt;
   margin: 5pt;
   width: 50pt;
+  line-height: {{ pt_size | int * 1.5}}px;
+}
+.cell-word{
+  z-index: -100;
+  float: left;
+  display: block;
+  text-align: center;
+  padding: 5pt;
+  margin: 5pt;
   line-height: {{ pt_size | int * 1.5}}px;
 }
 .cat-strings .cell {
@@ -78,7 +86,7 @@
         <div class="box-title">Misshapen {{ script }} words</div>
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
           {% for word in diff.glyph_diff["words"][script] %}
-              {{ word }}<br>
+              {{ word.render() }}
           {% endfor %}
         </span>
       </div>

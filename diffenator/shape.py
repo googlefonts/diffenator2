@@ -16,6 +16,7 @@ from blackrenderer.render import renderText
 from PIL import Image
 from pkg_resources import resource_filename
 import ahocorasick
+from jinja2 import pass_environment
 
 
 TEMPLATE = Template(
@@ -121,15 +122,17 @@ def build_words(fp, out, keep_chars=None):
         doc.write("\n".join(res))
 
 
-def test_words(word_file, font_a, font_b, skip_glyphs=set(), diff_pixels=False):
-    seen_a, seen_b = defaultdict(set), defaultdict(set)
-    seen_codepoints = set()
+def test_words(word_file, font_a, font_b, skip_glyphs=set()):
+    res = set()
     with open(word_file) as doc:
         words = doc.read().split("\n")
         print(f"testing {len(words)} words")
+        word_total = len(words)
         for i, word in enumerate(words):
+            print(i, word_total)
             if any(c in word for c in skip_glyphs):
                 continue
+            
             buf_a = hb.Buffer()
             buf_a.add_str(word)
             buf_a.guess_segment_properties()
@@ -137,6 +140,8 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), diff_pixels=False):
 
             infos_a = buf_a.glyph_infos
             pos_a = buf_a.glyph_positions
+            hb_a = "".join(f"gid={i.codepoint}, pos={j.position}<br>" for i,j in zip(infos_a, pos_a))
+            word_a = Word(word, hb_a)
 
             buf_b = hb.Buffer()
             buf_b.add_str(word)
@@ -145,30 +150,44 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), diff_pixels=False):
 
             infos_b = buf_b.glyph_infos
             pos_b = buf_b.glyph_positions
+            hb_b = "".join(f"gid={i.codepoint}, pos={j.position}<br>" for i,j in zip(infos_b, pos_b))
+            word_b = Word(word, hb_b)
 
-            for info, pos in zip(infos_a, pos_a):
-                seen_a[(info.codepoint, pos.position)].add(word)
-            for info, pos in zip(infos_b, pos_b):
-                seen_b[(info.codepoint, pos.position)].add(word)
+            if word_a != word_b:
+                pc = px_diff2(font_a, font_b, word)
+                if pc >= 0.004:
+                    res.add((pc, WordDiff(word, word_a.hb, word_b.hb)))
+    return [w[1] for w in sorted(res, key=lambda k: k[0], reverse=True)]
 
-    res = set()
-    missing = set(seen_a) - set(seen_b)
-    if missing:
-        for m in missing:
-            res |= set(list(seen_a[m])[:100])
 
-    shared = set(seen_a) & set(seen_b)
-    for idx in shared:
-        words_a = seen_a[idx]
-        words_b = seen_b[idx]
-        missing = words_a - words_b
-        if missing:
-            res |= missing
+class Renderable:
+    @pass_environment
+    def render(self, jinja):
+        classname = self.__class__.__name__
+        template = jinja.get_template(f"{classname}.partial.html")
+        return template.render(self.__dict__)
 
-    if diff_pixels:
-        print(f"Pixel diffing results. This may take a while.")
-        res = px_diff(font_a, font_b, res)
-    return res
+
+@dataclass
+class Word:
+    string: str
+    hb: str
+
+    def __eq__(self, other):
+        return (self.string, hb) == (other.string, other.hb)
+    
+    def __hash__(self):
+        return hash((self.string, self.hb))
+
+
+@dataclass
+class WordDiff(Renderable):
+    string: str
+    hb_a: str
+    hb_b: str
+
+    def __hash__(self):
+        return hash((self.string, self.hb_a, self.hb_b))
 
 
 def px_diff(font_a, font_b, strings, thresh=0.00005):
@@ -205,6 +224,34 @@ def px_diff(font_a, font_b, strings, thresh=0.00005):
     print("done")
     s = [i[1] for i in sorted(res, key=lambda k: k[0], reverse=True)]
     return s
+
+
+def px_diff2(font_a, font_b, string):
+    pc = 0.0
+    with tempfile.NamedTemporaryFile(
+        suffix=".png"
+    ) as out_a, tempfile.NamedTemporaryFile(suffix=".png") as out_b:
+        try:
+            renderText(font_a.path, string, out_a.name, fontSize=12, margin=0)
+            renderText(font_b.path, string, out_b.name, fontSize=12, margin=0)
+            img_a = Image.open(out_a.name)
+            img_b = Image.open(out_b.name)
+            width = min([img_a.width, img_b.width])
+            height = min([img_a.height, img_b.height])
+            diff_pixels = 0
+            for x in range(width):
+                for y in range(height):
+                    px_a = img_a.getpixel((x, y))
+                    px_b = img_b.getpixel((x, y))
+                    if px_a != px_b:
+                        diff_pixels += abs(px_a[0] - px_b[0])
+                        diff_pixels += abs(px_a[1] - px_b[1])
+                        diff_pixels += abs(px_a[2] - px_b[2])
+                        diff_pixels += abs(px_a[3] - px_b[3])
+            pc = diff_pixels / (width * height * 256 * 3 * 3 * 3)
+        except:
+            all
+    return pc
 
 
 @dataclass
@@ -269,7 +316,7 @@ def test_font_words(font_a, font_b, skip_glyphs=set(), diff_pixels=True):
             print(f"No wordlist for {script}")
             continue
         res[script] = test_words(
-            wordlist, font_a, font_b, skip_glyphs=skip_glyphs, diff_pixels=diff_pixels
+            wordlist, font_a, font_b, skip_glyphs=skip_glyphs
         )
     return res
 

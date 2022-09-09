@@ -47,38 +47,42 @@
 	  padding: 10px;
 	}
 	.tooltip {
-	z-index: 1;
 	position: relative;
 	display: inline-block;
 	border-bottom: 1px dotted black;
 	}
 
 	.tooltip .tooltiptext {
+	font-family: sans-serif;
 	visibility: hidden;
-	width: 120px;
+	width: 500px;
 	background-color: black;
 	color: #fff;
-	text-align: center;
+	text-align: left;
+	font-size: 12pt;
+	line-height: 15pt;
 	border-radius: 6px;
 	padding: 5px 0;
-	font-size: 10pt;
-	line-height: 13pt;
 
 	/* Position the tooltip */
 	position: absolute;
-	z-index: 1000;
+	z-index: 1;
 	}
-	.tooltip .tooltiptext {
-  width: 120px;
-  top: 100%;
-  left: 50%;
-  margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
-}
 
 	.tooltip:hover .tooltiptext {
+	padding: 10px;
 	visibility: visible;
 	}
-	           /* Stuff needed for the table differ */
+	.tooltipleft {
+		float:left;
+		width: 249px;
+	}
+	.tooltipright {
+		float:right;
+		width:250px;
+	}
+
+			/* Stuff needed for the table differ */
             body {
                 font-family: Helvetica;
             }
