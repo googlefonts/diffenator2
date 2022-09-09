@@ -3,5 +3,4 @@
 *.egg-info
 *.ttf
 __pycache__
-*.html
 venv
