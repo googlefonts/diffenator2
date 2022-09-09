@@ -15,6 +15,7 @@ class_defs = {
     4: "Component Glyph",
 }
 
+
 def serialise_name_table(obj):
     return {
         (r.nameID, r.platformID, r.platEncID, r.langID): r.toUnicode()
@@ -39,9 +40,9 @@ def serialise_fvar_table(obj, root):
         nametbl.getName(i.subfamilyNameID, 3, 1, 0x409).toUnicode(): {
             "coordinates": i.coordinates,
             # todo get ps name
-#            "postscriptName": None if i.postscriptNameID == None else nametbl.getName(
-#                i.postscriptNameID, 3, 1, 0x409
-#            ).toUnicode(),
+            #            "postscriptName": None if i.postscriptNameID == None else nametbl.getName(
+            #                i.postscriptNameID, 3, 1, 0x409
+            #            ).toUnicode(),
             "flags": i.flags,
         }
         for i in obj.instances
@@ -116,7 +117,7 @@ def _TTJ(obj, root=None):
 class Diff:
     def __init__(self, obj_a, obj_b):
         """A basic general purposes dict differ. Should not be tied to fonts!"""
-        self.obj_a = obj_a 
+        self.obj_a = obj_a
         self.obj_b = obj_b
         self.diff = self.clean(self._diff(self.obj_a, self.obj_b))
 
@@ -124,7 +125,9 @@ class Diff:
         """Diff to json objects. Output as html"""
         if obj1 is None and obj2 is None:
             return False
-        elif isinstance(obj1, (int, float, str)) and isinstance(obj2, (int, float, str)):
+        elif isinstance(obj1, (int, float, str)) and isinstance(
+            obj2, (int, float, str)
+        ):
             if obj1 == obj2:
                 return False
             return obj1, obj2
@@ -204,7 +207,7 @@ class Diff:
                 + f"\n{space}</div>"
             )
         return s
-    
+
     def summary(self):
         raise NotImplementedError()
 

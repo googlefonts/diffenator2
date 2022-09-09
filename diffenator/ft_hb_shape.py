@@ -1,13 +1,11 @@
+import argparse
 import logging
 from blackrenderer.render import renderText
 
 logger = logging.getLogger(__name__)
 
 
-
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser(description="Draw some text")
     parser.add_argument("font", metavar="TTF")
     parser.add_argument("string", metavar="TEXT")
@@ -27,4 +25,11 @@ if __name__ == "__main__":
             else:
                 features[f] = True
 
-    renderText(args.font, args.string, args.out, features=features, lang=args.lang, script=args.script)
+    renderText(
+        args.font,
+        args.string,
+        args.out,
+        features=features,
+        lang=args.lang,
+        script=args.script,
+    )

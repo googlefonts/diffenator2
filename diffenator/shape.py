@@ -109,7 +109,7 @@ def build_words(fp, out, keep_chars=None):
             word_freq[word] += 1
             if keep_chars and all(c in keep_chars for c in word):
                 bank.add(word)
-    
+
     words = remove_substring_words(bank)
     # Remove pairs which have already been seen
     res = set()
@@ -121,9 +121,7 @@ def build_words(fp, out, keep_chars=None):
         doc.write("\n".join(res))
 
 
-def test_words(
-    word_file, font_a, font_b, skip_glyphs=set(), diff_pixels=False
-):
+def test_words(word_file, font_a, font_b, skip_glyphs=set(), diff_pixels=False):
     seen_a, seen_b = defaultdict(set), defaultdict(set)
     seen_codepoints = set()
     with open(word_file) as doc:
@@ -192,14 +190,14 @@ def px_diff(font_a, font_b, strings, thresh=0.00005):
                 diff_pixels = 0
                 for x in range(width):
                     for y in range(height):
-                        px_a = img_a.getpixel((x, y)) 
+                        px_a = img_a.getpixel((x, y))
                         px_b = img_b.getpixel((x, y))
                         if px_a != px_b:
                             diff_pixels += abs(px_a[0] - px_b[0])
                             diff_pixels += abs(px_a[1] - px_b[1])
                             diff_pixels += abs(px_a[2] - px_b[2])
                             diff_pixels += abs(px_a[3] - px_b[3])
-                pc = diff_pixels  / (width * height * 256 * 3 * 3 * 3)
+                pc = diff_pixels / (width * height * 256 * 3 * 3 * 3)
                 if pc > thresh:
                     res.append((pc, string))
             except:
@@ -227,12 +225,14 @@ def test_font_glyphs(font_a, font_b, diff_pixels=True):
     cmap_a = set(
         chr(c)
         for c in font_a.ttFont.getBestCmap()
-        if c not in list(range(33)) + [847, 8288, 8203, 160, 6068, 6069, 173, 8204, 8205]
+        if c
+        not in list(range(33)) + [847, 8288, 8203, 160, 6068, 6069, 173, 8204, 8205]
     )
     cmap_b = set(
         chr(c)
         for c in font_b.ttFont.getBestCmap()
-        if c not in list(range(33)) + [847, 8288, 8203, 160, 6068, 6069, 173, 8204, 8205]
+        if c
+        not in list(range(33)) + [847, 8288, 8203, 160, 6068, 6069, 173, 8204, 8205]
     )
     missing_glyphs = cmap_a - cmap_b
     new_glyphs = cmap_b - cmap_a
@@ -247,9 +247,10 @@ def test_font_glyphs(font_a, font_b, diff_pixels=True):
     )
 
 
-def test_font_words(font_a, font_b, skip_glyphs=set(),diff_pixels=True):
+def test_font_words(font_a, font_b, skip_glyphs=set(), diff_pixels=True):
     from youseedee import ucd_data
     from collections import defaultdict
+
     scripts = defaultdict(int)
     cmap_a = font_a.ttFont.getBestCmap()
     for k in cmap_a:
@@ -267,7 +268,9 @@ def test_font_words(font_a, font_b, skip_glyphs=set(),diff_pixels=True):
         if not os.path.exists(wordlist):
             print(f"No wordlist for {script}")
             continue
-        res[script] = test_words(wordlist, font_a, font_b, skip_glyphs=skip_glyphs, diff_pixels=True)
+        res[script] = test_words(
+            wordlist, font_a, font_b, skip_glyphs=skip_glyphs, diff_pixels=diff_pixels
+        )
     return res
 
 

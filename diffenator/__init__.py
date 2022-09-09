@@ -30,9 +30,7 @@ logger.setLevel(logging.INFO)
 
 
 class DiffFonts:
-    def __init__(
-        self, old_font: DFont, new_font: DFont, strings=None
-    ):
+    def __init__(self, old_font: DFont, new_font: DFont, strings=None):
         self.old_font = old_font
         self.new_font = new_font
 
@@ -45,15 +43,15 @@ class DiffFonts:
 
         self.tables = jfont.Diff(self.old_font.jFont, self.new_font.jFont)
 
-# TODO readd this!
-#        old_fea = self.old_font.glyph_combinator.ff.asFea()
-#        new_fea = self.new_font.glyph_combinator.ff.asFea()
-#        if old_fea != new_fea:
-#            self.features = HtmlDiff(wrapcolumn=80).make_file(
-#                old_fea.split("\n"),
-#                new_fea.split("\n"),
-#            )
-        
+        # TODO readd this!
+        #        old_fea = self.old_font.glyph_combinator.ff.asFea()
+        #        new_fea = self.new_font.glyph_combinator.ff.asFea()
+        #        if old_fea != new_fea:
+        #            self.features = HtmlDiff(wrapcolumn=80).make_file(
+        #                old_fea.split("\n"),
+        #                new_fea.split("\n"),
+        #            )
+
         self.glyph_diff = test_fonts(
             self.old_font,
             self.new_font,
@@ -79,7 +77,7 @@ class Reporter:
         new_font_fp = os.path.join(fp, "after.ttf")
         shutil.copyfile(self.diff.old_font.path, old_font_fp)
         shutil.copyfile(self.diff.new_font.path, new_font_fp)
-        
+
         # TODO set more properties if VF
         old_css_font_face = html.CSSElement(
             "@font-face",

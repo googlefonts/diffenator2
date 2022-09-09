@@ -77,8 +77,14 @@ def css_font_faces(ttFonts, server_dir=None, position=None):
     """
     results = []
     for ttFont in ttFonts:
-        family_name = (ttFont["name"].getName(16, 3, 1, 0x409) or ttFont["name"].getName(1, 3, 1, 0x409)).toUnicode()
-        style_name = (ttFont["name"].getName(2, 3, 1, 0x409) or ttFont["name"].getName(17, 3, 1, 0x409)).toUnicode()
+        family_name = (
+            ttFont["name"].getName(16, 3, 1, 0x409)
+            or ttFont["name"].getName(1, 3, 1, 0x409)
+        ).toUnicode()
+        style_name = (
+            ttFont["name"].getName(2, 3, 1, 0x409)
+            or ttFont["name"].getName(17, 3, 1, 0x409)
+        ).toUnicode()
         font_path = ttFont.reader.file.name
         path = (
             font_path
@@ -87,7 +93,11 @@ def css_font_faces(ttFonts, server_dir=None, position=None):
         )
         src = f"url({path})"
         font_family = _class_name(family_name, style_name, position)
-        font_style = "italic" if ttFont["name"].getName(2, 3, 1, 0x409).toUnicode() == "Italic" else "normal"
+        font_style = (
+            "italic"
+            if ttFont["name"].getName(2, 3, 1, 0x409).toUnicode() == "Italic"
+            else "normal"
+        )
         font_weight = css_font_weight(ttFont)
         font_stretch = WIDTH_CLASS_TO_CSS[ttFont["OS/2"].usWidthClass]
 
@@ -153,13 +163,23 @@ def css_font_weight(ttFont):
 
 
 def css_font_class_from_static(ttFont, position=None):
-    family_name = (ttFont["name"].getName(16, 3, 1, 0x409) or ttFont["name"].getName(1, 3, 1, 0x409)).toUnicode()
-    style_name = (ttFont["name"].getName(2, 3, 1, 0x409) or ttFont["name"].getName(17, 3, 1, 0x409)).toUnicode()
+    family_name = (
+        ttFont["name"].getName(16, 3, 1, 0x409)
+        or ttFont["name"].getName(1, 3, 1, 0x409)
+    ).toUnicode()
+    style_name = (
+        ttFont["name"].getName(2, 3, 1, 0x409)
+        or ttFont["name"].getName(17, 3, 1, 0x409)
+    ).toUnicode()
 
     class_name = _class_name(family_name, style_name, position)
     font_family = class_name
     font_weight = css_font_weight(ttFont)
-    font_style = "italic" if ttFont["name"].getName(2,3,1,0x409).toUnicode() == "Italic" else "normal"
+    font_style = (
+        "italic"
+        if ttFont["name"].getName(2, 3, 1, 0x409).toUnicode() == "Italic"
+        else "normal"
+    )
     font_stretch = WIDTH_CLASS_TO_CSS[ttFont["OS/2"].usWidthClass]
     return CSSElement(
         class_name,
@@ -176,8 +196,14 @@ def css_font_class_from_static(ttFont, position=None):
 def css_font_classes_from_vf(ttFont, position=None):
     instances = ttFont["fvar"].instances
     nametable = ttFont["name"]
-    family_name = (ttFont["name"].getName(16, 3, 1, 0x409) or ttFont["name"].getName(1, 3, 1, 0x409)).toUnicode()
-    style_name = (ttFont["name"].getName(2, 3, 1, 0x409) or ttFont["name"].getName(17, 3, 1, 0x409)).toUnicode()
+    family_name = (
+        ttFont["name"].getName(16, 3, 1, 0x409)
+        or ttFont["name"].getName(1, 3, 1, 0x409)
+    ).toUnicode()
+    style_name = (
+        ttFont["name"].getName(2, 3, 1, 0x409)
+        or ttFont["name"].getName(17, 3, 1, 0x409)
+    ).toUnicode()
 
     results = []
     for instance in instances:
