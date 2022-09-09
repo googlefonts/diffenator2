@@ -1,6 +1,7 @@
 """
 Check fonts for shaping regressions using real words.
 """
+import unicodedata2 as uni
 from diffenator.font import DFont
 from dataclasses import dataclass
 from lxml import etree
@@ -130,7 +131,7 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set()):
         word_total = len(words)
         for i, word in enumerate(words):
             print(i, word_total)
-            if any(c in word for c in skip_glyphs):
+            if any(c.string in word for c in skip_glyphs):
                 continue
             
             buf_a = hb.Buffer()
@@ -188,6 +189,7 @@ class WordDiff(Renderable):
 
     def __hash__(self):
         return hash((self.string, self.hb_a, self.hb_b))
+
 
 
 def px_diff(font_a, font_b, strings, thresh=0.00005):
@@ -272,26 +274,50 @@ def test_font_glyphs(font_a, font_b, diff_pixels=True):
     cmap_a = set(
         chr(c)
         for c in font_a.ttFont.getBestCmap()
-        if c
-        not in list(range(33)) + [847, 8288, 8203, 160, 6068, 6069, 173, 8204, 8205]
     )
     cmap_b = set(
         chr(c)
         for c in font_b.ttFont.getBestCmap()
-        if c
-        not in list(range(33)) + [847, 8288, 8203, 160, 6068, 6069, 173, 8204, 8205]
     )
-    missing_glyphs = cmap_a - cmap_b
-    new_glyphs = cmap_b - cmap_a
+    missing_glyphs = set(Glyph(c, uni.name(c), ord(c)) for c in cmap_a - cmap_b)
+    new_glyphs = set(Glyph(c, uni.name(c), ord(c)) for c in cmap_b - cmap_a)
     same_glyphs = cmap_a & cmap_b
     skip_glyphs = missing_glyphs | new_glyphs
-    modified_glyphs = px_diff(font_a, font_b, list(same_glyphs))
+    modified_glyphs = []
+    for g in same_glyphs:
+        pc = px_diff2(font_a, font_b, g)
+        if pc > 0.0005:
+            glyph = GlyphD(g, uni.name(g), ord(g), pc)
+            modified_glyphs.append(glyph)
+    modified_glyphs.sort(key=lambda k: k.changed_pixels, reverse=True)
 
     return GlyphDiff(
-        list(sorted(missing_glyphs)),
-        list(sorted(new_glyphs)),
+        list(sorted(missing_glyphs, key=lambda k: k.string)),
+        list(sorted(new_glyphs, key=lambda k: k.string)),
         modified_glyphs,
     )
+
+
+@dataclass
+class Glyph(Renderable):
+    string: str
+    name: str
+    unicode: str
+
+    def __hash__(self):
+        return hash((self.string, self.name, self.unicode))
+
+
+@dataclass
+class GlyphD(Renderable):
+    string: str
+    name: str
+    unicode: str
+    changed_pixels: float
+
+    def __hash__(self):
+        return hash((self.string, self.name, self.unicode))
+
 
 
 def test_font_words(font_a, font_b, skip_glyphs=set(), diff_pixels=True):

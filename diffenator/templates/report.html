@@ -47,7 +47,7 @@
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
           {% for glyph in diff.glyph_diff["glyphs"].new %}
             <div class="cell">
-              {{ glyph }}
+              {{ glyph.render() }}
             </div>
           {% endfor %}
         </span>
@@ -61,7 +61,7 @@
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
           {% for glyph in diff.glyph_diff["glyphs"].missing %}
             <div class="cell">
-              {{ glyph }}
+              {{ glyph.render() }}
             </div>
           {% endfor %}
         </span>
@@ -74,7 +74,7 @@
         <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
           {% for glyph in diff.glyph_diff["glyphs"].modified %}
             <div class="cell">
-              {{ glyph }}
+              {{ glyph.render() }}
             </div>
           {% endfor %}
         </span>
