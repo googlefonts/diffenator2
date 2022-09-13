@@ -74,55 +74,6 @@ ot_to_html_lang = {
 }
 
 
-def gid_pos_hash(info, pos):
-    return f"gid={info.codepoint}, pos={pos.position}<br>"
-
-
-def gid_hash(info, _):
-    return f"gid={info.codepoint}"
-
-
-def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_hash):
-    res = set()
-    with open(word_file) as doc:
-        words = doc.read().split("\n")
-        print(f"testing {len(words)} words")
-        word_total = len(words)
-        for i, line in enumerate(words):
-            items = line.split(",")
-            word, features = items[0], items[1:]
-            features = {k: True for k in features}
-            print(i, word_total)
-            if any(c.string in word for c in skip_glyphs):
-                continue
-            
-            buf_a = hb.Buffer()
-            buf_a.add_str(word)
-            buf_a.guess_segment_properties()
-            hb.shape(font_a.hbFont, buf_a, features=features)
-
-            infos_a = buf_a.glyph_infos
-            pos_a = buf_a.glyph_positions
-            hb_a = "".join(hash_func(i, j) for i,j in zip(infos_a, pos_a))
-            word_a = Word(word, hb_a)
-
-            buf_b = hb.Buffer()
-            buf_b.add_str(word)
-            buf_b.guess_segment_properties()
-            hb.shape(font_b.hbFont, buf_b, features=features)
-
-            infos_b = buf_b.glyph_infos
-            pos_b = buf_b.glyph_positions
-            hb_b = "".join(hash_func(i, j) for i,j in zip(infos_b, pos_b))
-            word_b = Word(word, hb_b)
-
-            if word_a != word_b:
-                pc = px_diff(font_a, font_b, word, features=features)
-                if pc >= 0.004:
-                    res.add((pc, WordDiff(word, word_a.hb, word_b.hb, tuple(features.keys()))))
-    return [w[1] for w in sorted(res, key=lambda k: k[0], reverse=True)]
-
-
 class Renderable:
     @pass_environment
     def render(self, jinja):
@@ -138,7 +89,7 @@ class Word:
 
     def __eq__(self, other):
         return (self.string, hb) == (other.string, other.hb)
-    
+
     def __hash__(self):
         return hash((self.string, self.hb))
 
@@ -154,76 +105,6 @@ class WordDiff(Renderable):
         return hash((self.string, self.hb_a, self.hb_b, self.ot_features))
 
 
-def px_diff(font_a, font_b, string, features=None):
-    pc = 0.0
-    with tempfile.NamedTemporaryFile(
-        suffix=".png"
-    ) as out_a, tempfile.NamedTemporaryFile(suffix=".png") as out_b:
-        try:
-            renderText(font_a.path, string, out_a.name, fontSize=12, margin=0, features=features)
-            renderText(font_b.path, string, out_b.name, fontSize=12, margin=0, features=features)
-            img_a = Image.open(out_a.name)
-            img_b = Image.open(out_b.name)
-            width = min([img_a.width, img_b.width])
-            height = min([img_a.height, img_b.height])
-            diff_pixels = 0
-            for x in range(width):
-                for y in range(height):
-                    px_a = img_a.getpixel((x, y))
-                    px_b = img_b.getpixel((x, y))
-                    if px_a != px_b:
-                        diff_pixels += abs(px_a[0] - px_b[0])
-                        diff_pixels += abs(px_a[1] - px_b[1])
-                        diff_pixels += abs(px_a[2] - px_b[2])
-                        diff_pixels += abs(px_a[3] - px_b[3])
-            pc = diff_pixels / (width * height * 256 * 3 * 3 * 3)
-        except:
-            all
-    return pc
-
-
-@dataclass
-class GlyphDiff:
-    missing: list
-    new: list
-    modified: list
-
-
-def test_fonts(font_a, font_b):
-    glyphs = test_font_glyphs(font_a, font_b)
-    skip_glyphs = glyphs.missing + glyphs.new
-    words = test_font_words(font_a, font_b, skip_glyphs)
-    return {"glyphs": glyphs, "words": words}
-
-
-def test_font_glyphs(font_a, font_b):
-    cmap_a = set(
-        chr(c)
-        for c in font_a.ttFont.getBestCmap()
-    )
-    cmap_b = set(
-        chr(c)
-        for c in font_b.ttFont.getBestCmap()
-    )
-    missing_glyphs = set(Glyph(c, uni.name(c), ord(c)) for c in cmap_a - cmap_b)
-    new_glyphs = set(Glyph(c, uni.name(c), ord(c)) for c in cmap_b - cmap_a)
-    same_glyphs = cmap_a & cmap_b
-    skip_glyphs = missing_glyphs | new_glyphs
-    modified_glyphs = []
-    for g in same_glyphs:
-        pc = px_diff(font_a, font_b, g)
-        if pc > 0.0005:
-            glyph = GlyphD(g, uni.name(g), ord(g), pc)
-            modified_glyphs.append(glyph)
-    modified_glyphs.sort(key=lambda k: k.changed_pixels, reverse=True)
-
-    return GlyphDiff(
-        list(sorted(missing_glyphs, key=lambda k: k.string)),
-        list(sorted(new_glyphs, key=lambda k: k.string)),
-        modified_glyphs,
-    )
-
-
 @dataclass
 class Glyph(Renderable):
     string: str
@@ -235,7 +116,7 @@ class Glyph(Renderable):
 
 
 @dataclass
-class GlyphD(Renderable):
+class GlyphDiff(Renderable):
     string: str
     name: str
     unicode: str
@@ -244,6 +125,49 @@ class GlyphD(Renderable):
     def __hash__(self):
         return hash((self.string, self.name, self.unicode))
 
+
+@dataclass
+class GlyphItems:
+    missing: list
+    new: list
+    modified: list
+
+
+def gid_pos_hash(info, pos):
+    return f"gid={info.codepoint}, pos={pos.position}<br>"
+
+
+def gid_hash(info, _):
+    return f"gid={info.codepoint}"
+
+
+def test_fonts(font_a, font_b):
+    glyphs = test_font_glyphs(font_a, font_b)
+    skip_glyphs = glyphs.missing + glyphs.new
+    words = test_font_words(font_a, font_b, skip_glyphs)
+    return {"glyphs": glyphs, "words": words}
+
+
+def test_font_glyphs(font_a, font_b):
+    cmap_a = set(chr(c) for c in font_a.ttFont.getBestCmap())
+    cmap_b = set(chr(c) for c in font_b.ttFont.getBestCmap())
+    missing_glyphs = set(Glyph(c, uni.name(c), ord(c)) for c in cmap_a - cmap_b)
+    new_glyphs = set(Glyph(c, uni.name(c), ord(c)) for c in cmap_b - cmap_a)
+    same_glyphs = cmap_a & cmap_b
+    skip_glyphs = missing_glyphs | new_glyphs
+    modified_glyphs = []
+    for g in same_glyphs:
+        pc = px_diff(font_a, font_b, g)
+        if pc > 0.0005:
+            glyph = GlyphDiff(g, uni.name(g), ord(g), pc)
+            modified_glyphs.append(glyph)
+    modified_glyphs.sort(key=lambda k: k.changed_pixels, reverse=True)
+
+    return GlyphItems(
+        list(sorted(missing_glyphs, key=lambda k: k.string)),
+        list(sorted(new_glyphs, key=lambda k: k.string)),
+        modified_glyphs,
+    )
 
 
 def test_font_words(font_a, font_b, skip_glyphs=set()):
@@ -267,10 +191,98 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
         if not os.path.exists(wordlist):
             print(f"No wordlist for {script}")
             continue
-        res[script] = test_words(
-            wordlist, font_a, font_b, skip_glyphs=skip_glyphs
-        )
+        res[script] = test_words(wordlist, font_a, font_b, skip_glyphs=skip_glyphs)
     return res
+
+
+def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_hash):
+    res = set()
+    with open(word_file) as doc:
+        words = doc.read().split("\n")
+        print(f"testing {len(words)} words")
+        word_total = len(words)
+        for i, line in enumerate(words):
+            items = line.split(",")
+            word, features = items[0], items[1:]
+            features = {k: True for k in features}
+            print(i, word_total)
+            if any(c.string in word for c in skip_glyphs):
+                continue
+
+            buf_a = hb.Buffer()
+            buf_a.add_str(word)
+            buf_a.guess_segment_properties()
+            hb.shape(font_a.hbFont, buf_a, features=features)
+
+            infos_a = buf_a.glyph_infos
+            pos_a = buf_a.glyph_positions
+            hb_a = "".join(hash_func(i, j) for i, j in zip(infos_a, pos_a))
+            word_a = Word(word, hb_a)
+
+            buf_b = hb.Buffer()
+            buf_b.add_str(word)
+            buf_b.guess_segment_properties()
+            hb.shape(font_b.hbFont, buf_b, features=features)
+
+            infos_b = buf_b.glyph_infos
+            pos_b = buf_b.glyph_positions
+            hb_b = "".join(hash_func(i, j) for i, j in zip(infos_b, pos_b))
+            word_b = Word(word, hb_b)
+
+            if word_a != word_b:
+                pc = px_diff(font_a, font_b, word, features=features)
+                if pc >= 0.004:
+                    res.add(
+                        (
+                            pc,
+                            WordDiff(
+                                word, word_a.hb, word_b.hb, tuple(features.keys())
+                            ),
+                        )
+                    )
+    return [w[1] for w in sorted(res, key=lambda k: k[0], reverse=True)]
+
+
+def px_diff(font_a, font_b, string, features=None):
+    pc = 0.0
+    with tempfile.NamedTemporaryFile(
+        suffix=".png"
+    ) as out_a, tempfile.NamedTemporaryFile(suffix=".png") as out_b:
+        try:
+            renderText(
+                font_a.path,
+                string,
+                out_a.name,
+                fontSize=12,
+                margin=0,
+                features=features,
+            )
+            renderText(
+                font_b.path,
+                string,
+                out_b.name,
+                fontSize=12,
+                margin=0,
+                features=features,
+            )
+            img_a = Image.open(out_a.name)
+            img_b = Image.open(out_b.name)
+            width = min([img_a.width, img_b.width])
+            height = min([img_a.height, img_b.height])
+            diff_pixels = 0
+            for x in range(width):
+                for y in range(height):
+                    px_a = img_a.getpixel((x, y))
+                    px_b = img_b.getpixel((x, y))
+                    if px_a != px_b:
+                        diff_pixels += abs(px_a[0] - px_b[0])
+                        diff_pixels += abs(px_a[1] - px_b[1])
+                        diff_pixels += abs(px_a[2] - px_b[2])
+                        diff_pixels += abs(px_a[3] - px_b[3])
+            pc = diff_pixels / (width * height * 256 * 3 * 3 * 3)
+        except:
+            all
+    return pc
 
 
 def main():
