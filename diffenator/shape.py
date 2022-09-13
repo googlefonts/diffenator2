@@ -123,13 +123,24 @@ def build_words(fp, out, keep_chars=None):
         doc.write("\n".join(res))
 
 
-def test_words(word_file, font_a, font_b, skip_glyphs=set()):
+def gid_pos_hash(info, pos):
+    return f"gid={info.codepoint}, pos={pos.position}<br>"
+
+
+def gid_hash(info, _):
+    return f"gid={info.codepoint}"
+
+
+def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_hash):
     res = set()
     with open(word_file) as doc:
         words = doc.read().split("\n")
         print(f"testing {len(words)} words")
         word_total = len(words)
-        for i, word in enumerate(words):
+        for i, line in enumerate(words):
+            items = line.split(",")
+            word, features = items[0], items[1:]
+            features = {k: True for k in features}
             print(i, word_total)
             if any(c.string in word for c in skip_glyphs):
                 continue
@@ -137,27 +148,27 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set()):
             buf_a = hb.Buffer()
             buf_a.add_str(word)
             buf_a.guess_segment_properties()
-            hb.shape(font_a.hbFont, buf_a)
+            hb.shape(font_a.hbFont, buf_a, features=features)
 
             infos_a = buf_a.glyph_infos
             pos_a = buf_a.glyph_positions
-            hb_a = "".join(f"gid={i.codepoint}, pos={j.position}<br>" for i,j in zip(infos_a, pos_a))
+            hb_a = "".join(hash_func(i, j) for i,j in zip(infos_a, pos_a))
             word_a = Word(word, hb_a)
 
             buf_b = hb.Buffer()
             buf_b.add_str(word)
             buf_b.guess_segment_properties()
-            hb.shape(font_b.hbFont, buf_b)
+            hb.shape(font_b.hbFont, buf_b, features=features)
 
             infos_b = buf_b.glyph_infos
             pos_b = buf_b.glyph_positions
-            hb_b = "".join(f"gid={i.codepoint}, pos={j.position}<br>" for i,j in zip(infos_b, pos_b))
+            hb_b = "".join(hash_func(i, j) for i,j in zip(infos_b, pos_b))
             word_b = Word(word, hb_b)
 
             if word_a != word_b:
-                pc = px_diff2(font_a, font_b, word)
+                pc = px_diff2(font_a, font_b, word, features=features)
                 if pc >= 0.004:
-                    res.add((pc, WordDiff(word, word_a.hb, word_b.hb)))
+                    res.add((pc, WordDiff(word, word_a.hb, word_b.hb, tuple(features.keys()))))
     return [w[1] for w in sorted(res, key=lambda k: k[0], reverse=True)]
 
 
@@ -186,9 +197,10 @@ class WordDiff(Renderable):
     string: str
     hb_a: str
     hb_b: str
+    ot_features: tuple
 
     def __hash__(self):
-        return hash((self.string, self.hb_a, self.hb_b))
+        return hash((self.string, self.hb_a, self.hb_b, self.ot_features))
 
 
 
@@ -228,14 +240,14 @@ def px_diff(font_a, font_b, strings, thresh=0.00005):
     return s
 
 
-def px_diff2(font_a, font_b, string):
+def px_diff2(font_a, font_b, string, features=None):
     pc = 0.0
     with tempfile.NamedTemporaryFile(
         suffix=".png"
     ) as out_a, tempfile.NamedTemporaryFile(suffix=".png") as out_b:
         try:
-            renderText(font_a.path, string, out_a.name, fontSize=12, margin=0)
-            renderText(font_b.path, string, out_b.name, fontSize=12, margin=0)
+            renderText(font_a.path, string, out_a.name, fontSize=12, margin=0, features=features)
+            renderText(font_b.path, string, out_b.name, fontSize=12, margin=0, features=features)
             img_a = Image.open(out_a.name)
             img_b = Image.open(out_b.name)
             width = min([img_a.width, img_b.width])
