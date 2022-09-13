@@ -1,0 +1,13 @@
+1/4,latn,dflt,frac
+1/234,latn,dflt,frac
+0,,,zero
+0123456789,,,sups
+0123456789,,,sinf
+0123456789,,,numr
+0123456789,,,dnom
+0123456789,,,pnum
+0123456789,,,tnum
+0a,,,ordn
+0o,,,ordn
+a,,,ordn
+o,,,ordn

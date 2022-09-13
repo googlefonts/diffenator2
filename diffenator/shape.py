@@ -65,6 +65,8 @@ def remove_substring_words(words):
 
 
 ot_to_html_lang = {
+    ("", ""): "en",
+    ("latn", "dflt"): "en",
     ("arab", "ARA"): "ar",
     ("dev2", "HIN"): "hi",
     ("dev2", "MAR"): "mr",
@@ -100,6 +102,7 @@ class WordDiff(Renderable):
     hb_a: str
     hb_b: str
     ot_features: tuple
+    lang: str
 
     def __hash__(self):
         return hash((self.string, self.hb_a, self.hb_b, self.ot_features))
@@ -203,13 +206,15 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
         word_total = len(words)
         for i, line in enumerate(words):
             items = line.split(",")
-            word, features = items[0], items[1:]
+            word, script, lang, features = items[0], items[1], items[2], items[3:]
             features = {k: True for k in features}
             print(i, word_total)
             if any(c.string in word for c in skip_glyphs):
                 continue
 
             buf_a = hb.Buffer()
+            buf_a.script = script
+            buf_a.language = lang
             buf_a.add_str(word)
             buf_a.guess_segment_properties()
             hb.shape(font_a.hbFont, buf_a, features=features)
@@ -220,6 +225,8 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
             word_a = Word(word, hb_a)
 
             buf_b = hb.Buffer()
+            buf_b.script = script
+            buf_b.language = lang
             buf_b.add_str(word)
             buf_b.guess_segment_properties()
             hb.shape(font_b.hbFont, buf_b, features=features)
@@ -230,20 +237,24 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
             word_b = Word(word, hb_b)
 
             if word_a != word_b:
-                pc = px_diff(font_a, font_b, word, features=features)
+                pc = px_diff(font_a, font_b, word, script=script, lang=lang, features=features)
                 if pc >= 0.004:
                     res.add(
                         (
                             pc,
                             WordDiff(
-                                word, word_a.hb, word_b.hb, tuple(features.keys())
+                                word,
+                                word_a.hb,
+                                word_b.hb,
+                                tuple(features.keys()),
+                                ot_to_html_lang.get((script, lang)),
                             ),
                         )
                     )
     return [w[1] for w in sorted(res, key=lambda k: k[0], reverse=True)]
 
 
-def px_diff(font_a, font_b, string, features=None):
+def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
     pc = 0.0
     with tempfile.NamedTemporaryFile(
         suffix=".png"
@@ -256,6 +267,8 @@ def px_diff(font_a, font_b, string, features=None):
                 fontSize=12,
                 margin=0,
                 features=features,
+                script=script,
+                lang=lang,
             )
             renderText(
                 font_b.path,
@@ -264,6 +277,8 @@ def px_diff(font_a, font_b, string, features=None):
                 fontSize=12,
                 margin=0,
                 features=features,
+                script=script,
+                lang=lang,
             )
             img_a = Image.open(out_a.name)
             img_b = Image.open(out_b.name)
