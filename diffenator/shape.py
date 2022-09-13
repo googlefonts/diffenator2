@@ -1,6 +1,7 @@
 """
 Check fonts for shaping regressions using real words.
 """
+import argparse
 import unicodedata2 as uni
 from dataclasses import dataclass
 from lxml import etree
@@ -260,3 +261,25 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
             wordlist, font_a, font_b, skip_glyphs=skip_glyphs
         )
     return res
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(required=True, dest="cmd")
+
+    build = subparsers.add_parser("build")
+    build.add_argument("xml_fp")
+    build.add_argument("out")
+    build.add_argument("--glyphs", "-g", default=None)
+
+    args = parser.parse_args()
+
+    if args.cmd == "build":
+        glyphs = None if not args.glyphs else set(args.glyphs)
+        build_words(args.xml_fp, args.out, glyphs)
+    else:
+        raise ValueError(f"{args.cmd} unsupported command")
+
+
+if __name__ == "__main__":
+    main()
