@@ -2,16 +2,12 @@
 Check fonts for shaping regressions using real words.
 """
 import unicodedata2 as uni
-from diffenator.font import DFont
 from dataclasses import dataclass
 from lxml import etree
 from lxml import objectify
 from collections import defaultdict
 import uharfbuzz as hb
-import argparse
-from string import Template
 import os
-import shutil
 import tempfile
 from blackrenderer.render import renderText
 from PIL import Image
@@ -176,14 +172,14 @@ class GlyphDiff:
     modified: list
 
 
-def test_fonts(font_a, font_b, diff_pixels=True):
-    glyphs = test_font_glyphs(font_a, font_b, diff_pixels=diff_pixels)
+def test_fonts(font_a, font_b):
+    glyphs = test_font_glyphs(font_a, font_b)
     skip_glyphs = glyphs.missing + glyphs.new
-    words = test_font_words(font_a, font_b, skip_glyphs, diff_pixels=diff_pixels)
+    words = test_font_words(font_a, font_b, skip_glyphs)
     return {"glyphs": glyphs, "words": words}
 
 
-def test_font_glyphs(font_a, font_b, diff_pixels=True):
+def test_font_glyphs(font_a, font_b):
     cmap_a = set(
         chr(c)
         for c in font_a.ttFont.getBestCmap()
@@ -233,7 +229,7 @@ class GlyphD(Renderable):
 
 
 
-def test_font_words(font_a, font_b, skip_glyphs=set(), diff_pixels=True):
+def test_font_words(font_a, font_b, skip_glyphs=set()):
     from youseedee import ucd_data
     from collections import defaultdict
 
