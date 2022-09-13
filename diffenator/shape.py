@@ -64,6 +64,16 @@ def remove_substring_words(words):
 # Functions to test word lists
 
 
+ot_to_html_lang = {
+    ("arab", "ARA"): "ar",
+    ("dev2", "HIN"): "hi",
+    ("dev2", "MAR"): "mr",
+    ("dev2", "NEP"): "ne",
+    ("latn", "MOL"): "mo",
+    ("cyrl", "SRB"): "sr",
+}
+
+
 def gid_pos_hash(info, pos):
     return f"gid={info.codepoint}, pos={pos.position}<br>"
 
