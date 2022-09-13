@@ -16,22 +16,7 @@ import ahocorasick
 from jinja2 import pass_environment
 
 
-def remove_substring_words(words):
-    res = set()
-    auto = ahocorasick.Automaton()
-    for word in words:
-        auto.add_word(word, word)
-        res.add(word)
-    auto.make_automaton()
-
-    for word in words:
-        for end_ind, found in auto.iter(word):
-            if word != found:
-                try:
-                    res.remove(found)
-                except:
-                    all
-    return res
+# functions to build word lists
 
 
 def build_words(fp, out, keep_chars=None):
@@ -55,6 +40,27 @@ def build_words(fp, out, keep_chars=None):
         res.add(word)
     with open(out, "w") as doc:
         doc.write("\n".join(res))
+
+
+def remove_substring_words(words):
+    res = set()
+    auto = ahocorasick.Automaton()
+    for word in words:
+        auto.add_word(word, word)
+        res.add(word)
+    auto.make_automaton()
+
+    for word in words:
+        for end_ind, found in auto.iter(word):
+            if word != found:
+                try:
+                    res.remove(found)
+                except:
+                    all
+    return res
+
+
+# Functions to test word lists
 
 
 def gid_pos_hash(info, pos):
