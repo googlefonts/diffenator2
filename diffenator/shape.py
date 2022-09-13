@@ -162,7 +162,11 @@ def test_font_glyphs(font_a, font_b):
     for g in same_glyphs:
         pc = px_diff(font_a, font_b, g)
         if pc > 0.0005:
-            glyph = GlyphDiff(g, uni.name(g), ord(g), pc)
+            try:
+                uni_name = uni.name(g)
+            except ValueError:
+                uni_name = ""
+            glyph = GlyphDiff(g, uni_name, ord(g), pc)
             modified_glyphs.append(glyph)
     modified_glyphs.sort(key=lambda k: k.changed_pixels, reverse=True)
 
@@ -206,9 +210,11 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
         word_total = len(words)
         for i, line in enumerate(words):
             items = line.split(",")
-            word, script, lang, features = items[0], items[1], items[2], items[3:]
+            try:
+                word, script, lang, features = items[0], items[1], items[2], items[3:]
+            except IndexError:
+                word, script, lang, features = items[0], "latn", "dflt", []
             features = {k: True for k in features}
-            print(i, word_total)
             if any(c.string in word for c in skip_glyphs):
                 continue
 
@@ -238,7 +244,7 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
 
             if word_a != word_b:
                 pc = px_diff(font_a, font_b, word, script=script, lang=lang, features=features)
-                if pc >= 0.004:
+                if pc >= 0.002:
                     res.add(
                         (
                             pc,
