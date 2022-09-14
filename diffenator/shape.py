@@ -64,7 +64,7 @@ def remove_substring_words(words):
 
 
 ot_to_html_lang = {
-    ("", ""): "en",
+    (None, None): "en",
     ("latn", "dflt"): "en",
     ("arab", "ARA"): "ar",
     ("dev2", "HIN"): "hi",
@@ -72,6 +72,11 @@ ot_to_html_lang = {
     ("dev2", "NEP"): "ne",
     ("latn", "MOL"): "mo",
     ("cyrl", "SRB"): "sr",
+}
+
+ot_to_dir = {
+    None: "ltr",
+    "arab": "rlt"
 }
 
 
@@ -102,6 +107,7 @@ class WordDiff(Renderable):
     hb_b: str
     ot_features: tuple
     lang: str
+    direction: str
 
     def __hash__(self):
         return hash((self.string, self.hb_a, self.hb_b, self.ot_features))
@@ -286,6 +292,7 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
                                 word_b.hb,
                                 tuple(features.keys()),
                                 ot_to_html_lang.get((script, lang)),
+                                ot_to_dir.get(script, None)
                             ),
                         )
                     )
