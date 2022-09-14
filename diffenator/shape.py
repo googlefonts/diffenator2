@@ -13,6 +13,7 @@ from diffenator.ft_hb_shape import render_text
 from pkg_resources import resource_filename
 import ahocorasick
 from jinja2 import pass_environment
+from threading import Thread
 
 
 # functions to build word lists
@@ -175,6 +176,19 @@ def test_font_glyphs(font_a, font_b):
     )
 
 
+class ThreadReturn(Thread):
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs={}, Verbose=None):
+        Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args,
+                                                **self._kwargs)
+    def join(self, *args):
+        Thread.join(self, *args)
+        return self._return
+
 def test_font_words(font_a, font_b, skip_glyphs=set()):
     from youseedee import ucd_data
     from collections import defaultdict
@@ -189,6 +203,7 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
             continue
 
     res = {}
+    threads = []
     for script, count in scripts.items():
         if count < 10:
             continue
@@ -196,7 +211,12 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
         if not os.path.exists(wordlist):
             print(f"No wordlist for {script}")
             continue
-        res[script] = test_words(wordlist, font_a, font_b, skip_glyphs=skip_glyphs)
+        th = ThreadReturn(target=test_words, args=(wordlist, font_a, font_b, skip_glyphs))
+        th.start()
+        threads.append((script, th))
+    
+    for script, th in threads:
+        res[script] = th.join()
     return res
 
 
