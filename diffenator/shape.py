@@ -9,9 +9,7 @@ from lxml import objectify
 from collections import defaultdict
 import uharfbuzz as hb
 import os
-import tempfile
-from blackrenderer.render import renderText
-from PIL import Image
+from diffenator.ft_hb_shape import render_text
 from pkg_resources import resource_filename
 import ahocorasick
 from jinja2 import pass_environment
@@ -262,47 +260,40 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
 
 def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
     pc = 0.0
-    with tempfile.NamedTemporaryFile(
-        suffix=".png"
-    ) as out_a, tempfile.NamedTemporaryFile(suffix=".png") as out_b:
-        try:
-            renderText(
-                font_a.path,
-                string,
-                out_a.name,
-                fontSize=12,
-                margin=0,
-                features=features,
-                script=script,
-                lang=lang,
-            )
-            renderText(
-                font_b.path,
-                string,
-                out_b.name,
-                fontSize=12,
-                margin=0,
-                features=features,
-                script=script,
-                lang=lang,
-            )
-            img_a = Image.open(out_a.name)
-            img_b = Image.open(out_b.name)
-            width = min([img_a.width, img_b.width])
-            height = min([img_a.height, img_b.height])
-            diff_pixels = 0
-            for x in range(width):
-                for y in range(height):
-                    px_a = img_a.getpixel((x, y))
-                    px_b = img_b.getpixel((x, y))
-                    if px_a != px_b:
-                        diff_pixels += abs(px_a[0] - px_b[0])
-                        diff_pixels += abs(px_a[1] - px_b[1])
-                        diff_pixels += abs(px_a[2] - px_b[2])
-                        diff_pixels += abs(px_a[3] - px_b[3])
-            pc = diff_pixels / (width * height * 256 * 3 * 3 * 3)
-        except:
-            all
+    try:
+        img_a = render_text(
+            font_a,
+            string,
+            fontSize=12,
+            margin=0,
+            features=features,
+            script=script,
+            lang=lang,
+        )
+        img_b = render_text(
+            font_b,
+            string,
+            fontSize=12,
+            margin=0,
+            features=features,
+            script=script,
+            lang=lang,
+        )
+        width = min([img_a.width, img_b.width])
+        height = min([img_a.height, img_b.height])
+        diff_pixels = 0
+        for x in range(width):
+            for y in range(height):
+                px_a = img_a.getpixel((x, y))
+                px_b = img_b.getpixel((x, y))
+                if px_a != px_b:
+                    diff_pixels += abs(px_a[0] - px_b[0])
+                    diff_pixels += abs(px_a[1] - px_b[1])
+                    diff_pixels += abs(px_a[2] - px_b[2])
+                    diff_pixels += abs(px_a[3] - px_b[3])
+        pc = diff_pixels / (width * height * 256 * 3 * 3 * 3)
+    except:
+        all
     return pc
 
 

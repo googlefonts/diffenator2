@@ -5,6 +5,7 @@ import os
 from diffenator import jfont
 import uharfbuzz as hb
 import logging
+from blackrenderer.font import BlackRendererFont
 
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,7 @@ class DFont:
     def __init__(self, path: str, font_size: int = 1000):
         self.path = path
         self.ttFont: TTFont = TTFont(self.path, recalcTimestamp=False)
+        self.blackFont: BlackRendererFont = BlackRendererFont(path)
         with open(path, "rb") as fontfile:
             fontdata = fontfile.read()
         self.hbFont: hb.Font = hb.Font(hb.Face(fontdata))

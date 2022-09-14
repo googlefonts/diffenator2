@@ -1,8 +1,63 @@
 import argparse
 import logging
-from blackrenderer.render import renderText
+import uharfbuzz as hb
+from blackrenderer.font import BlackRendererFont
+from blackrenderer.render import buildGlyphLine, scaleRect, insetRect, calcGlyphLineBounds, intRect
+from blackrenderer.backends import getSurfaceClass
+from PIL import Image
+
 
 logger = logging.getLogger(__name__)
+
+
+def render_text(
+    font,
+    textString,
+    *,
+    fontSize=250,
+    margin=20,
+    features=None,
+    variations=None,
+    backendName=None,
+    lang=None,
+    script=None,
+):
+    font = font.blackFont
+    glyphNames = font.glyphNames
+
+    scaleFactor = fontSize / font.unitsPerEm
+
+    buf = hb.Buffer()
+    buf.add_str(textString)
+    buf.guess_segment_properties()
+
+    if script:
+        buf.script = script
+    if lang:
+        buf.language = lang
+    if variations:
+        font.setLocation(variations)
+
+    hb.shape(font.hbFont, buf, features)
+
+    infos = buf.glyph_infos
+    positions = buf.glyph_positions
+    glyphLine = buildGlyphLine(infos, positions, glyphNames)
+    bounds = calcGlyphLineBounds(glyphLine, font)
+    bounds = scaleRect(bounds, scaleFactor, scaleFactor)
+    bounds = insetRect(bounds, -margin, -margin)
+    bounds = intRect(bounds)
+    surfaceClass = getSurfaceClass("skia", ".png")
+
+    surface = surfaceClass()
+    with surface.canvas(bounds) as canvas:
+        canvas.scale(scaleFactor)
+        for glyph in glyphLine:
+            with canvas.savedState():
+                canvas.translate(glyph.xOffset, glyph.yOffset)
+                font.drawGlyph(glyph.name, canvas)
+            canvas.translate(glyph.xAdvance, glyph.yAdvance)
+    return Image.fromarray(surface._image.toarray())
 
 
 if __name__ == "__main__":
@@ -25,11 +80,11 @@ if __name__ == "__main__":
             else:
                 features[f] = True
 
-    renderText(
+    img = render_text(
         args.font,
         args.string,
-        args.out,
         features=features,
         lang=args.lang,
         script=args.script,
     )
+    img.save(args.out)
