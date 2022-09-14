@@ -234,14 +234,16 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
             try:
                 word, script, lang, features = items[0], items[1], items[2], items[3:]
             except IndexError:
-                word, script, lang, features = items[0], "latn", "dflt", []
+                word, script, lang, features = items[0], None, None, []
             features = {k: True for k in features}
             if any(c.string in word for c in skip_glyphs):
                 continue
 
             buf_a = hb.Buffer()
-            buf_a.script = script
-            buf_a.language = lang
+            if script:
+                buf_a.script = script
+            if lang:
+                buf_a.language = lang
             buf_a.add_str(word)
             buf_a.guess_segment_properties()
             hb.shape(font_a.hbFont, buf_a, features=features)
@@ -252,8 +254,10 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
             word_a = Word(word, hb_a)
 
             buf_b = hb.Buffer()
-            buf_b.script = script
-            buf_b.language = lang
+            if script:
+                buf_b.script = script
+            if lang:
+                buf_b.language = lang
             buf_b.add_str(word)
             buf_b.guess_segment_properties()
             hb.shape(font_b.hbFont, buf_b, features=features)
@@ -269,7 +273,7 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
                 ):
                     continue
                 pc = px_diff(font_a, font_b, word, script=script, lang=lang, features=features)
-                if pc >= 0.002:
+                if pc >= 0.0002:
                     for i, j in zip(infos_b, pos_b):
                         h = hash_func(i, j)
                         seen_gids[h] += 1
