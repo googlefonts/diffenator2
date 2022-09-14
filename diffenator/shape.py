@@ -239,6 +239,7 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
             items = line.split(",")
             try:
                 word, script, lang, features = items[0], items[1], items[2], items[3:]
+            # for wordlists which just contain words
             except IndexError:
                 word, script, lang, features = items[0], None, None, []
             features = {k: True for k in features}
