@@ -74,10 +74,7 @@ ot_to_html_lang = {
     ("cyrl", "SRB"): "sr",
 }
 
-ot_to_dir = {
-    None: "ltr",
-    "arab": "rlt"
-}
+ot_to_dir = {None: "ltr", "arab": "rlt", "hebr": "rtl"}
 
 
 class Renderable:
@@ -183,17 +180,20 @@ def test_font_glyphs(font_a, font_b):
 
 
 class ThreadReturn(Thread):
-    def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs={}, Verbose=None):
+    def __init__(
+        self, group=None, target=None, name=None, args=(), kwargs={}, Verbose=None
+    ):
         Thread.__init__(self, group, target, name, args, kwargs)
         self._return = None
+
     def run(self):
         if self._target is not None:
-            self._return = self._target(*self._args,
-                                                **self._kwargs)
+            self._return = self._target(*self._args, **self._kwargs)
+
     def join(self, *args):
         Thread.join(self, *args)
         return self._return
+
 
 def test_font_words(font_a, font_b, skip_glyphs=set()):
     from youseedee import ucd_data
@@ -217,10 +217,12 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
         if not os.path.exists(wordlist):
             print(f"No wordlist for {script}")
             continue
-        th = ThreadReturn(target=test_words, args=(wordlist, font_a, font_b, skip_glyphs))
+        th = ThreadReturn(
+            target=test_words, args=(wordlist, font_a, font_b, skip_glyphs)
+        )
         th.start()
         threads.append((script, th))
-    
+
     for script, th in threads:
         res[script] = th.join()
     return res
@@ -229,6 +231,7 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
 def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_hash):
     res = set()
     from collections import defaultdict
+
     seen_gids = defaultdict(int)
     with open(word_file) as doc:
         words = doc.read().split("\n")
@@ -275,11 +278,11 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
             word_b = Word(word, hb_b)
 
             if word_a != word_b:
-                if all(
-                    seen_gids[hash_func(i,j)] >= 1 for i,j in zip(infos_b, pos_b)
-                ):
+                if all(seen_gids[hash_func(i, j)] >= 1 for i, j in zip(infos_b, pos_b)):
                     continue
-                pc = px_diff(font_a, font_b, word, script=script, lang=lang, features=features)
+                pc = px_diff(
+                    font_a, font_b, word, script=script, lang=lang, features=features
+                )
                 if pc >= 0.0002:
                     for i, j in zip(infos_b, pos_b):
                         h = hash_func(i, j)
@@ -293,7 +296,7 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
                                 word_b.hb,
                                 tuple(features.keys()),
                                 ot_to_html_lang.get((script, lang)),
-                                ot_to_dir.get(script, None)
+                                ot_to_dir.get(script, None),
                             ),
                         )
                     )
