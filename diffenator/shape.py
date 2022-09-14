@@ -140,7 +140,7 @@ def gid_pos_hash(info, pos):
 
 
 def gid_hash(info, _):
-    return f"gid={info.codepoint}"
+    return f"gid={info.codepoint}<br>"
 
 
 def test_fonts(font_a, font_b):
@@ -222,11 +222,14 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
 
 def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_hash):
     res = set()
+    from collections import defaultdict
+    seen_gids = defaultdict(int)
     with open(word_file) as doc:
         words = doc.read().split("\n")
         print(f"testing {len(words)} words")
         word_total = len(words)
         for i, line in enumerate(words):
+            skip_px = False
             items = line.split(",")
             try:
                 word, script, lang, features = items[0], items[1], items[2], items[3:]
@@ -261,8 +264,15 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
             word_b = Word(word, hb_b)
 
             if word_a != word_b:
+                if all(
+                    seen_gids[hash_func(i,j)] >= 1 for i,j in zip(infos_b, pos_b)
+                ):
+                    continue
                 pc = px_diff(font_a, font_b, word, script=script, lang=lang, features=features)
                 if pc >= 0.002:
+                    for i, j in zip(infos_b, pos_b):
+                        h = hash_func(i, j)
+                        seen_gids[h] += 1
                     res.add(
                         (
                             pc,
