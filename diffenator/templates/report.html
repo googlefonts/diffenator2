@@ -90,7 +90,16 @@
           {% endfor %}
         </span>
       </div>
-    {% endfor %}  
+    {% endfor %}
+    
+    <div class="box">
+      <div class="box-title">Misshapen user strings</div>
+      <span class="{{ font_class.selector }}" style="font-size: {{ pt_size }}pt">
+        {% for word in diff.strings %}
+            {{ word.render() }}
+        {% endfor %}
+      </span>
+    </div>
     
 
     {% if diff.features %}

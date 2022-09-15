@@ -11,7 +11,7 @@ Output:
 from difflib import HtmlDiff
 from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
-from diffenator.shape import px_diff
+from diffenator.shape import px_diff, test_words
 import numpy as np
 from diffenator.shape import test_fonts
 from jinja2 import Environment, FileSystemLoader
@@ -30,19 +30,21 @@ logger.setLevel(logging.INFO)
 
 
 class DiffFonts:
-    def __init__(self, old_font: DFont, new_font: DFont, strings=None):
+    def __init__(self, old_font: DFont, new_font: DFont):
         self.old_font = old_font
         self.new_font = new_font
 
-        self.strings = strings
-        self.build()
-
-    def build(self):
-        if self.strings:
-            self.diffstrings = px_diff(self.old_font, self.new_font, self.strings)
-
+    def diff_all(self):
+        skip = frozenset(["diff_strings", "diff_all"])
+        diff_funcs = [f for f in dir(self) if f.startswith("diff_") if f not in skip]
+        for f in diff_funcs:
+            eval(f"self.{f}()")
+        
+    def diff_tables(self):
         self.tables = jfont.Diff(self.old_font.jFont, self.new_font.jFont)
 
+    def diff_fea(self):
+        pass
         # TODO readd this!
         #        old_fea = self.old_font.glyph_combinator.ff.asFea()
         #        new_fea = self.new_font.glyph_combinator.ff.asFea()
@@ -52,10 +54,12 @@ class DiffFonts:
         #                new_fea.split("\n"),
         #            )
 
-        self.glyph_diff = test_fonts(
-            self.old_font,
-            self.new_font,
-        )
+    
+    def diff_strings(self, fp):
+        self.strings = test_words(fp, self.old_font, self.new_font, threshold=0.0)
+    
+    def diff_words(self):
+        self.glyph_diff = test_fonts(self.old_font,self.new_font)
 
 
 class Reporter:

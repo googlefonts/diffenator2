@@ -19,12 +19,11 @@ def main():
     new_font = DFont(args.new_font)
     old_font, new_font = match_fonts(old_font, new_font, scale_upm=True)
 
-    strings = None
+    diff = DiffFonts(old_font, new_font)
+    diff.diff_all()
     if args.strings:
-        with open(args.strings) as file:
-            strings = [line.rstrip() for line in file]
+        diff.diff_strings(args.strings)
 
-    diff = DiffFonts(old_font, new_font, strings=strings)
     report = Reporter(diff)
     report.save(args.out)
 

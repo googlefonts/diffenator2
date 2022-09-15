@@ -228,7 +228,7 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
     return res
 
 
-def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_hash):
+def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_hash, threshold=0.0002):
     res = set()
     from collections import defaultdict
 
@@ -283,7 +283,7 @@ def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_h
                 pc = px_diff(
                     font_a, font_b, word, script=script, lang=lang, features=features
                 )
-                if pc >= 0.0002:
+                if pc >= threshold:
                     for i, j in zip(infos_b, pos_b):
                         h = hash_func(i, j)
                         seen_gids[h] += 1
