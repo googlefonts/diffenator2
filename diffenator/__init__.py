@@ -39,7 +39,7 @@ class DiffFonts:
         diff_funcs = [f for f in dir(self) if f.startswith("diff_") if f not in skip]
         for f in diff_funcs:
             eval(f"self.{f}()")
-        
+
     def diff_tables(self):
         self.tables = jfont.Diff(self.old_font.jFont, self.new_font.jFont)
 
@@ -54,12 +54,11 @@ class DiffFonts:
         #                new_fea.split("\n"),
         #            )
 
-    
     def diff_strings(self, fp):
         self.strings = test_words(fp, self.old_font, self.new_font, threshold=0.0)
-    
+
     def diff_words(self):
-        self.glyph_diff = test_fonts(self.old_font,self.new_font)
+        self.glyph_diff = test_fonts(self.old_font, self.new_font)
 
 
 class Reporter:

@@ -2,7 +2,13 @@ import argparse
 import logging
 import uharfbuzz as hb
 from blackrenderer.font import BlackRendererFont
-from blackrenderer.render import buildGlyphLine, scaleRect, insetRect, calcGlyphLineBounds, intRect
+from blackrenderer.render import (
+    buildGlyphLine,
+    scaleRect,
+    insetRect,
+    calcGlyphLineBounds,
+    intRect,
+)
 from blackrenderer.backends import getSurfaceClass
 from PIL import Image
 

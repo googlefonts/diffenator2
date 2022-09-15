@@ -228,7 +228,14 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
     return res
 
 
-def test_words(word_file, font_a, font_b, skip_glyphs=set(), hash_func=gid_pos_hash, threshold=0.0002):
+def test_words(
+    word_file,
+    font_a,
+    font_b,
+    skip_glyphs=set(),
+    hash_func=gid_pos_hash,
+    threshold=0.0002,
+):
     res = set()
     from collections import defaultdict
 
