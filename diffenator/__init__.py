@@ -102,7 +102,7 @@ class Reporter:
             font_family="after",
         )
 
-        template = self.jinja.get_template("report.html")
+        template = self.jinja.get_template("diffenator/diffenator.html")
         doc = template.render(
             include_ui=True,
             pt_size=self.pt_size,
