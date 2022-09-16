@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from glob import glob
 
 setup(
     name='Diffenator2',
@@ -8,13 +9,10 @@ setup(
     author_email='m.foley.88@gmail.com',
     description='Compare two fonts.',
     packages=find_packages(),    
-    entry_points={"console_scripts": [
-        "diffenator = diffenator.__main__:main",
-        "diffbrowsers = diffenator.diffbrowsers:main"
-    ]},
     install_requires=["FontTools[ufo]", "fontFeatures[shaper]", "jinja2", "blackrenderer[skia]", "Pillow", "uharfbuzz", "pyahocorasick"],
     package_dir={'diffenator': 'diffenator'},
     package_data={
         "diffenator": ["data/*", "templates/*"],
-    }
+    },
+    scripts=glob("bin/*")
 )
