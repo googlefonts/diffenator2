@@ -9,7 +9,7 @@ setup(
     author_email='m.foley.88@gmail.com',
     description='Compare two fonts.',
     packages=find_packages(),    
-    install_requires=["FontTools[ufo]", "fontFeatures[shaper]", "jinja2", "blackrenderer[skia]", "Pillow", "uharfbuzz", "pyahocorasick"],
+    install_requires=["FontTools[ufo]", "fontFeatures[shaper]", "jinja2", "blackrenderer[skia]", "Pillow", "uharfbuzz", "pyahocorasick", "selenium>=4.4.3"],
     package_dir={'diffenator': 'diffenator'},
     package_data={
         "diffenator": ["data/*", "templates/*"],
