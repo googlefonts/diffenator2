@@ -1,57 +1,12 @@
 """
-Revisitng rendering html pages
-
-What's wrong with what we've got. Feels overengineered!
-
-What do we need to do:
-
-- Proof a font/fonts
-- Diff 1 set of font/fonts against another
-- Diffenate 1 set of font/fonts against another (feels like the above)
-
-Let's start by making them as their own simple functions
 """
 from dataclasses import dataclass, field
-from jinja2 import Template, Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader
 from fontTools.ttLib import TTFont
 import os
+import shutil
 from diffenator.shape import Renderable
 
-
-def proof_rendering(ttFonts, template_dir):
-    font_faces = [CSSFontFace(f) for f in ttFonts]
-    font_styles = [CSSFontStyle(f) for f in ttFonts]
-    env = Environment(
-        loader=FileSystemLoader(template_dir),
-    )
-    template = env.get_template("waterfall.html")
-    doc = template.render(
-        font_faces=font_faces,
-        font_styles=font_styles,
-    )
-    print(doc)
-
-
-def diff_rendering(ttFonts_old, ttFonts_new, template_dir):
-    font_faces_old = [CSSFontFace(f, "old") for f in ttFonts_old]
-    font_styles_old = [CSSFontStyle(f, "old") for f in ttFonts_old]
-    
-    font_faces_new = [CSSFontFace(f, "new") for f in ttFonts_new]
-    font_styles_new = [CSSFontStyle(f, "new") for f in ttFonts_new]
-
-    font_styles_old, font_styles_new = _match_styles(
-        font_styles_old, font_styles_new
-    )
-    with open(template) as doc:
-        temp = Template(doc.read())
-        print(temp.render(
-            font_faces_old=font_faces_old,
-            font_styles_old=font_styles_old,
-            font_faces_new=font_faces_new,
-            font_styles_new=font_styles_new,
-        ))
-
-from diffenator.shape import Renderable
 
 @dataclass
 class CSSFontFace(Renderable):
@@ -59,10 +14,10 @@ class CSSFontFace(Renderable):
     suffix: str = ""
     filename: str = field(init=False)
     familyname: str = field(init=False)
-    
+
     def __post_init__(self):
         self.filename = os.path.basename(self.ttfont.reader.file.name)
-        self.familyname = self.ttfont['name'].getBestFamilyName()
+        self.familyname = self.ttfont["name"].getBestFamilyName()
 
 
 @dataclass
@@ -79,6 +34,52 @@ class CSSFontStyle(Renderable):
         self.stylename = self.ttfont["name"].getBestSubFamilyName()
 
 
+def proof_rendering(ttFonts, template, dst="out"):
+    font_faces = [CSSFontFace(f) for f in ttFonts]
+    font_styles = [CSSFontStyle(f) for f in ttFonts]
+    _package(template, dst, font_faces=font_faces, font_styles=font_styles)
+
+
+def diff_rendering(ttFonts_old, ttFonts_new, template_fp, dst="out"):
+    font_faces_old = [CSSFontFace(f, "old") for f in ttFonts_old]
+    font_styles_old = [CSSFontStyle(f, "old") for f in ttFonts_old]
+
+    font_faces_new = [CSSFontFace(f, "new") for f in ttFonts_new]
+    font_styles_new = [CSSFontStyle(f, "new") for f in ttFonts_new]
+
+    font_styles_old, font_styles_new = _match_styles(font_styles_old, font_styles_new)
+    _package(
+        template_fp,
+        dst,
+        font_faces_old=font_faces_old,
+        font_styles_old=font_styles_old,
+        font_faces_new=font_faces_new,
+        font_styles_new=font_styles_new,
+    )
+
+
+def _package(template_fp, dst, **kwargs):
+    if not os.path.exists(dst):
+        os.mkdir(dst)
+
+    # write doc
+    env = Environment(
+        loader=FileSystemLoader(os.path.dirname(template_fp)),
+    )
+    template = env.get_template(os.path.basename(template_fp))
+    doc = template.render(**kwargs)
+    dst_doc = os.path.join(dst, os.path.basename(template_fp))
+    with open(dst_doc, "w") as out_file:
+        out_file.write(doc)
+
+    # copy fonts
+    if "font_faces" in kwargs:
+        for font_face in kwargs["font_faces"]:
+            out_fp = os.path.join(dst, font_face.filename)
+            shutil.copy(font_face.ttfont.reader.file.name, out_fp)
+    # TODO fonts before and fonts after
+
+
 def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]):
     old = {s.stylename: s for s in styles_old}
     new = {s.stylename: s for s in styles_new}
@@ -90,5 +91,9 @@ def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]
 
 if __name__ == "__main__":
     import os
-    fonts = [TTFont(os.environ["mavenvf"]), TTFont("/Users/marcfoley/Type/fonts/ofl/exo/Exo[wght].ttf")]
-    proof_rendering(fonts, template_dir="templates")
+
+    fonts = [
+        TTFont(os.environ["mavenvf"]),
+        TTFont("/Users/marcfoley/Type/fonts/ofl/exo/Exo[wght].ttf"),
+    ]
+    proof_rendering(fonts, template="templates/waterfall.html", dst="out")
