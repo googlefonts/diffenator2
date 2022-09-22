@@ -6,6 +6,7 @@ from fontTools.ttLib import TTFont
 import os
 import shutil
 from diffenator.shape import Renderable
+from diffenator.utils import font_sample_text
 
 
 WIDTH_CLASS_TO_CSS = {
@@ -86,7 +87,6 @@ class CSSFontStyle(Renderable):
             )
 
 
-
 def get_font_styles(ttfonts, suffix=""):
     res = []
     for ttfont in ttfonts:
@@ -117,7 +117,8 @@ def get_font_styles(ttfonts, suffix=""):
 def proof_rendering(ttFonts, template, dst="out"):
     font_faces = [CSSFontFace(f) for f in ttFonts]
     font_styles = get_font_styles(ttFonts)
-    _package(template, dst, font_faces=font_faces, font_styles=font_styles)
+    sample_text = " ".join(font_sample_text(ttFonts[0]))
+    _package(template, dst, font_faces=font_faces, font_styles=font_styles, sample_text=sample_text)
 
 
 def diff_rendering(ttFonts_old, ttFonts_new, template, dst="out"):
@@ -128,6 +129,8 @@ def diff_rendering(ttFonts_old, ttFonts_new, template, dst="out"):
     font_styles_new = get_font_styles(ttFonts_new, "new")
 
     font_styles_old, font_styles_new = _match_styles(font_styles_old, font_styles_new)
+
+    sample_text = " ".join(font_sample_text(ttFonts_old[0]))
     _package(
         template,
         dst,
@@ -136,7 +139,13 @@ def diff_rendering(ttFonts_old, ttFonts_new, template, dst="out"):
         font_faces_new=font_faces_new,
         font_styles_new=font_styles_new,
         include_ui=True,
+        sample_text=sample_text,
     )
+
+def diffenator(ttfont_old, ttfont_new, template, dst="out"):
+    font_face_old = CSSFontFace(ttfont_old, "old")
+    font_face_new = CSSFontFace(ttfont_new, "new")
+    # TODO finish this off
 
 
 def _package(template_fp, dst, **kwargs):
@@ -177,4 +186,5 @@ if __name__ == "__main__":
 
     fonts = [TTFont(os.environ["mavenvf"])]
     fonts2 = [TTFont("/Users/marcfoley/Desktop/MavenProVF.ttf")]
-    diff_rendering(fonts, fonts2, template="templates/waterfall.html", dst="out")
+    txt = font_sample_text(fonts[0])
+    diff_rendering(fonts, fonts2, template="templates/text.html", dst="out")

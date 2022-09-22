@@ -28,6 +28,7 @@ if sys.version_info[0] == 3:
     from configparser import ConfigParser
 else:
     from ConfigParser import ConfigParser
+from gflanguages import LoadLanguages
 
 # =====================================
 # HELPER FUNCTIONS
@@ -111,3 +112,34 @@ def partition(items, size):
     """partition([1,2,3,4,5,6], 2) --> [[1,2],[3,4],[5,6]]"""
     return [items[i : i + size] for i in range(0, len(items), size)]
 
+
+def font_sample_text(ttFont):
+    """Collect words which exist in the Universal Declaration of Human Rights
+    that can be formed using the ttFont instance.
+    UDHR has been chosen due to the many languages it covers"""
+    with open(resource_filename("diffenator", "data/udhr_all.txt")) as doc:
+        uhdr = doc.read()
+
+    cmap = set(ttFont.getBestCmap())
+    words = []
+    seen_chars = set()
+    def _add_words(words, text, seen_chars):
+        for word in text.split():
+            chars = set(ord(l) for l in word)
+            if not chars.issubset(cmap):
+                continue
+            if chars & seen_chars == chars:
+                continue
+            seen_chars |= chars
+            words.append(word)
+
+    _add_words(words, uhdr, seen_chars)
+
+    if len(seen_chars) < len(cmap):
+        languages = LoadLanguages()
+        for file, proto in languages.items():
+            if hasattr(proto, "sample_text"):
+                for key, text in proto.sample_text.ListFields():
+                    _add_words(words, text, seen_chars)
+
+    return words
