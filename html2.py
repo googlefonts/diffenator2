@@ -35,7 +35,7 @@ class CSSFontFace(Renderable):
         self.stylename = self.ttfont["name"].getBestSubFamilyName()
         self.classname = self.cssfamilyname.replace(" ", "-")
         self.font_style = "normal" if "Italic" not in self.stylename else "italic"
-        
+
         if "fvar" in self.ttfont:
             fvar = self.ttfont["fvar"]
             axes = {a.axisTag: a for a in fvar.axes}
@@ -69,11 +69,22 @@ class CSSFontStyle(Renderable):
     stylename: str
     coords: dict
     suffix: str = ""
-    
+
     def __post_init__(self):
-        self.cssfamilyname = f"{self.suffix} {self.familyname}"
+        if self.suffix:
+            self.cssfamilyname = f"{self.suffix} {self.familyname}"
+        else:
+            self.cssfamilyname = self.familyname
         self.full_name = f"{self.familyname} {self.stylename}"
-        self.class_name = f"{self.suffix} {self.familyname} {self.stylename}".replace(" ", "-")
+        if self.suffix:
+            self.class_name = f"{self.suffix} {self.familyname} {self.stylename}".replace(
+                " ", "-"
+            )
+        else:
+            self.class_name = f"{self.familyname} {self.stylename}".replace(
+                " ", "-"
+            )
+
 
 
 def get_font_styles(ttfonts, suffix=""):
@@ -89,12 +100,17 @@ def get_font_styles(ttfonts, suffix=""):
                 res.append(CSSFontStyle(family_name, style_name, coords, suffix))
         else:
             style_name = ttfont["name"].getBestSubFamilyName()
-            res.append(CSSFontStyle(family_name, style_name, {
-                "wght": ttfont["OS/2"].usWeightClass,
-                "wdth": WIDTH_CLASS_TO_CSS[ttfont["OS/2"].usWidthClass],
-                }
-            ),
-            suffix)
+            res.append(
+                CSSFontStyle(
+                    family_name,
+                    style_name,
+                    {
+                        "wght": ttfont["OS/2"].usWeightClass,
+                        "wdth": WIDTH_CLASS_TO_CSS[ttfont["OS/2"].usWidthClass],
+                    },
+                ),
+                suffix,
+            )
     return res
 
 
@@ -119,6 +135,7 @@ def diff_rendering(ttFonts_old, ttFonts_new, template, dst="out"):
         font_styles_old=font_styles_old,
         font_faces_new=font_faces_new,
         font_styles_new=font_styles_new,
+        include_ui=True,
     )
 
 
@@ -150,16 +167,14 @@ def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]
     shared = set(old) & set(new)
     if not shared:
         raise ValueError("No matching fonts found")
-    return [s for s in styles_old if s.full_name in shared], [s for s in styles_new if s.full_name in shared]
+    return [s for s in styles_old if s.full_name in shared], [
+        s for s in styles_new if s.full_name in shared
+    ]
 
 
 if __name__ == "__main__":
     import os
 
-    fonts = [
-        TTFont(os.environ["mavenvf"]),
-        TTFont("/Users/marcfoley/Type/fonts/ofl/inconsolata/Inconsolata[wdth,wght].ttf"),
-    ]
-    fonts2 = fonts[:]
-    fonts2.pop()
+    fonts = [TTFont(os.environ["mavenvf"])]
+    fonts2 = [TTFont("/Users/marcfoley/Desktop/MavenProVF.ttf")]
     diff_rendering(fonts, fonts2, template="templates/waterfall.html", dst="out")
