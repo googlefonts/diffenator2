@@ -1,6 +1,7 @@
 """
 """
 from dataclasses import dataclass, field
+import pdb
 from jinja2 import Environment, FileSystemLoader
 from fontTools.ttLib import TTFont
 import os
@@ -99,20 +100,22 @@ def get_font_styles(ttfonts, suffix=""):
                 coords = inst.coordinates
                 res.append(CSSFontStyle(family_name, style_name, coords, suffix))
         else:
-            style_name = ttfont["name"].getBestSubFamilyName()
-            res.append(
-                CSSFontStyle(
-                    family_name,
-                    style_name,
-                    {
-                        "wght": ttfont["OS/2"].usWeightClass,
-                        "wdth": WIDTH_CLASS_TO_CSS[ttfont["OS/2"].usWidthClass],
-                    },
-                ),
-                suffix,
-            )
+            res.append(static_font_style(ttfont, suffix))
     return res
 
+
+def static_font_style(ttfont, suffix=""):
+    family_name = ttfont["name"].getBestFamilyName()
+    style_name = ttfont["name"].getBestSubFamilyName()
+    return CSSFontStyle(
+        family_name,
+        style_name,
+        {
+            "wght": ttfont["OS/2"].usWeightClass,
+            "wdth": WIDTH_CLASS_TO_CSS[ttfont["OS/2"].usWidthClass],
+        },
+        suffix,
+    )
 
 def proof_rendering(ttFonts, template, dst="out"):
     font_faces = [CSSFontFace(f) for f in ttFonts]
@@ -142,10 +145,25 @@ def diff_rendering(ttFonts_old, ttFonts_new, template, dst="out"):
         sample_text=sample_text,
     )
 
-def diffenator(ttfont_old, ttfont_new, template, dst="out"):
-    font_face_old = CSSFontFace(ttfont_old, "old")
-    font_face_new = CSSFontFace(ttfont_new, "new")
-    # TODO finish this off
+def diffenator_report(diff, template, dst="out"):
+    ttfont_old = diff.old_font.ttFont
+    ttfont_new = diff.new_font.ttFont
+    font_faces_old = [CSSFontFace(ttfont_old, "old")]
+    font_faces_new = [CSSFontFace(ttfont_new, "new")]
+
+    font_styles_old = [static_font_style(ttfont_old, "old")]
+    font_styles_new = [static_font_style(ttfont_new, "new")]
+    _package(
+        template,
+        dst,
+        diff=diff,
+        font_faces_old=font_faces_old,
+        font_faces_new=font_faces_new,
+        font_styles_old=font_styles_old,
+        font_styles_new=font_styles_new,
+        include_ui=True,
+        pt_size=32,
+    )
 
 
 def _package(template_fp, dst, **kwargs):
@@ -163,6 +181,7 @@ def _package(template_fp, dst, **kwargs):
         out_file.write(doc)
 
     # copy fonts
+    # make this more general purpose for ttfont objects
     for k in ("font_faces", "font_faces_old", "font_faces_new"):
         if k in kwargs:
             for font in kwargs[k]:
@@ -183,8 +202,11 @@ def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]
 
 if __name__ == "__main__":
     import os
+    from diffenator import DiffFonts
+    from diffenator.font import DFont
 
-    fonts = [TTFont(os.environ["mavenvf"])]
-    fonts2 = [TTFont("/Users/marcfoley/Desktop/MavenProVF.ttf")]
-    txt = font_sample_text(fonts[0])
-    diff_rendering(fonts, fonts2, template="templates/text.html", dst="out")
+    font_before = DFont(os.environ["mavenvf"])
+    font_after = DFont("/Users/marcfoley/Desktop/MavenProVF.ttf")
+    diff = DiffFonts(font_before, font_after)
+    diff.diff_all()
+    diffenator_report(diff, "templates/diffenator.html", "diff_test")
