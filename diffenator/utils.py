@@ -29,6 +29,7 @@ if sys.version_info[0] == 3:
 else:
     from ConfigParser import ConfigParser
 from gflanguages import LoadLanguages
+from functools import lru_cache
 
 # =====================================
 # HELPER FUNCTIONS
@@ -113,6 +114,7 @@ def partition(items, size):
     return [items[i : i + size] for i in range(0, len(items), size)]
 
 
+@lru_cache()
 def font_sample_text(ttFont):
     """Collect words which exist in the Universal Declaration of Human Rights
     that can be formed using the ttFont instance.

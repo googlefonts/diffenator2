@@ -12,7 +12,7 @@ setup(
     install_requires=["FontTools[ufo]", "fontFeatures[shaper]", "jinja2", "blackrenderer[skia]", "Pillow", "uharfbuzz", "pyahocorasick", "selenium>=4.4.3"],
     package_dir={'diffenator': 'diffenator'},
     package_data={
-        "diffenator": ["data/*", "templates/*"],
+        "diffenator": ["data/*", "templates/*", "data/*.txt"],
     },
     scripts=glob("bin/*")
 )
