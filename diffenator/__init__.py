@@ -60,63 +60,6 @@ class DiffFonts:
     def diff_words(self):
         self.glyph_diff = test_fonts(self.old_font, self.new_font)
     
-    def to_html(self, out):
-        from diffenator.html2 import diffenator_report
-        diffenator_report(self.diff, dst=out)
-
-
-class Reporter:
-    def __init__(self, diff: DiffFonts, pt_size=32):
-        self.diff = diff
-        self.pt_size = pt_size
-        self.template_dir = resource_filename("diffenator", "templates")
-        self.jinja = Environment(
-            loader=FileSystemLoader(self.template_dir),
-        )
-
-    def save(self, fp: str):
-        # create a dir which contains the html doc and fonts for easy distro
-        if os.path.exists(fp):
-            shutil.rmtree(fp)
-        os.mkdir(fp)
-
-        old_font_fp = os.path.join(fp, "before.ttf")
-        new_font_fp = os.path.join(fp, "after.ttf")
-        shutil.copyfile(self.diff.old_font.path, old_font_fp)
-        shutil.copyfile(self.diff.new_font.path, new_font_fp)
-
-        # TODO set more properties if VF
-        old_css_font_face = html.CSSElement(
-            "@font-face",
-            font_family="before",
-            src=f"url(before.ttf)",
-        )
-        old_css_font_class = html.CSSElement(
-            "before",
-            font_family="before",
-        )
-
-        new_css_font_face = html.CSSElement(
-            "@font-face",
-            font_family="after",
-            src=f"url(after.ttf)",
-        )
-        new_css_font_class = html.CSSElement(
-            "after",
-            font_family="after",
-        )
-
-        template = self.jinja.get_template("diffenator/diffenator.html")
-        doc = template.render(
-            include_ui=True,
-            pt_size=self.pt_size,
-            diff=self.diff,
-            css_font_faces_before=[old_css_font_face],
-            css_font_faces_after=[new_css_font_face],
-            css_font_classes_before=[old_css_font_class],
-            css_font_classes_after=[new_css_font_class],
-        )
-        report_out = os.path.join(fp, "report.html")
-        with open(report_out, "w") as f:
-            logger.info(f"Saving {report_out}")
-            f.write(doc)
+    def to_html(self, templates, out):
+        from diffenator.html import diffenator_report
+        diffenator_report(self, templates, dst=out)
