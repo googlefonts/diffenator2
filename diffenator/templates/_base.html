@@ -98,56 +98,56 @@
             .header {
             font-weight: bold;
             }
-            .attrib-before{
+            .attrib-old{
                 color: red;
                 cursor: text;
             }
-            .attrib-after{
+            .attrib-new{
                 color: green;
                 cursor: text;
             }
             .leaf {
             font-weight: bold;
             }
-            .before .cell .after {
+            .old .cell .new {
             	display:  none;
             }
-            .after .cell .before {
+            .new .cell .old {
             	display:  none;
             }
-            .both .cell .before {
+            .both .cell .old {
             	opacity: 0.75;
             	color:  red;
             }
-            .both .cell .after {
+            .both .cell .new {
             	opacity: 0.75;
             	position: absolute;
             	top: 0;
             	color:  green;
             }
 
-	  {% for font_face in css_font_faces_before %}
+	  {% for font_face in font_faces_old %}
 	    {{ font_face.render() }}
 	  {% endfor %}
 
-	  {% for font_face in css_font_faces_after %}
+	  {% for font_face in font_faces_new %}
 	    {{ font_face.render() }}
 	  {% endfor %}
 
-	  {% for font_face in css_font_faces %}
+	  {% for font_face in font_faces %}
 	    {{ font_face.render() }}
 	  {% endfor %}
 
-	  {% for font_class in css_font_classes_before %}
-	    .{{ font_class.render() }}
+	  {% for font_class in font_styles_old %}
+	    {{ font_class.render() }}
 	  {% endfor %}
 
-	  {% for font_class in css_font_classes_after %}
-	    .{{ font_class.render() }}
+	  {% for font_class in font_styles_new %}
+	    {{ font_class.render() }}
 	  {% endfor %}
 
-	  {% for font_class in css_font_classes %}
-	    .{{ font_class.render() }}
+	  {% for font_class in font_styles %}
+	    {{ font_class.render() }}
 	  {% endfor %}
 	{% endblock %}
     </style>
@@ -155,7 +155,7 @@
 <body>
     {% if include_ui %}
     <div id="nav">
-        <div id="font-toggle">Before</div>
+        <div id="font-toggle">old</div>
      </div>
     {% endif %}
     <div id="content">
@@ -166,26 +166,26 @@
 </body>
 	<script>
 
-	POSITION = "before"
+	POSITION = "old"
 	fontToggle = document.getElementById("font-toggle")
 	function switchFonts() {
 	  items = document.getElementsByClassName("box");
 	  console.log("Click from "+POSITION)
 	  
-	  if (POSITION === "before") {
-	  POSITION = "after"
+	  if (POSITION === "old") {
+	  POSITION = "new"
 	  for (item of items) {
-	    item.firstElementChild.textContent = item.firstElementChild.textContent.replace("before", "after")
-            item.lastElementChild.className = item.lastElementChild.className.replace("before", "after")
-	    fontToggle.textContent = "After"
+	    item.firstElementChild.textContent = item.firstElementChild.textContent.replace("old", "new")
+            item.lastElementChild.className = item.lastElementChild.className.replace("old", "new")
+	    fontToggle.textContent = "new"
 	  }
 
 	  } else {
-	  POSITION = "before"
+	  POSITION = "old"
 	  for (item of items) {
-	    item.firstElementChild.textContent = item.firstElementChild.textContent.replace("after", "before")
-            item.lastElementChild.className = item.lastElementChild.className.replace("after", "before")
-	    fontToggle.textContent = "Before"
+	    item.firstElementChild.textContent = item.firstElementChild.textContent.replace("new", "old")
+            item.lastElementChild.className = item.lastElementChild.className.replace("new", "old")
+	    fontToggle.textContent = "old"
 	  }
 	}
 	}

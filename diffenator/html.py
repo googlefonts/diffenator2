@@ -1,590 +1,206 @@
+"""
+"""
+from dataclasses import dataclass, field
+import pdb
+from jinja2 import Environment, FileSystemLoader
 from fontTools.ttLib import TTFont
-from pkg_resources import resource_filename
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-import tempfile
 import os
-from multiprocessing import Process
-from contextlib import contextmanager
-from http.server import *
-import logging
-import time
-from copy import copy
 import shutil
-from collections import namedtuple
-from diffenator.utils import *
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from platform import platform
-
-
-__all__ = [
-    "CSSElement",
-    "css_font_class_from_static",
-    "css_font_classes_from_vf",
-    "css_font_faces",
-    "css_font_classes",
-    "HtmlTemplater",
-    "HtmlProof",
-    "HtmlDiff",
-    "simple_server",
-    "daemon_server",
-    "browserstack_local",
-    "css_font_weight",
-]
-
-
-log = logging.getLogger("gftools.html")
-log.setLevel(logging.INFO)
+from diffenator.shape import Renderable
+from diffenator.utils import font_sample_text
 
 
 WIDTH_CLASS_TO_CSS = {
-    1: "50%",
-    2: "62.5%",
-    3: "75%",
-    4: "87.5%",
-    5: "100%",
-    6: "112.5%",
-    7: "125%",
-    8: "150%",
-    9: "200%",
+    1: "50",
+    2: "62.5",
+    3: "75",
+    4: "87.5",
+    5: "100",
+    6: "112.5",
+    7: "125",
+    8: "150",
+    9: "200",
 }
 
 
-class CSSElement(object):
-    """Create a CSSElement. CSSElements include a render method which
-    renders the class as a string so it can be used in html templates.
+@dataclass
+class CSSFontFace(Renderable):
+    ttfont: TTFont
+    suffix: str = ""
+    filename: str = field(init=False)
+    familyname: str = field(init=False)
+    classname: str = field(init=False)
 
-    Args:
-      selector: The css selector e.g h1, h2, class-name, @font0face
-      **kwargs: css properties and their property values e.g
-        font_family="MyFamily"
+    def __post_init__(self):
+        self.filename = os.path.basename(self.ttfont.reader.file.name)
+        self.cssfamilyname = _family_name(self.ttfont, self.suffix)
+        self.stylename = self.ttfont["name"].getBestSubFamilyName()
+        self.classname = self.cssfamilyname.replace(" ", "-")
+        self.font_style = "normal" if "Italic" not in self.stylename else "italic"
 
-    Example:
-      | >>> bold = CSSElement("bold", font_weight=700, font_style="normal")
-      | >>> bold.render()
-      | >>> 'bold { font-weight: 700; font-style: normal; }'
-    """
-
-    def __init__(self, selector, **kwargs):
-        self.selector = selector
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-        self.declerations = {k.replace("_", "-"): v for k, v in kwargs.items()}
-
-    def render(self):
-        decleration_strings = " ".join(
-            f"{k}: {v};" for k, v in self.declerations.items() if not k.startswith("-")
-        )
-        return f"{self.selector} {{ { decleration_strings } }}"
-
-
-def css_font_faces(ttFonts, server_dir=None, position=None):
-    """Generate @font-face CSSElements for a collection of fonts
-
-    Args:
-      ttFonts: a list containing ttFont instances
-      server_dir: optional. A path to the root directory of the server.
-        @font-face src urls are relative to the server's root dir.
-      position: optional. Adds a suffix to the font-family name
-
-    Returns:
-      A list of @font-face CSSElements
-    """
-    results = []
-    for ttFont in ttFonts:
-        family_name = font_familyname(ttFont)
-        style_name = font_stylename(ttFont)
-        font_path = ttFont.reader.file.name
-        path = (
-            font_path
-            if not server_dir
-            else os.path.relpath(font_path, start=server_dir)
-        )
-        src = f"url({path})"
-        font_family = _class_name(family_name, style_name, position)
-        font_style = "italic" if font_is_italic(ttFont) else "normal"
-        font_weight = css_font_weight(ttFont)
-        font_stretch = WIDTH_CLASS_TO_CSS[ttFont["OS/2"].usWidthClass]
-
-        if "fvar" in ttFont:
-            fvar = ttFont["fvar"]
+        if "fvar" in self.ttfont:
+            fvar = self.ttfont["fvar"]
             axes = {a.axisTag: a for a in fvar.axes}
             if "wght" in axes:
                 min_weight = int(axes["wght"].minValue)
                 max_weight = int(axes["wght"].maxValue)
-                font_weight = f"{min_weight} {max_weight}"
+                self.font_weight = f"{min_weight} {max_weight}"
             if "wdth" in axes:
                 min_width = int(axes["wdth"].minValue)
                 max_width = int(axes["wdth"].maxValue)
-                font_stretch = f"{min_width}% {max_width}%"
+                self.font_stretch = f"{min_width}% {max_width}%"
             if "ital" in axes:
                 pass
             if "slnt" in axes:
                 min_angle = int(axes["slnt"].minValue)
                 max_angle = int(axes["slnt"].maxValue)
-                font_style = f"oblique {min_angle}deg {max_angle}deg"
-
-        font_face = CSSElement(
-            "@font-face",
-            src=src,
-            font_family=font_family,
-            font_weight=font_weight,
-            font_stretch=font_stretch,
-            font_style=font_style,
-        )
-        results.append(font_face)
-    return results
+                self.font_style = f"oblique {min_angle}deg {max_angle}deg"
 
 
-def css_font_classes(ttFonts, position=None):
-    """Generate class CSSElements for a collection of fonts
+def _family_name(ttFont, suffix=""):
+    familyname = ttFont["name"].getBestFamilyName()
+    if suffix:
+        return f"{suffix} {familyname}"
+    else:
+        return familyname
 
-    Args:
-      ttFonts: a list containing ttFont instances
-      position: optional. Adds a suffix to the font-family name
 
-    Returns:
-      A list of class CSSElements
-    """
-    results = []
-    for ttFont in ttFonts:
-        if "fvar" in ttFont:
-            results += css_font_classes_from_vf(ttFont, position)
+@dataclass
+class CSSFontStyle(Renderable):
+    familyname: str
+    stylename: str
+    coords: dict
+    suffix: str = ""
+
+    def __post_init__(self):
+        if self.suffix:
+            self.cssfamilyname = f"{self.suffix} {self.familyname}"
         else:
-            results.append(css_font_class_from_static(ttFont, position))
-    return results
+            self.cssfamilyname = self.familyname
+        self.full_name = f"{self.familyname} {self.stylename}"
+        if self.suffix:
+            self.class_name = f"{self.suffix} {self.familyname} {self.stylename}".replace(
+                " ", "-"
+            )
+        else:
+            self.class_name = f"{self.familyname} {self.stylename}".replace(
+                " ", "-"
+            )
 
 
-def _class_name(family_name, style_name, position=None):
-    string = f"{family_name}-{style_name}".replace(" ", "-")
-    return string if not position else f"{string}-{position}"
+def get_font_styles(ttfonts, suffix=""):
+    res = []
+    for ttfont in ttfonts:
+        family_name = ttfont["name"].getBestFamilyName()
+        if "fvar" in ttfont:
+            fvar = ttfont["fvar"]
+            for inst in fvar.instances:
+                name_id = inst.subfamilyNameID
+                style_name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
+                coords = inst.coordinates
+                res.append(CSSFontStyle(family_name, style_name, coords, suffix))
+        else:
+            res.append(static_font_style(ttfont, suffix))
+    return res
 
 
-def css_font_weight(ttFont):
-    # At Google Fonts, we released many Thin families with a weight class of
-    # 250. This was implemented to fix older GDI browsers
-    weight = ttFont["OS/2"].usWeightClass
-    return weight if weight != 250 else 100
-
-
-def css_font_class_from_static(ttFont, position=None):
-    family_name = font_familyname(ttFont)
-    style_name = font_stylename(ttFont)
-
-    class_name = _class_name(family_name, style_name, position)
-    font_family = class_name
-    font_weight = css_font_weight(ttFont)
-    font_style = "italic" if font_is_italic(ttFont) else "normal"
-    font_stretch = WIDTH_CLASS_TO_CSS[ttFont["OS/2"].usWidthClass]
-    return CSSElement(
-        class_name,
-        _full_name=f"{family_name} {style_name}",
-        _style=style_name,
-        _font_path=ttFont.reader.file.name,
-        font_family=font_family,
-        font_weight=font_weight,
-        font_style=font_style,
-        font_stretch=font_stretch,
+def static_font_style(ttfont, suffix=""):
+    family_name = ttfont["name"].getBestFamilyName()
+    style_name = ttfont["name"].getBestSubFamilyName()
+    return CSSFontStyle(
+        family_name,
+        style_name,
+        {
+            "wght": ttfont["OS/2"].usWeightClass,
+            "wdth": WIDTH_CLASS_TO_CSS[ttfont["OS/2"].usWidthClass],
+        },
+        suffix,
     )
 
 
-def css_font_classes_from_vf(ttFont, position=None):
-    instances = ttFont["fvar"].instances
-    nametable = ttFont["name"]
-    family_name = font_familyname(ttFont)
-    style_name = font_stylename(ttFont)
+def proof_rendering(ttFonts, templates, dst="out"):
+    font_faces = [CSSFontFace(f) for f in ttFonts]
+    font_styles = get_font_styles(ttFonts)
+    sample_text = " ".join(font_sample_text(ttFonts[0]))
+    glyphs = [chr(c) for c in ttFonts[0].getBestCmap()]
+    _package(templates, dst, font_faces=font_faces, font_styles=font_styles, sample_text=sample_text, glyphs=glyphs, pt_size=20)
 
-    results = []
-    for instance in instances:
-        nameid = instance.subfamilyNameID
-        inst_style = nametable.getName(nameid, 3, 1, 0x409).toUnicode()
 
-        class_name = _class_name(family_name, inst_style, position)
-        font_family = _class_name(family_name, style_name, position)
-        font_weight = (
-            css_font_weight(ttFont)
-            if not "wght" in instance.coordinates
-            else int(instance.coordinates["wght"])
+def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out"):
+    font_faces_old = [CSSFontFace(f, "old") for f in ttFonts_old]
+    font_styles_old = get_font_styles(ttFonts_old, "old")
+
+    font_faces_new = [CSSFontFace(f, "new") for f in ttFonts_new]
+    font_styles_new = get_font_styles(ttFonts_new, "new")
+
+    font_styles_old, font_styles_new = _match_styles(font_styles_old, font_styles_new)
+
+    sample_text = " ".join(font_sample_text(ttFonts_old[0]))
+    glyphs = [chr(c) for c in ttFonts_old[0].getBestCmap()]
+    _package(
+        templates,
+        dst,
+        font_faces_old=font_faces_old,
+        font_styles_old=font_styles_old,
+        font_faces_new=font_faces_new,
+        font_styles_new=font_styles_new,
+        include_ui=True,
+        sample_text=sample_text,
+        glyphs=glyphs,
+        pt_size=20,
+    )
+
+def diffenator_report(diff, template, dst="out"):
+    ttfont_old = diff.old_font.ttFont
+    ttfont_new = diff.new_font.ttFont
+    font_faces_old = [CSSFontFace(ttfont_old, "old")]
+    font_faces_new = [CSSFontFace(ttfont_new, "new")]
+
+    font_styles_old = [static_font_style(ttfont_old, "old")]
+    font_styles_new = [static_font_style(ttfont_new, "new")]
+    _package(
+        [template],
+        dst,
+        diff=diff,
+        font_faces_old=font_faces_old,
+        font_faces_new=font_faces_new,
+        font_styles_old=font_styles_old,
+        font_styles_new=font_styles_new,
+        include_ui=True,
+        pt_size=32,
+    )
+
+
+def _package(templates, dst, **kwargs):
+    if not os.path.exists(dst):
+        os.mkdir(dst)
+
+    # write docs
+    for template_fp in templates:
+        env = Environment(
+            loader=FileSystemLoader(os.path.dirname(template_fp)),
         )
-        font_style = "italic" if "Italic" in inst_style else "normal"
-        font_stretch = (
-            "100%"
-            if not "wdth" in instance.coordinates
-            else f"{int(instance.coordinates['wdth'])}%"
-        )
-        font_class = CSSElement(
-            class_name,
-            _full_name=f"{family_name} {inst_style}",
-            _style=inst_style,
-            _font_path=ttFont.reader.file.name,
-            font_family=font_family,
-            font_weight=font_weight,
-            font_style=font_style,
-            font_stretch=font_stretch,
-        )
-        results.append(font_class)
-    return results
-
-
-Document = namedtuple("Document", ["filename", "path", "options"])
-
-
-class HtmlTemplater(object):
-
-    def __init__(
-        self,
-        out="out",
-        template_dir=resource_filename("diffenator", "templates"),
-    ):
-        """
-        Generate html documents from Jinja2 templates and optionally
-        screenshot the results on different browsers, using the
-        Browserstack Screenshot api.
-
-        When saving images, two brackground processes are started. A local
-        server which serves the populated html documents
-        and browserstack local. This allows Browserstack to take local
-        screenshots.
-
-        The main purpose of this class is to allow developers to
-        write their own template generators by using inheritance e.g
-
-        ```
-        class MyTemplate(HtmlTemplater):
-            def __init__(self, forename, surname, out):
-                super().__init__(self, out)
-                self.forename = forename
-                self.surname = surname
-
-        html = MyTemplate("Joe", "Doe")
-        html.build_pages()
-        ```
-
-        template:
-        <p>Hello {{ forename }} {{ surname }}.</p>
-
-        result:
-        <p>Hello Joe Doe.</p>
-
-        For more complex examples, see HtmlProof and HtmlDiff in this
-        module.
-
-        All html docs and assets are saved into the specified out
-        directory. Packaging the assets together makes it easier to share
-        and we don't have to worry about absolute vs relative paths. This
-        can be problematic for some assets such as webfonts where the path
-        must be related to the local server, not the user's system.
-
-        Note: Templates whose filename's start with an "_" are non
-        renderable. This functionality exists so css classes etc
-        can be defined in a _base.html file which other templates can
-        inherit from.
-
-        Args:
-          out: output dir for generated html documents
-          template_dir: the directory containing the html templates
-        """
-        self.template_dir = template_dir
-        self.templates = [
-            f
-            for f in os.listdir(os.path.join(self.template_dir, "diffbrowsers"))
-            if all([not f.startswith("_"), f.endswith("html")])
-        ]
-        # TODO we may want to make this an arg
-        self.server_url = "http://0.0.0.0:8000"
-        self.jinja = Environment(
-            loader=FileSystemLoader(self.template_dir),
-            autoescape=select_autoescape(["html", "xml"]),
-        )
-        self.screenshot = ScreenShotter()
-
-        self.out = self.mkdir(out)
-        self.documents = {}
-        # Set to true if html pages are going get cropped in Browserstack
-
-    def build_pages(self, pages=None, dst=None, **kwargs):
-        if not pages:
-            pages = self.templates
-        log.info(f"Building pages {pages}")
-        for page in pages:
-            self.build_page(page, dst=dst, **kwargs)
-
-    def build_page(self, filename, dst=None, **kwargs):
-        if not "pt_size" in kwargs:
-            kwargs["pt_size"] = 14
-        # Combine self.__dict__ attributes with function kwargs. This allows Jinja
-        # templates to access the class attributes
-        jinja_kwargs = {**self.__dict__, **kwargs}
-        out = self._render_html(filename, dst=dst, **jinja_kwargs)
-        self.documents[filename] = Document(filename, out, kwargs)
-
-    def _render_html(self, filename, dst=None, **kwargs):
-        html_template = self.jinja.get_template("diffbrowsers/" + filename)
-        html = html_template.render(**kwargs)
-        dst = dst if dst else os.path.join(self.out, filename)
-        with open(dst, "w") as html_file:
-            html_file.write(html)
-        return dst
-
-    def mkdir(self, path):
-        if not os.path.isdir(path):
-            os.mkdir(path)
-        return path
-
-    def copy_files(self, srcs, dst):
-        [shutil.copy(f, dst) for f in srcs]
-        return [os.path.join(dst, os.path.basename(f)) for f in srcs]
-
-    def save_imgs(self, pages=None, dst=None):
-        assert hasattr(self, "screenshot")
-
-        pages = pages if pages else self.documents.keys()
-        log.warning("Generating images with Browserstack. This may take a while")
-        img_dir = dst if dst else self.mkdir(os.path.join(self.out, "img"))
-        with daemon_server(directory=self.out):
-            for page in pages:
-                if page not in self.documents:
-                    raise ValueError(
-                        f"{page} doesn't exist in documents, '{self.documents}'"
-                    )
-                paths = self.documents[page].path
-                out = os.path.join(img_dir, page)
-                self.mkdir(out)
-                self._save_img(paths, out)
-
-    def _save_img(self, path, dst):
-        page = os.path.relpath(path, start=self.out)
-        url = f"{self.server_url}/{page}"
-        self.screenshot.take(url, dst)
-
-
-class HtmlProof(HtmlTemplater):
-    def __init__(
-        self, fonts, out="out", template_dir=resource_filename("diffenator", "templates")
-    ):
-        """Proof a single family."""
-        super().__init__(out, template_dir=template_dir)
-        fonts_dir = os.path.join(out, "fonts")
-        self.mkdir(fonts_dir)
-
-        self.fonts = self.copy_files(fonts, fonts_dir)
-        self.ttFonts = [TTFont(f) for f in self.fonts]
-
-        self.css_font_faces = css_font_faces(self.ttFonts, self.out)
-        self.css_font_classes = css_font_classes(self.ttFonts)
-
-        self.sample_text = "Hello world"
-        self.glyphs = "A B C D E F G H I J K L"
-
-
-class HtmlDiff(HtmlTemplater):
-    def __init__(
-        self,
-        fonts_before,
-        fonts_after,
-        out="out",
-        template_dir=resource_filename("diffenator", "templates"),
-    ):
-        """Compare two families"""
-        super().__init__(out=out, template_dir=template_dir)
-        fonts_before_dir = os.path.join(out, "fonts_before")
-        fonts_after_dir = os.path.join(out, "fonts_after")
-        self.mkdir(fonts_before_dir)
-        self.mkdir(fonts_after_dir)
-
-        self.fonts_before = self.copy_files(fonts_before, fonts_before_dir)
-        self.ttFonts_before = [TTFont(f) for f in self.fonts_before]
-
-        self.fonts_after = self.copy_files(fonts_after, fonts_after_dir)
-        self.ttFonts_after = [TTFont(f) for f in self.fonts_after]
-
-        self.css_font_faces_before = css_font_faces(
-            self.ttFonts_before, self.out, position="before"
-        )
-        self.css_font_faces_after = css_font_faces(
-            self.ttFonts_after, self.out, position="after"
-        )
-
-        self.css_font_classes_before = css_font_classes(self.ttFonts_before, "before")
-        self.css_font_classes_after = css_font_classes(self.ttFonts_after, "after")
-        self._match_css_font_classes()
-
-        self.too_big_for_browserstack = len(self.css_font_classes_before) > 4
-
-        self.sample_text = " ".join(font_sample_text(self.ttFonts_before[0]))
-        self.glyphs = get_encoded_glyphs(self.ttFonts_before[0])
-
-    def _match_css_font_classes(self):
-        """Match css font classes by full names for static fonts and
-        family name + instance name for fvar instances"""
-        styles_before = {s._full_name: s for s in self.css_font_classes_before}
-        styles_after = {s._full_name: s for s in self.css_font_classes_after}
-        shared_styles = set(styles_before) & set(styles_after)
-
-        self.css_font_classes_before = sorted(
-            [s for k, s in styles_before.items() if k in shared_styles],
-            key=lambda s: (s.font_weight, s._full_name),
-        )
-        self.css_font_classes_after = sorted(
-            [s for k, s in styles_after.items() if k in shared_styles],
-            key=lambda s: (s.font_weight, s._full_name),
-        )
-        if not all([self.css_font_classes_before, self.css_font_classes_after]):
-            raise ValueError("No matching fonts found")
-
-    def _render_html(
-        self,
-        filename,
-        **kwargs,
-    ):
-        html_template = self.jinja.get_template(filename)
-
-        # This document is intended for humans. It includes a button
-        # to toggle which set of fonts is visible.
-        combined = html_template.render(include_ui=True, **kwargs)
-        combined_path = os.path.join(self.out, filename)
-        with open(combined_path, "w") as combined_html:
-            combined_html.write(combined)
-
-        # This document contains fonts_before. It solely exists for
-        # screenshot generation purposes
-        before_kwargs = copy(kwargs)
-        before_kwargs.pop("css_font_classes_after")
-        before = html_template.render(**before_kwargs)
-        before_filename = f"{filename[:-5]}-before.html"
-        before_path = os.path.join(self.out, before_filename)
-        with open(before_path, "w") as before_html:
-            before_html.write(before)
-
-        # This document contains fonts_after. It solely exists for
-        # screenshot generation purposes
-        after_kwargs = copy(kwargs)
-        after_kwargs.pop("css_font_classes_before")
-        after = html_template.render(**after_kwargs)
-        after_filename = f"{filename[:-5]}-after.html"
-        after_path = os.path.join(self.out, after_filename)
-        with open(after_path, "w") as after_html:
-            after_html.write(after)
-
-        return (before_path, after_path)
-
-    def _save_img(self, document, dst):
-        # Output results as a gif
-        before_page = os.path.relpath(document[0], start=self.out)
-        after_page = os.path.relpath(document[1], start=self.out)
-        before_url = f"{self.server_url}/{before_page}"
-        after_url = f"{self.server_url}/{after_page}"
-        with tempfile.TemporaryDirectory() as before_dst, tempfile.TemporaryDirectory() as after_dst:
-            self.screenshot.take(before_url, before_dst)
-            self.screenshot.take(after_url, after_dst)
-            gen_gifs(before_dst, after_dst, dst)
-
-
-# Local server functions
-
-
-def simple_server(directory="."):
-    """A simple python web server which can be served from a specific
-    directory
-
-    Args:
-      directory: start the server from a specified directory. Default is cwd
-    """
-
-    class Handler(SimpleHTTPRequestHandler):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, directory=directory, **kwargs)
-
-    server_address = ("", 8000)
-    httpd = HTTPServer(server_address, Handler)
-    httpd.serve_forever()
-
-
-@contextmanager
-def daemon_server(directory="."):
-    """Start a simple_server as a background process.
-
-    Args:
-      directory: start the server from a specified directory. Default is '.'
-    """
-    p = Process(target=simple_server, args=[directory], daemon=True)
-    try:
-        p.start()
-        yield p
-    finally:
-        p.terminate()
-
-
-# stuff to create screenshots using selenium
-
-class ScreenShotter:
-    """Use selenium to take screenshots from local browsers"""
-    def __init__(self, width=1280):
-
-        self.browsers = self._get_browsers()
-        self.width = width
-
-    def _file_prefix(self, browser):
-        meta = browser.capabilities
-        plat = platform()
-        browser = meta['browserName']
-        browser_version = meta['browserVersion']
-        return f'{plat}_{browser}_{browser_version}'.replace(" ", "-")
-
-    def take(self, url, dst_dir):
-        for browser in self.browsers:
-            file_prefix = self._file_prefix(browser)
-            filename = os.path.join(dst_dir, f"{file_prefix}.png")
-            # this sucks. Find out why we're getting a race condition
-            import time
-            time.sleep(3)
-            browser.set_window_size(
-                self.width,
-                1000
-            )
-            browser.get(url)
-            # recalc since image size since we now know the height
-            body_el = browser.find_element(By.TAG_NAME, "html")
-            browser.set_window_size(
-                self.width,
-                body_el.size['height']
-            )
-            browser.save_screenshot(filename)
-
-    def set_width(self, width):
-        # we don't care about setting height since we will always return a
-        # full height screenshot
-        self.width = width
-
-    def _get_browsers(self):
-        """Determine which browsers we can screenshot which exist on the system"""
-        # We can add more webdrivers if needed. Let's focus on these first
-        supported = ["Chrome", "Firefox", "Safari"]
-        has = []
-        driver = webdriver
-        for browser in supported:
-            try:
-                # TODO customise more browsers. We should aim for at least Safari and FF
-                if browser == "Chrome":
-                    # Using headless mode enables us to set the window size
-                    # to any arbitrary value which means we can use to capture
-                    # the full size of the body elem
-                    options = webdriver.ChromeOptions()
-                    options.add_argument("--headless")
-                    options.add_argument("--hide-scrollbars")
-                    browser_driver = getattr(driver, browser)(options=options)
-                elif browser == "Firefox":
-                    options = webdriver.FirefoxOptions()
-                    options.add_argument("--headless")
-                    options.add_argument("--hide-scrollbars")
-                    browser_driver = getattr(driver, browser)(options=options)
-                else:
-                    browser_driver = getattr(driver, browser)()
-                has.append(browser_driver)
-            except:
-                pass
-        return has
-
-    def __del__(self):
-        for browser in self.browsers:
-            browser.quit()
+        template = env.get_template(os.path.basename(template_fp))
+        doc = template.render(**kwargs)
+        dst_doc = os.path.join(dst, os.path.basename(template_fp))
+        with open(dst_doc, "w") as out_file:
+            out_file.write(doc)
+
+    # copy fonts
+    # make this more general purpose for ttfont objects
+    for k in ("font_faces", "font_faces_old", "font_faces_new"):
+        if k in kwargs:
+            for font in kwargs[k]:
+                out_fp = os.path.join(dst, font.filename)
+                shutil.copy(font.ttfont.reader.file.name, out_fp)
+
+
+def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]):
+    old = {s.full_name: s for s in styles_old}
+    new = {s.full_name: s for s in styles_new}
+    shared = set(old) & set(new)
+    if not shared:
+        raise ValueError("No matching fonts found")
+    return [s for s in styles_old if s.full_name in shared], [
+        s for s in styles_new if s.full_name in shared
+    ]

@@ -234,7 +234,7 @@ def test_words(
     font_b,
     skip_glyphs=set(),
     hash_func=gid_pos_hash,
-    threshold=0.0002,
+    threshold=0.00002,
 ):
     res = set()
     from collections import defaultdict

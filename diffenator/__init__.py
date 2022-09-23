@@ -59,6 +59,10 @@ class DiffFonts:
 
     def diff_words(self):
         self.glyph_diff = test_fonts(self.old_font, self.new_font)
+    
+    def to_html(self, out):
+        from diffenator.html2 import diffenator_report
+        diffenator_report(self.diff, dst=out)
 
 
 class Reporter:
