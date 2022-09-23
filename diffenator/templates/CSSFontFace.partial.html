@@ -1,0 +1,7 @@
+@font-face{
+    src: url({{ filename }});
+    font-family: "{{ cssfamilyname }}";
+    font-weight: {{ font_weight }};
+    {% if font_stretch %}font-stretch: {{ font_stretch }};{% endif %}
+    font-style: {{ font_style }};
+}
