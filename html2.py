@@ -117,14 +117,16 @@ def static_font_style(ttfont, suffix=""):
         suffix,
     )
 
-def proof_rendering(ttFonts, template, dst="out"):
+
+def proof_rendering(ttFonts, templates, dst="out"):
     font_faces = [CSSFontFace(f) for f in ttFonts]
     font_styles = get_font_styles(ttFonts)
     sample_text = " ".join(font_sample_text(ttFonts[0]))
-    _package(template, dst, font_faces=font_faces, font_styles=font_styles, sample_text=sample_text)
+    glyphs = [chr(c) for c in ttFonts[0].getBestCmap()]
+    _package(templates, dst, font_faces=font_faces, font_styles=font_styles, sample_text=sample_text, glyphs=glyphs, pt_size=20)
 
 
-def diff_rendering(ttFonts_old, ttFonts_new, template, dst="out"):
+def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out"):
     font_faces_old = [CSSFontFace(f, "old") for f in ttFonts_old]
     font_styles_old = get_font_styles(ttFonts_old, "old")
 
@@ -134,8 +136,9 @@ def diff_rendering(ttFonts_old, ttFonts_new, template, dst="out"):
     font_styles_old, font_styles_new = _match_styles(font_styles_old, font_styles_new)
 
     sample_text = " ".join(font_sample_text(ttFonts_old[0]))
+    glyphs = [chr(c) for c in ttFonts_old[0].getBestCmap()]
     _package(
-        template,
+        templates,
         dst,
         font_faces_old=font_faces_old,
         font_styles_old=font_styles_old,
@@ -143,6 +146,8 @@ def diff_rendering(ttFonts_old, ttFonts_new, template, dst="out"):
         font_styles_new=font_styles_new,
         include_ui=True,
         sample_text=sample_text,
+        glyphs=glyphs,
+        pt_size=20,
     )
 
 def diffenator_report(diff, template, dst="out"):
@@ -154,7 +159,7 @@ def diffenator_report(diff, template, dst="out"):
     font_styles_old = [static_font_style(ttfont_old, "old")]
     font_styles_new = [static_font_style(ttfont_new, "new")]
     _package(
-        template,
+        [template],
         dst,
         diff=diff,
         font_faces_old=font_faces_old,
@@ -166,19 +171,20 @@ def diffenator_report(diff, template, dst="out"):
     )
 
 
-def _package(template_fp, dst, **kwargs):
+def _package(templates, dst, **kwargs):
     if not os.path.exists(dst):
         os.mkdir(dst)
 
-    # write doc
-    env = Environment(
-        loader=FileSystemLoader(os.path.dirname(template_fp)),
-    )
-    template = env.get_template(os.path.basename(template_fp))
-    doc = template.render(**kwargs)
-    dst_doc = os.path.join(dst, os.path.basename(template_fp))
-    with open(dst_doc, "w") as out_file:
-        out_file.write(doc)
+    # write docs
+    for template_fp in templates:
+        env = Environment(
+            loader=FileSystemLoader(os.path.dirname(template_fp)),
+        )
+        template = env.get_template(os.path.basename(template_fp))
+        doc = template.render(**kwargs)
+        dst_doc = os.path.join(dst, os.path.basename(template_fp))
+        with open(dst_doc, "w") as out_file:
+            out_file.write(doc)
 
     # copy fonts
     # make this more general purpose for ttfont objects
@@ -205,8 +211,15 @@ if __name__ == "__main__":
     from diffenator import DiffFonts
     from diffenator.font import DFont
 
-    font_before = DFont(os.environ["mavenvf"])
-    font_after = DFont("/Users/marcfoley/Desktop/MavenProVF.ttf")
-    diff = DiffFonts(font_before, font_after)
-    diff.diff_all()
-    diffenator_report(diff, "templates/diffenator.html", "diff_test")
+    fonts_before = [TTFont("/Users/marcfoley/Downloads/build/GoogleSans/variable/GoogleSans-Italic[GRAD,opsz,wght].ttf")]
+    fonts_after = [TTFont("/Users/marcfoley/Downloads/variable-fonts (1)/GoogleSans-Italic[GRAD,opsz,wght].ttf")]
+    diff_rendering(
+        fonts_before,
+        fonts_after,
+        [
+            "templates/waterfall.html",
+            "templates/text.html",
+            "templates/glyphs.html",
+        ],
+        "diff_test3"
+    )
