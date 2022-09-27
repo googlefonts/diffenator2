@@ -8,18 +8,27 @@ from pkg_resources import resource_filename
 import argparse
 
 
+def _parse_coords(string):
+    if not string:
+        return {}
+    return  {s.split("=")[0]: float(s.split("=")[1]) for s in string.split(",")}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("old_font")
     parser.add_argument("new_font")
     parser.add_argument("--template", default=resource_filename("diffenator", "templates/diffenator.html"))
     parser.add_argument("--strings", help="File of strings to visually compare")
+    parser.add_argument("--coords", "-c", default="")
     parser.add_argument("--out", "-o", default="out", help="Output html path")
     args = parser.parse_args()
 
+    coords = _parse_coords(args.coords)
+
     old_font = DFont(args.old_font)
     new_font = DFont(args.new_font)
-    old_font, new_font = match_fonts(old_font, new_font, scale_upm=True)
+    old_font, new_font = match_fonts(old_font, new_font, variations=coords, scale_upm=True)
 
     diff = DiffFonts(old_font, new_font)
     diff.diff_all()

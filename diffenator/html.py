@@ -32,7 +32,13 @@ class CSSFontFace(Renderable):
     classname: str = field(init=False)
 
     def __post_init__(self):
-        self.filename = os.path.basename(self.ttfont.reader.file.name)
+        ttf_filename = os.path.basename(self.ttfont.reader.file.name)
+        import pdb
+        pdb.set_trace()
+        if self.suffix:
+            self.filename = f"{self.suffix}-{ttf_filename}"
+        else:
+            self.filename = ttf_filename
         self.cssfamilyname = _family_name(self.ttfont, self.suffix)
         self.stylename = self.ttfont["name"].getBestSubFamilyName()
         self.classname = self.cssfamilyname.replace(" ", "-")
@@ -118,6 +124,22 @@ def static_font_style(ttfont, suffix=""):
     )
 
 
+def diffenator_font_style(dfont, suffix=""):
+    ttfont = dfont.ttFont
+    family_name = ttfont["name"].getBestFamilyName()
+    if dfont.is_variable():
+        name_id = next((i.subfamilyNameID for i in ttfont["fvar"].instances if i.coordinates == dfont.variation), None)
+        style_name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
+    else:
+        style_name = ttfont["name"].getBestSubFamilyName()
+    return CSSFontStyle(
+        family_name,
+        style_name,
+        dfont.variation,
+        suffix,
+    )
+
+
 def proof_rendering(ttFonts, templates, dst="out"):
     font_faces = [CSSFontFace(f) for f in ttFonts]
     font_styles = get_font_styles(ttFonts)
@@ -151,13 +173,11 @@ def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out"):
     )
 
 def diffenator_report(diff, template, dst="out"):
-    ttfont_old = diff.old_font.ttFont
-    ttfont_new = diff.new_font.ttFont
-    font_faces_old = [CSSFontFace(ttfont_old, "old")]
-    font_faces_new = [CSSFontFace(ttfont_new, "new")]
+    font_faces_old = [CSSFontFace(diff.old_font.ttFont, "old")]
+    font_faces_new = [CSSFontFace(diff.new_font.ttFont, "new")]
 
-    font_styles_old = [static_font_style(ttfont_old, "old")]
-    font_styles_new = [static_font_style(ttfont_new, "new")]
+    font_styles_old = [diffenator_font_style(diff.old_font, "old")]
+    font_styles_new = [diffenator_font_style(diff.new_font, "new")]
     _package(
         [template],
         dst,

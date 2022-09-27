@@ -284,69 +284,72 @@ def test_words(
             hb_b = "".join(hash_func(i, j) for i, j in zip(infos_b, pos_b))
             word_b = Word(word, hb_b)
 
-            if word_a != word_b:
-                if all(seen_gids[hash_func(i, j)] >= 1 for i, j in zip(infos_b, pos_b)):
-                    continue
-                pc = px_diff(
-                    font_a, font_b, word, script=script, lang=lang, features=features
-                )
-                if pc >= threshold:
-                    for i, j in zip(infos_b, pos_b):
-                        h = hash_func(i, j)
-                        seen_gids[h] += 1
-                    res.add(
-                        (
-                            pc,
-                            WordDiff(
-                                word,
-                                word_a.hb,
-                                word_b.hb,
-                                tuple(features.keys()),
-                                ot_to_html_lang.get((script, lang)),
-                                ot_to_dir.get(script, None),
-                            ),
-                        )
+            if all(seen_gids[hash_func(i, j)] >= 1 for i, j in zip(infos_b, pos_b)):
+                continue
+            import pdb
+            pdb.set_trace()
+            pc = px_diff(
+                font_a, font_b, word, script=script, lang=lang, features=features
+            )
+            if pc >= threshold:
+                for i, j in zip(infos_b, pos_b):
+                    h = hash_func(i, j)
+                    seen_gids[h] += 1
+                res.add(
+                    (
+                        pc,
+                        WordDiff(
+                            word,
+                            word_a.hb,
+                            word_b.hb,
+                            tuple(features.keys()),
+                            ot_to_html_lang.get((script, lang)),
+                            ot_to_dir.get(script, None),
+                        ),
                     )
+                )
     return [w[1] for w in sorted(res, key=lambda k: k[0], reverse=True)]
 
 
 def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
-    pc = 0.0
-    try:
-        img_a = render_text(
-            font_a,
-            string,
-            fontSize=12,
-            margin=0,
-            features=features,
-            script=script,
-            lang=lang,
-        )
-        img_b = render_text(
-            font_b,
-            string,
-            fontSize=12,
-            margin=0,
-            features=features,
-            script=script,
-            lang=lang,
-        )
-        width = min([img_a.width, img_b.width])
-        height = min([img_a.height, img_b.height])
-        diff_pixels = 0
-        for x in range(width):
-            for y in range(height):
-                px_a = img_a.getpixel((x, y))
-                px_b = img_b.getpixel((x, y))
-                if px_a != px_b:
-                    diff_pixels += abs(px_a[0] - px_b[0])
-                    diff_pixels += abs(px_a[1] - px_b[1])
-                    diff_pixels += abs(px_a[2] - px_b[2])
-                    diff_pixels += abs(px_a[3] - px_b[3])
-        pc = diff_pixels / (width * height * 256 * 3 * 3 * 3)
-    except:
-        all
-    return pc
+        pc = 0.0
+        try:
+            img_a = render_text(
+                font_a,
+                string,
+                fontSize=12,
+                margin=0,
+                features=features,
+                script=script,
+                lang=lang,
+                variations=font_a.variation,
+            )
+            img_b = render_text(
+                font_b,
+                string,
+                fontSize=12,
+                margin=0,
+                features=features,
+                script=script,
+                lang=lang,
+                variations=font_b.variation,
+            )
+            width = min([img_a.width, img_b.width])
+            height = min([img_a.height, img_b.height])
+            diff_pixels = 0
+            for x in range(width):
+                for y in range(height):
+                    px_a = img_a.getpixel((x, y))
+                    px_b = img_b.getpixel((x, y))
+                    if px_a != px_b:
+                        diff_pixels += abs(px_a[0] - px_b[0])
+                        diff_pixels += abs(px_a[1] - px_b[1])
+                        diff_pixels += abs(px_a[2] - px_b[2])
+                        diff_pixels += abs(px_a[3] - px_b[3])
+            pc = diff_pixels / (width * height * 256 * 3 * 3 * 3)
+        except:
+            all
+        return pc
 
 
 def main():

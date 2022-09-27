@@ -33,7 +33,7 @@ class DFont:
 
     def set_variations(self, coords: dict[str, float]):
         self.variation = coords
-        self.ttFont = instantiateVariableFont(self.ttFont, coords)
+        self.hbFont.set_variations(coords)
 
     def set_variations_from_font(self, font: any):
         # Parse static font into a variations dict
@@ -64,6 +64,12 @@ def match_fonts(
         if ratio != 1.0:
             scale_upem(old_font.ttFont, ratio)
 
+    if variations:
+        old_font.set_variations(variations)
+        new_font.set_variations(variations)
+        return old_font, new_font
+
+    # Match VFs against statics
     if old_font.is_variable() and new_font.is_variable():
         return old_font, new_font
     elif not old_font.is_variable() and new_font.is_variable():
