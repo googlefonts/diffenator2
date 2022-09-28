@@ -13,21 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import requests
-from io import BytesIO
-from zipfile import ZipFile
 import sys
 import os
-import shutil
-import unicodedata
 from collections import namedtuple
 from pkg_resources import resource_filename
-import json
 from PIL import Image
-if sys.version_info[0] == 3:
-    from configparser import ConfigParser
-else:
-    from ConfigParser import ConfigParser
+from configparser import ConfigParser
 from gflanguages import LoadLanguages
 from functools import lru_cache
 
@@ -36,6 +27,7 @@ from functools import lru_cache
 
 
 ## Font-related utility functions
+
 
 def font_stylename(ttFont):
     """Get a font's stylename using the name table. Since our fonts use the
@@ -91,7 +83,7 @@ def gen_gifs(dir1, dir2, dst_dir):
     dir2_imgs = set(f for f in os.listdir(dir2) if f.endswith(("jpg", "png")))
     shared_imgs = dir1_imgs & dir2_imgs
     for img in shared_imgs:
-        gif_filename = img[:-4] + '.gif'
+        gif_filename = img[:-4] + ".gif"
         img_a_path = os.path.join(dir1, img)
         img_b_path = os.path.join(dir2, img)
         dst = os.path.join(dst_dir, gif_filename)
@@ -100,13 +92,7 @@ def gen_gifs(dir1, dir2, dst_dir):
 
 def gen_gif(img_a_path, img_b_path, dst):
     with Image.open(img_a_path) as img_a, Image.open(img_b_path) as img_b:
-        img_a.save(
-            dst, 
-            save_all=True,
-            append_images=[img_b],
-            loop=10000,
-            duration=1000
-        )
+        img_a.save(dst, save_all=True, append_images=[img_b], loop=10000, duration=1000)
 
 
 def partition(items, size):
@@ -125,6 +111,7 @@ def font_sample_text(ttFont):
     cmap = set(ttFont.getBestCmap())
     words = []
     seen_chars = set()
+
     def _add_words(words, text, seen_chars):
         for word in text.split():
             chars = set(ord(l) for l in word)

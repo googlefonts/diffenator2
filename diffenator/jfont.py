@@ -1,6 +1,4 @@
-import argparse
 from copy import deepcopy as copy
-from enum import Enum
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._n_a_m_e import table__n_a_m_e
 from fontTools.ttLib.tables._f_v_a_r import table__f_v_a_r

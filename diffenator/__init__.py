@@ -8,20 +8,10 @@ What should be checked:
 Output:
 - A single html page. No images, just pure html and js.
 """
-from difflib import HtmlDiff
-from fontTools.ttLib import TTFont
-from fontTools.varLib.instancer import instantiateVariableFont
-from diffenator.shape import px_diff, test_words
-import numpy as np
+from diffenator.shape import test_words
 from diffenator.shape import test_fonts
-from jinja2 import Environment, FileSystemLoader
-from diffenator import html
 from diffenator.font import DFont
-import os
-import shutil
 from diffenator import jfont
-from pkg_resources import resource_filename
-import uharfbuzz as hb
 import logging
 
 
@@ -43,23 +33,13 @@ class DiffFonts:
     def diff_tables(self):
         self.tables = jfont.Diff(self.old_font.jFont, self.new_font.jFont)
 
-    def diff_fea(self):
-        pass
-        # TODO readd this!
-        #        old_fea = self.old_font.glyph_combinator.ff.asFea()
-        #        new_fea = self.new_font.glyph_combinator.ff.asFea()
-        #        if old_fea != new_fea:
-        #            self.features = HtmlDiff(wrapcolumn=80).make_file(
-        #                old_fea.split("\n"),
-        #                new_fea.split("\n"),
-        #            )
-
     def diff_strings(self, fp):
         self.strings = test_words(fp, self.old_font, self.new_font, threshold=0.0)
 
     def diff_words(self):
         self.glyph_diff = test_fonts(self.old_font, self.new_font)
-    
+
     def to_html(self, templates, out):
         from diffenator.html import diffenator_report
+
         diffenator_report(self, templates, dst=out)

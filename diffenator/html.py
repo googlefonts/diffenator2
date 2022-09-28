@@ -1,7 +1,6 @@
 """
 """
 from dataclasses import dataclass, field
-import pdb
 from jinja2 import Environment, FileSystemLoader
 from fontTools.ttLib import TTFont
 import os
@@ -33,8 +32,6 @@ class CSSFontFace(Renderable):
 
     def __post_init__(self):
         ttf_filename = os.path.basename(self.ttfont.reader.file.name)
-        import pdb
-        pdb.set_trace()
         if self.suffix:
             self.filename = f"{self.suffix}-{ttf_filename}"
         else:
@@ -85,13 +82,11 @@ class CSSFontStyle(Renderable):
             self.cssfamilyname = self.familyname
         self.full_name = f"{self.familyname} {self.stylename}"
         if self.suffix:
-            self.class_name = f"{self.suffix} {self.familyname} {self.stylename}".replace(
-                " ", "-"
+            self.class_name = (
+                f"{self.suffix} {self.familyname} {self.stylename}".replace(" ", "-")
             )
         else:
-            self.class_name = f"{self.familyname} {self.stylename}".replace(
-                " ", "-"
-            )
+            self.class_name = f"{self.familyname} {self.stylename}".replace(" ", "-")
 
 
 def get_font_styles(ttfonts, suffix=""):
@@ -128,7 +123,14 @@ def diffenator_font_style(dfont, suffix=""):
     ttfont = dfont.ttFont
     family_name = ttfont["name"].getBestFamilyName()
     if dfont.is_variable():
-        name_id = next((i.subfamilyNameID for i in ttfont["fvar"].instances if i.coordinates == dfont.variation), None)
+        name_id = next(
+            (
+                i.subfamilyNameID
+                for i in ttfont["fvar"].instances
+                if i.coordinates == dfont.variation
+            ),
+            None,
+        )
         style_name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
     else:
         style_name = ttfont["name"].getBestSubFamilyName()
@@ -145,7 +147,15 @@ def proof_rendering(ttFonts, templates, dst="out"):
     font_styles = get_font_styles(ttFonts)
     sample_text = " ".join(font_sample_text(ttFonts[0]))
     glyphs = [chr(c) for c in ttFonts[0].getBestCmap()]
-    _package(templates, dst, font_faces=font_faces, font_styles=font_styles, sample_text=sample_text, glyphs=glyphs, pt_size=20)
+    _package(
+        templates,
+        dst,
+        font_faces=font_faces,
+        font_styles=font_styles,
+        sample_text=sample_text,
+        glyphs=glyphs,
+        pt_size=20,
+    )
 
 
 def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out"):
@@ -171,6 +181,7 @@ def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out"):
         glyphs=glyphs,
         pt_size=20,
     )
+
 
 def diffenator_report(diff, template, dst="out"):
     font_faces_old = [CSSFontFace(diff.old_font.ttFont, "old")]

@@ -1,5 +1,4 @@
 from fontTools.ttLib import TTFont
-from fontTools.varLib.instancer import instantiateVariableFont
 from fontTools.ttLib.scaleUpem import scale_upem
 import os
 from diffenator import jfont
