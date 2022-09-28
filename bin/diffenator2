@@ -1,0 +1,159 @@
+from tempfile import NamedTemporaryFile
+from ninja.ninja_syntax import Writer
+import ninja
+import argparse
+import os
+from fontTools.ttLib import TTFont
+import tempfile
+
+
+def _fullname(ttfont):
+    return f"{ttfont['name'].getBestFamilyName()} {ttfont['name'].getBestSubFamilyName()}"
+
+
+def _vf_fullnames(ttfont):
+    assert "fvar" in ttfont
+    res = []
+    family_name = ttfont['name'].getBestFamilyName()
+    instances = ttfont["fvar"].instances
+    for inst in instances:
+        name_id = inst.subfamilyNameID
+        name = ttfont['name'].getName(name_id, 3, 1, 0x409).toUnicode()
+        res.append((f"{family_name} {name}", inst.coordinates))
+    return res
+
+
+def matcher(fonts_before, fonts_after):
+    before = {}
+    after = {}
+    for font in fonts_before:
+        if "fvar" in font:
+            vf_names = _vf_fullnames(font)
+            for n, coords in vf_names:
+                before[n] = (font.reader.file.name, coords)
+        else:
+            before[_fullname(font)] = (font.reader.file.name, {})
+    
+    for font in fonts_after:
+        if "fvar" in font:
+            vf_names = _vf_fullnames(font)
+            for n, coords in vf_names:
+                after[n] = (font.reader.file.name, coords)
+        else:
+            after[_fullname(font)] = (font.reader.file.name, {})
+    
+    shared = set(before.keys()) & set(after.keys())
+    res = []
+    for style in shared:
+        res.append((style, before[style][0], after[style][0], after[style][1]))
+    return res
+
+
+def dict_coords_to_string(coords):
+    return ",".join(f"{k}={v}" for k,v in coords.items())
+
+
+def run_proofing_tools(fonts, out="out"):
+    if not os.path.exists(out):
+        os.mkdir(out)
+
+    with tempfile.TemporaryDirectory() as dir_:
+        w = Writer(open(os.path.join(dir_, "build.ninja"), "w"))
+        w.comment("Rules")
+        w.newline()
+        w.rule("proofing", "diffbrowsers proof $fonts -o $out/diffbrowsers")
+        w.newline()
+        
+        # Setup build
+        w.comment("Build rules")
+        w.build(out, "proofing", variables=dict(
+            fonts=[f.reader.file.name for f in fonts],
+            out=out,
+        ))
+        w.close()
+        os.chdir(dir_)
+        ninja._program("ninja", [])
+
+
+def run_diffing_tools(fonts_before, fonts_after=None, out="out"):
+    if not os.path.exists(out):
+        os.mkdir(out)
+
+    with tempfile.TemporaryDirectory() as dir_:
+        w = Writer(open(os.path.join(dir_, "build.ninja"), "w"))
+        # Setup rules
+        w.comment("Rules")
+        w.newline()
+        w.comment("Build Hinting docs")
+        w.rule("diffbrowsers", "diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out/diffbrowsers")
+        w.newline()
+
+        w.comment("Build Proofing docs")
+        w.rule("proofing", "diffbrowsers proof $fonts -o $out/diffbrowsers")
+        w.newline()
+
+        w.comment("Run diffenator")
+        w.rule("diffenator", "diffenator $font_before $font_after -c $coords -o $out")
+        w.newline()
+
+        # Setup build
+        w.comment("Build rules")
+        if fonts_after:
+            w.build(out, "diffbrowsers", variables=dict(
+                fonts_before=[f.reader.file.name for f in fonts_before],
+                fonts_after=[f.reader.file.name for f in fonts_after],
+                out=out,
+            ))
+            for style, font_before, font_after, coords in matcher(fonts_before, fonts_after):
+                style = style.replace(" ", "-")
+                w.build(
+                    os.path.join(out, style), "diffenator", variables=dict(
+                        font_before=font_before,
+                        font_after=font_after,
+                        coords=dict_coords_to_string(coords),
+                        out=style
+                    ))
+        w.close()
+        os.chdir(dir_)
+        ninja._program("ninja", [])
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(
+        dest="command", required=True, metavar='"proof" or "diff"'
+    )
+    universal_options_parser = argparse.ArgumentParser(add_help=False)
+    universal_options_parser.add_argument(
+        "--out", "-o", help="Output dir", default="out"
+    )
+    proof_parser = subparsers.add_parser(
+        "proof",
+        parents=[universal_options_parser],
+        help="Generate html proofing documents for a family",
+    )
+    proof_parser.add_argument("fonts", nargs="+")
+
+
+    diff_parser = subparsers.add_parser(
+        "diff",
+        parents=[universal_options_parser],
+    )
+    diff_parser.add_argument("--fonts-before", "-fb", nargs="+", required=True)
+    diff_parser.add_argument("--fonts-after", "-fa", nargs="+", required=True)
+
+    args = parser.parse_args()
+
+    if args.command == "proof":
+        fonts = [TTFont(f) for f in args.fonts]
+        run_proofing_tools(fonts, args.out)
+    elif args.command == "diff":
+        fonts_before = [TTFont(f) for f in args.fonts_before]
+        fonts_after = [TTFont(f) for f in args.fonts_after]
+        run_diffing_tools(fonts_before, fonts_after, args.out)
+    else:
+        raise NotImplementedError(f"{args.command} not supported")
+
+
+if __name__ == "__main__":
+    main()
