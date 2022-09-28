@@ -13,10 +13,145 @@ from diffenator.shape import test_fonts
 from diffenator.font import DFont
 from diffenator import jfont
 import logging
+import os
+import tempfile
+import ninja
+from ninja.ninja_syntax import Writer
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+def dict_coords_to_string(coords):
+    return ",".join(f"{k}={v}" for k, v in coords.items())
+
+
+def run_proofing_tools(fonts, out="out"):
+    if not os.path.exists(out):
+        os.mkdir(out)
+
+    with tempfile.TemporaryDirectory() as dir_:
+        w = Writer(open(os.path.join(dir_, "build.ninja"), "w"))
+        w.comment("Rules")
+        w.newline()
+        w.rule("proofing", "diffbrowsers proof $fonts -o $out/diffbrowsers")
+        w.newline()
+
+        # Setup build
+        w.comment("Build rules")
+        w.build(
+            out,
+            "proofing",
+            variables=dict(
+                fonts=[f.reader.file.name for f in fonts],
+                out=out,
+            ),
+        )
+        w.close()
+        os.chdir(dir_)
+        ninja._program("ninja", [])
+
+
+def run_diffing_tools(
+    fonts_before, fonts_after=None, diffbrowsers=True, diffenator=True, out="out"
+):
+    if not os.path.exists(out):
+        os.mkdir(out)
+
+    with tempfile.TemporaryDirectory() as dir_:
+        w = Writer(open(os.path.join(dir_, "build.ninja"), "w"))
+        # Setup rules
+        w.comment("Rules")
+        w.newline()
+        w.comment("Build Hinting docs")
+        w.rule(
+            "diffbrowsers",
+            "diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out/diffbrowsers",
+        )
+        w.newline()
+
+        w.comment("Build Proofing docs")
+        w.rule("proofing", "diffbrowsers proof $fonts -o $out/diffbrowsers")
+        w.newline()
+
+        w.comment("Run diffenator")
+        w.rule("diffenator", "diffenator $font_before $font_after -c $coords -o $out")
+        w.newline()
+
+        # Setup build
+        w.comment("Build rules")
+        if diffbrowsers:
+            w.build(
+                out,
+                "diffbrowsers",
+                variables=dict(
+                    fonts_before=[f.reader.file.name for f in fonts_before],
+                    fonts_after=[f.reader.file.name for f in fonts_after],
+                    out=out,
+                ),
+            )
+        if diffenator:
+            for style, font_before, font_after, coords in matcher(
+                fonts_before, fonts_after
+            ):
+                style = style.replace(" ", "-")
+                w.build(
+                    os.path.join(out, style),
+                    "diffenator",
+                    variables=dict(
+                        font_before=font_before,
+                        font_after=font_after,
+                        coords=dict_coords_to_string(coords),
+                        out=style,
+                    ),
+                )
+        w.close()
+        os.chdir(dir_)
+        ninja._program("ninja", [])
+
+
+def _fullname(ttfont):
+    return (
+        f"{ttfont['name'].getBestFamilyName()} {ttfont['name'].getBestSubFamilyName()}"
+    )
+
+
+def _vf_fullnames(ttfont):
+    assert "fvar" in ttfont
+    res = []
+    family_name = ttfont["name"].getBestFamilyName()
+    instances = ttfont["fvar"].instances
+    for inst in instances:
+        name_id = inst.subfamilyNameID
+        name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
+        res.append((f"{family_name} {name}", inst.coordinates))
+    return res
+
+
+def matcher(fonts_before, fonts_after):
+    before = {}
+    after = {}
+    for font in fonts_before:
+        if "fvar" in font:
+            vf_names = _vf_fullnames(font)
+            for n, coords in vf_names:
+                before[n] = (font.reader.file.name, coords)
+        else:
+            before[_fullname(font)] = (font.reader.file.name, {})
+
+    for font in fonts_after:
+        if "fvar" in font:
+            vf_names = _vf_fullnames(font)
+            for n, coords in vf_names:
+                after[n] = (font.reader.file.name, coords)
+        else:
+            after[_fullname(font)] = (font.reader.file.name, {})
+
+    shared = set(before.keys()) & set(after.keys())
+    res = []
+    for style in shared:
+        res.append((style, before[style][0], after[style][0], after[style][1]))
+    return res
 
 
 class DiffFonts:

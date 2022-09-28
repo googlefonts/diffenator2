@@ -7,6 +7,7 @@ import os
 import shutil
 from diffenator.shape import Renderable
 from diffenator.utils import font_sample_text
+from selenium import webdriver
 
 
 WIDTH_CLASS_TO_CSS = {
@@ -235,3 +236,5 @@ def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]
     return [s for s in styles_old if s.full_name in shared], [
         s for s in styles_new if s.full_name in shared
     ]
+
+

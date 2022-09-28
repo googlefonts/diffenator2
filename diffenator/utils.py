@@ -21,12 +21,49 @@ from PIL import Image
 from configparser import ConfigParser
 from gflanguages import LoadLanguages
 from functools import lru_cache
+import requests
+import sys
+import os
+from zipfile import ZipFile
 
-# =====================================
-# HELPER FUNCTIONS
+
+def download_file(url, out=None):
+    local_filename = out if out else url.split("/")[-1]
+    # NOTE the stream=True parameter below
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                # If you have chunk encoded response uncomment if
+                # and set chunk_size parameter to None.
+                # if chunk:
+                f.write(chunk)
+    return local_filename
 
 
-## Font-related utility functions
+def download_latest_github_release_archive(user, repo, out=None, gh_token="GH_TOKEN"):
+    headers = {"Authorization": f"Bearer {os.environ[gh_token]}"}
+    latest_release = requests.get(
+        f"https://api.github.com/repos/{user}/{repo}/releases/latest",
+        headers=headers,
+    ).json()
+    assets = latest_release["assets"]
+    dl_url = assets[0]["browser_download_url"]
+    zip_file = download_file(dl_url, out)
+    zip_dir = zip_file.replace(".zip", "")
+    z = ZipFile(zip_file)
+    z.extractall(zip_dir)
+    return zip_dir
+
+
+def download_googlefonts_release_archive(family_name, out=None):
+    url_family_name = family_name.replace(" ", "%20")
+    url = f"https://fonts.google.com/download?family={url_family_name}"
+    fp = download_file(url, out)
+    zip_dir = fp.replace(".zip", "")
+    z = ZipFile(fp)
+    z.extractall(zip_dir)
+    return zip_dir
 
 
 def font_stylename(ttFont):
