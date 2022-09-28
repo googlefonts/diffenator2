@@ -8,6 +8,7 @@ What should be checked:
 Output:
 - A single html page. No images, just pure html and js.
 """
+from diffenator.screenshot import ScreenShotter
 from diffenator.shape import test_words
 from diffenator.shape import test_fonts
 from diffenator.font import DFont
@@ -15,8 +16,10 @@ from diffenator import jfont
 import logging
 import os
 import tempfile
+import shutil
 import ninja
 from ninja.ninja_syntax import Writer
+from diffenator.screenshot import screenshot_dir
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +29,7 @@ def dict_coords_to_string(coords):
     return ",".join(f"{k}={v}" for k, v in coords.items())
 
 
-def run_proofing_tools(fonts, out="out"):
+def run_proofing_tools(fonts, out="out", imgs=True):
     if not os.path.exists(out):
         os.mkdir(out)
 
@@ -50,10 +53,12 @@ def run_proofing_tools(fonts, out="out"):
         w.close()
         os.chdir(dir_)
         ninja._program("ninja", [])
+        if imgs:
+            screenshot_dir(out, os.path.join(out, "imgs"))
 
 
 def run_diffing_tools(
-    fonts_before, fonts_after=None, diffbrowsers=True, diffenator=True, out="out"
+    fonts_before, fonts_after=None, diffbrowsers=True, diffenator=True, out="out", imgs=True,
 ):
     if not os.path.exists(out):
         os.mkdir(out)
@@ -108,6 +113,8 @@ def run_diffing_tools(
         w.close()
         os.chdir(dir_)
         ninja._program("ninja", [])
+        if imgs:
+            screenshot_dir(out, os.path.join(out, "imgs"))
 
 
 def _fullname(ttfont):

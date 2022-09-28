@@ -4,6 +4,8 @@ from platform import platform
 import os
 from selenium.webdriver.common.by import By
 from diffenator.utils import gen_gifs
+import shutil
+import tempfile
 
 
 class ScreenShotter:
@@ -35,6 +37,7 @@ class ScreenShotter:
                 self.take_png(url, dst_dir)
 
     def take_png(self, url, dst_dir, javascript=""):
+        res = []
         for browser in self.browsers:
             file_prefix = self._file_prefix(browser)
             filename = os.path.join(dst_dir, f"{file_prefix}.png")
@@ -52,6 +55,8 @@ class ScreenShotter:
                 body_el.size['height']
             )
             browser.save_screenshot(filename)
+            res.append(filename)
+        return res
     
     def take_gif(self, url, dst_dir):
         before_fp = os.path.join(dst_dir, "before")
@@ -87,11 +92,13 @@ class ScreenShotter:
                     options = webdriver.ChromeOptions()
                     options.add_argument("--headless")
                     options.add_argument("--hide-scrollbars")
+                    options.add_argument('--force-device-scale-factor=1')
                     browser_driver = getattr(driver, browser)(options=options)
                 elif browser == "Firefox":
                     options = webdriver.FirefoxOptions()
                     options.add_argument("--headless")
                     options.add_argument("--hide-scrollbars")
+                    options.add_argument('--force-device-scale-factor=1')
                     browser_driver = getattr(driver, browser)(options=options)
                 else:
                     browser_driver = getattr(driver, browser)()
@@ -103,3 +110,27 @@ class ScreenShotter:
     def __del__(self):
         for browser in self.browsers:
             browser.quit()
+
+
+def screenshot_dir(dir_fp, out):
+    """Screenshot a folder of html docs. Walk the damn things"""
+    if not os.path.exists(out):
+        os.mkdir(out)
+    screenshotter = ScreenShotter()
+    for dirpath, _, filenames in os.walk(dir_fp):
+        for filename in filenames:
+            if not filename.endswith(".html"):
+                continue
+            dir_name = os.path.join(out, filename.replace(".html", ""))
+            fp = os.path.join(dirpath, filename)
+            # TODO does this work on FF. Works on Chrome and Safari so I think so?
+            url = f"file:///{fp}"
+            img_prefix_fp = os.path.relpath(fp, dir_fp).replace(os.path.sep, "-").replace(".html", "")
+            with tempfile.TemporaryDirectory() as tmp:
+                screenshotter.take(url, tmp)
+                for f in os.listdir(tmp):
+                    if not f.endswith(("png", "gif")):
+                        continue
+                    src = os.path.join(tmp, f)
+                    dst = os.path.join(out, f"{img_prefix_fp}-{f}")
+                    shutil.move(src, dst)
