@@ -35,7 +35,8 @@ def run_proofing_tools(fonts, out="out", imgs=True):
         w = Writer(open(os.path.join(dir_, "build.ninja"), "w"))
         w.comment("Rules")
         w.newline()
-        w.rule("proofing", "diffbrowsers proof $fonts -o $out/diffbrowsers")
+        out_s = f"$out{os.path.sep}diffbrowsers"
+        w.rule("proofing", f"diffbrowsers proof $fonts -o {out_s}")
         w.newline()
 
         # Setup build
@@ -69,14 +70,15 @@ def run_diffing_tools(
         w.comment("Rules")
         w.newline()
         w.comment("Build Hinting docs")
+        out_s = f"$out{os.path.sep}diffbrowsers"
         w.rule(
             "diffbrowsers",
-            "diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out/diffbrowsers",
+            f"diffbrowsers diff -fb $fonts_before -fa $fonts_after -o {out_s}",
         )
         w.newline()
 
         w.comment("Build Proofing docs")
-        w.rule("proofing", "diffbrowsers proof $fonts -o $out/diffbrowsers")
+        w.rule("proofing", f"diffbrowsers proof $fonts -o {out_s}")
         w.newline()
 
         w.comment("Run diffenator")

@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 from glob import glob
+import os
 
 setup(
     name="Diffenator2",
@@ -24,7 +25,11 @@ setup(
     ],
     package_dir={"diffenator": "diffenator"},
     package_data={
-        "diffenator": ["data/wordlists/*.txt", "templates/*", "data/*.txt"],
+        "diffenator": [
+            os.path.join("data", "wordlists", "*.txt"),
+            os.path.join("templates", "*"),
+            os.path.join("data", "*.txt")
+        ],
     },
-    scripts=glob("bin/*"),
+    scripts=glob(os.path.join("bin", "*")),
 )
