@@ -49,8 +49,10 @@ def run_proofing_tools(fonts, out="out", imgs=True):
             ),
         )
         w.close()
+        cwd = os.getcwd()
         os.chdir(dir_)
         ninja._program("ninja", [])
+        os.chdir(cwd)
         if imgs:
             screenshot_dir(out, os.path.join(out, "imgs"))
 
@@ -109,8 +111,10 @@ def run_diffing_tools(
                     ),
                 )
         w.close()
+        cwd = os.getcwd()
         os.chdir(dir_)
         ninja._program("ninja", [])
+        os.chdir(cwd)
         if imgs:
             screenshot_dir(out, os.path.join(out, "imgs"))
 
