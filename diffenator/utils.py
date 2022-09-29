@@ -25,6 +25,7 @@ import requests
 import sys
 import os
 from zipfile import ZipFile
+import tempfile
 
 
 def download_file(url, out=None):
@@ -59,11 +60,11 @@ def download_latest_github_release_archive(user, repo, out=None, gh_token="GH_TO
 def download_googlefonts_release_archive(family_name, out=None):
     url_family_name = family_name.replace(" ", "%20")
     url = f"https://fonts.google.com/download?family={url_family_name}"
-    fp = download_file(url, out)
-    zip_dir = fp.replace(".zip", "")
-    z = ZipFile(fp)
-    z.extractall(zip_dir)
-    return zip_dir
+    with tempfile.NamedTemporaryFile() as tmp:
+        fp = download_file(url, tmp.name)
+        z = ZipFile(fp)
+        z.extractall(out)
+    return out
 
 
 def font_stylename(ttFont):

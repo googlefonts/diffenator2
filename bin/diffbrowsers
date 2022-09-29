@@ -80,12 +80,12 @@ def main():
     args = parser.parse_args()
 
     if args.command == "proof":
-        fonts = [TTFont(fp) for fp in args.fonts]
+        fonts = [TTFont(os.path.abspath(fp)) for fp in args.fonts]
         proof_rendering(fonts, args.templates, args.out)
 
     elif args.command == "diff":
-        fonts_before = [TTFont(fp) for fp in args.fonts_before]
-        fonts_after = [TTFont(fp) for fp in args.fonts_after]
+        fonts_before = [TTFont(os.path.abspath(fp)) for fp in args.fonts_before]
+        fonts_after = [TTFont(os.path.abspath(fp)) for fp in args.fonts_after]
         diff_rendering(fonts_before, fonts_after, args.templates, args.out)
 
 

@@ -88,8 +88,8 @@ def run_diffing_tools(
                 out,
                 "diffbrowsers",
                 variables=dict(
-                    fonts_before=[f.reader.file.name for f in fonts_before],
-                    fonts_after=[f.reader.file.name for f in fonts_after],
+                    fonts_before=[os.path.abspath(f.reader.file.name) for f in fonts_before],
+                    fonts_after=[os.path.abspath(f.reader.file.name) for f in fonts_after],
                     out=out,
                 ),
             )
@@ -140,17 +140,17 @@ def matcher(fonts_before, fonts_after):
         if "fvar" in font:
             vf_names = _vf_fullnames(font)
             for n, coords in vf_names:
-                before[n] = (font.reader.file.name, coords)
+                before[n] = (os.path.abspath(font.reader.file.name), coords)
         else:
-            before[_fullname(font)] = (font.reader.file.name, {})
+            before[_fullname(font)] = (os.path.abspath(font.reader.file.name), {})
 
     for font in fonts_after:
         if "fvar" in font:
             vf_names = _vf_fullnames(font)
             for n, coords in vf_names:
-                after[n] = (font.reader.file.name, coords)
+                after[n] = (os.path.abspath(font.reader.file.name), coords)
         else:
-            after[_fullname(font)] = (font.reader.file.name, {})
+            after[_fullname(font)] = (os.path.abspath(font.reader.file.name), {})
 
     shared = set(before.keys()) & set(after.keys())
     res = []

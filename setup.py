@@ -19,6 +19,8 @@ setup(
         "pyahocorasick",
         "selenium>=4.4.3",
         "ninja",
+        "protobuf==3.19.2",
+        "gflanguages"
     ],
     package_dir={"diffenator": "diffenator"},
     package_data={
