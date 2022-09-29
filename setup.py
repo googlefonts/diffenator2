@@ -24,7 +24,7 @@ setup(
     ],
     package_dir={"diffenator": "diffenator"},
     package_data={
-        "diffenator": ["data/*", "templates/*", "data/*.txt"],
+        "diffenator": ["data/wordlists/*.txt", "templates/*", "data/*.txt"],
     },
     scripts=glob("bin/*"),
 )
