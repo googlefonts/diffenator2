@@ -8,7 +8,6 @@ What should be checked:
 Output:
 - A single html page. No images, just pure html and js.
 """
-from diffenator.screenshot import ScreenShotter
 from diffenator.shape import test_words
 from diffenator.shape import test_fonts
 from diffenator.font import DFont
@@ -16,7 +15,6 @@ from diffenator import jfont
 import logging
 import os
 import tempfile
-import shutil
 import ninja
 from ninja.ninja_syntax import Writer
 from diffenator.screenshot import screenshot_dir

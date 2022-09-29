@@ -119,7 +119,7 @@ def screenshot_dir(dir_fp, out):
     screenshotter = ScreenShotter()
     for dirpath, _, filenames in os.walk(dir_fp):
         for filename in filenames:
-            if not filename.endswith(".html"):
+            if not filename.endswith(".html") or "diffenator" in filename:
                 continue
             dir_name = os.path.join(out, filename.replace(".html", ""))
             fp = os.path.join(dirpath, filename)
