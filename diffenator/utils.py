@@ -28,18 +28,15 @@ from zipfile import ZipFile
 import tempfile
 
 
-def download_file(url, out=None):
-    local_filename = out if out else url.split("/")[-1]
-    # NOTE the stream=True parameter below
+def download_file(url, out):
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
-        with open(local_filename, "wb") as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                # If you have chunk encoded response uncomment if
-                # and set chunk_size parameter to None.
-                # if chunk:
-                f.write(chunk)
-    return local_filename
+        for chunk in r.iter_content(chunk_size=8192):
+            # If you have chunk encoded response uncomment if
+            # and set chunk_size parameter to None.
+            # if chunk:
+            out.write(chunk)
+    return out
 
 
 def download_latest_github_release_archive(user, repo, out=None, gh_token="GH_TOKEN"):
@@ -61,8 +58,8 @@ def download_googlefonts_release_archive(family_name, out=None):
     url_family_name = family_name.replace(" ", "%20")
     url = f"https://fonts.google.com/download?family={url_family_name}"
     with tempfile.NamedTemporaryFile(mode="wb") as tmp:
-        fp = download_file(url, tmp.name)
-        z = ZipFile(fp)
+        fp = download_file(url, tmp)
+        z = ZipFile(fp.name)
         z.extractall(out)
     return out
 
