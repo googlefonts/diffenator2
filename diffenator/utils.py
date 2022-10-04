@@ -57,7 +57,7 @@ def download_latest_github_release_archive(user, repo, out=None, gh_token="GH_TO
 def download_googlefonts_release_archive(family_name, out=None):
     url_family_name = family_name.replace(" ", "%20")
     url = f"https://fonts.google.com/download?family={url_family_name}"
-    temp_filename = os.path.join(tempfile.gettempdir(), os.urandom(24).hex())
+    temp_filename = os.path.join(tempfile.gettempdir(), os.urandom(24).hex()+".zip")
     with open(temp_filename, "wb") as tmp:
         fp = download_file(url, tmp)
         z = ZipFile(temp_filename)
