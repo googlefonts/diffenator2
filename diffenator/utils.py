@@ -26,17 +26,18 @@ import sys
 import os
 from zipfile import ZipFile
 import tempfile
+from io import BytesIO
 
 
-def download_file(url, out):
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        for chunk in r.iter_content(chunk_size=8192):
-            # If you have chunk encoded response uncomment if
-            # and set chunk_size parameter to None.
-            # if chunk:
-            out.write(chunk)
-    return out
+
+def download_file(url, dst_path=None):
+    """Download a file from a url. If no dst_path is specified, store the file
+    as a BytesIO object"""
+    request = requests.get(url, stream=True)
+    if not dst_path:
+        return BytesIO(request.content)
+    with open(dst_path, 'wb') as downloaded_file:
+        downloaded_file.write(request.content)
 
 
 def download_latest_github_release_archive(user, repo, out=None, gh_token="GH_TOKEN"):
@@ -54,16 +55,22 @@ def download_latest_github_release_archive(user, repo, out=None, gh_token="GH_TO
     return zip_dir
 
 
-def download_googlefonts_release_archive(family_name, out=None):
-    url_family_name = family_name.replace(" ", "%20")
-    url = f"https://fonts.google.com/download?family={url_family_name}"
-    temp_filename = os.path.join(tempfile.gettempdir(), os.urandom(24).hex()+".zip")
-    with open(temp_filename, "wb") as tmp:
-        fp = download_file(url, tmp)
-        z = ZipFile(temp_filename)
-        z.extractall(out)
-    os.remove(temp_filename)
-    return out
+def download_google_fonts_family(family, dst=None):
+    """Download a font family from Google Fonts"""
+    url = 'https://fonts.google.com/download?family={}'.format(
+        family.replace(' ', '%20')
+    )
+    zipfile = ZipFile(download_file(url))
+    fonts = []
+    for filename in zipfile.namelist():
+        if filename.endswith(".ttf"):
+            if dst:
+                target = os.path.join(dst, filename)
+                zipfile.extract(filename, dst)
+                fonts.append(target)
+            else:
+                fonts.append(BytesIO(zipfile.read(filename)))
+    return fonts
 
 
 def font_stylename(ttFont):
