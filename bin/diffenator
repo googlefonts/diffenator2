@@ -2,17 +2,11 @@
 """
 diffenator2
 """
-from diffenator import DiffFonts
+from diffenator import DiffFonts, string_coords_to_dict
 from diffenator.font import DFont, match_fonts
 from pkg_resources import resource_filename
 import os
 import argparse
-
-
-def _parse_coords(string):
-    if not string:
-        return {}
-    return  {s.split("=")[0]: float(s.split("=")[1]) for s in string.split(",")}
 
 
 def main():
@@ -25,7 +19,7 @@ def main():
     parser.add_argument("--out", "-o", default="out", help="Output html path")
     args = parser.parse_args()
 
-    coords = _parse_coords(args.coords)
+    coords = string_coords_to_dict(args.coords)
 
     old_font = DFont(args.old_font)
     new_font = DFont(args.new_font)

@@ -31,7 +31,9 @@ class DFont:
         self.font_size = size
 
     def set_variations(self, coords: dict[str, float]):
-        self.variation = coords
+        if coords == {}:
+            return
+        self.variations = coords
         self.hbFont.set_variations(coords)
 
     def set_variations_from_font(self, font: any):

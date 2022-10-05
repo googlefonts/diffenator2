@@ -123,22 +123,24 @@ def static_font_style(ttfont, suffix=""):
 def diffenator_font_style(dfont, suffix=""):
     ttfont = dfont.ttFont
     family_name = ttfont["name"].getBestFamilyName()
-    if dfont.is_variable():
+    if dfont.is_variable() and hasattr(dfont, "variations"):
         name_id = next(
             (
                 i.subfamilyNameID
                 for i in ttfont["fvar"].instances
-                if i.coordinates == dfont.variation
+                if i.coordinates == dfont.variations
             ),
             None,
         )
         style_name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
+        coords = dfont.variations
     else:
         style_name = ttfont["name"].getBestSubFamilyName()
+        coords = {"wght": ttfont["OS/2"].usWeightClass}
     return CSSFontStyle(
         family_name,
         style_name,
-        dfont.variation,
+        coords,
         suffix,
     )
 
