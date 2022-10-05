@@ -22,8 +22,8 @@ def main():
 
     coords = string_coords_to_dict(args.coords)
 
-    old_font = DFont(args.old_font)
-    new_font = DFont(args.new_font)
+    old_font = DFont(os.path.abspath(args.old_font))
+    new_font = DFont(os.path.abspath(args.new_font))
     match_fonts(old_font, new_font, variations=coords, scale_upm=True)
 
     diff = DiffFonts(old_font, new_font)
