@@ -55,7 +55,7 @@ def download_latest_github_release_archive(user, repo, out=None, gh_token="GH_TO
     return zip_dir
 
 
-def download_google_fonts_family(family, dst=None):
+def download_google_fonts_family(family, dst=None, ignore_static=True):
     """Download a font family from Google Fonts"""
     url = 'https://fonts.google.com/download?family={}'.format(
         family.replace(' ', '%20')
@@ -63,6 +63,8 @@ def download_google_fonts_family(family, dst=None):
     zipfile = ZipFile(download_file(url))
     fonts = []
     for filename in zipfile.namelist():
+        if ignore_static and "static" in filename:
+            continue
         if filename.endswith(".ttf"):
             if dst:
                 target = os.path.join(dst, filename)
