@@ -52,17 +52,12 @@ class DFont:
         return f"<DFont: {self.path}>"
 
 
-# Key feature of diffenator is to compare a static font against a VF instance.
-# We need to retain this
 def match_fonts(
     old_font: DFont, new_font: DFont, variations: dict = None, scale_upm: bool = True
 ):
     logger.info(
         f"Matching {os.path.basename(old_font.path)} to {os.path.basename(new_font.path)}"
     )
-    # diffing fonts with different upms was in V1 so we should retain it.
-    # previous implementation was rather messy. It is much easier to scale
-    # the whole font
     if scale_upm:
         ratio = new_font.ttFont["head"].unitsPerEm / old_font.ttFont["head"].unitsPerEm
         if ratio != 1.0:
@@ -77,10 +72,8 @@ def match_fonts(
             f"Both fonts must be variable fonts in order to use the variables "
             "option. Matching by stylename instead"
         )
-
     # Match VFs against statics
     if not old_font.is_variable() and new_font.is_variable():
         new_font.set_variations_from_font(old_font)
     elif old_font.is_variable() and not new_font.is_variable():
         old_font.set_variations_from_font(new_font)
-    return old_font, new_font
