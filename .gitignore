@@ -1,6 +1,5 @@
 .DS_Store
 *.pyc
 *.egg-info
-*.ttf
 __pycache__
 venv
