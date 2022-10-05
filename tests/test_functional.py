@@ -39,7 +39,7 @@ def test_run_diffbrowsers_proof_imgs(fp):
 
         imgs, html = [], []
         # check images have been generated and there's an image for every html page
-        for dirpath, dirnames, filenames in os.walk(tmp_dir):
+        for _, _, filenames in os.walk(tmp_dir):
             for f in filenames:
                 if not f.endswith((".html", ".png", ".jpeg", "jpg")):
                     continue
