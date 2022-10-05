@@ -10,7 +10,7 @@ def test_download_google_fonts_family_to_file():
     with tempfile.TemporaryDirectory() as tmp:
         family = download_google_fonts_family("Maven Pro", tmp)
         assert os.listdir(tmp)
-
+    
 
 def test_download_google_fonts_family_to_bytes():
     from diffenator.utils import download_google_fonts_family
@@ -18,3 +18,9 @@ def test_download_google_fonts_family_to_bytes():
     assert family
     for f in family:
         assert isinstance(f, BytesIO)
+
+
+def test_download_google_fonts_family_not_existing():
+    from diffenator.utils import download_google_fonts_family
+    with pytest.raises(ValueError):
+        download_google_fonts_family("foobar2")

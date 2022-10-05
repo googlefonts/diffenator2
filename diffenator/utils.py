@@ -30,6 +30,13 @@ from io import BytesIO
 
 
 
+def google_fonts_has_family(name):
+    url_name = name.replace(" ", "+")
+    url = f"https://fonts.google.com/specimen/{url_name}"
+    r = requests.get(url)
+    return True if r.status_code == 200 else False
+
+
 def download_file(url, dst_path=None):
     """Download a file from a url. If no dst_path is specified, store the file
     as a BytesIO object"""
@@ -55,12 +62,16 @@ def download_latest_github_release_archive(user, repo, out=None, gh_token="GH_TO
     return zip_dir
 
 
-def download_google_fonts_family(family, dst=None, ignore_static=True):
+def download_google_fonts_family(name, dst=None, ignore_static=True):
     """Download a font family from Google Fonts"""
+    if not google_fonts_has_family(name):
+        raise ValueError(f"No family on Google Fonts named {name}")
+
     url = 'https://fonts.google.com/download?family={}'.format(
-        family.replace(' ', '%20')
+        name.replace(' ', '%20')
     )
-    zipfile = ZipFile(download_file(url))
+    dl = download_file(url)
+    zipfile = ZipFile(dl)
     fonts = []
     for filename in zipfile.namelist():
         if ignore_static and "static" in filename:
