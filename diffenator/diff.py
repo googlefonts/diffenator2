@@ -26,5 +26,4 @@ class DiffFonts:
 
     def to_html(self, templates, out):
         from diffenator.html import diffenator_report
-
         diffenator_report(self, templates, dst=out)

@@ -76,19 +76,14 @@ def run_diffing_tools(
         w.comment("Rules")
         w.newline()
         w.comment("Build Hinting docs")
-        out_s = f"$out{os.path.sep}diffbrowsers"
         if imgs:
-            cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after --imgs -o {out_s}"
+            cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after --imgs -o $out"
         else:
-            cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after -o {out_s}"
+            cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out"
         w.rule(
             "diffbrowsers",
             cmd,
         )
-        w.newline()
-
-        w.comment("Build Proofing docs")
-        w.rule("proofing", f"diffbrowsers proof $fonts -o {out_s}")
         w.newline()
 
         w.comment("Run diffenator")
@@ -98,13 +93,14 @@ def run_diffing_tools(
         # Setup build
         w.comment("Build rules")
         if diffbrowsers:
+            diffbrowsers_out = os.path.join(out, "diffbrowsers")
             w.build(
-                out,
+                diffbrowsers_out,
                 "diffbrowsers",
                 variables=dict(
                     fonts_before=[os.path.abspath(f.reader.file.name) for f in fonts_before],
                     fonts_after=[os.path.abspath(f.reader.file.name) for f in fonts_after],
-                    out=out,
+                    out=diffbrowsers_out,
                 ),
             )
         if diffenator:
