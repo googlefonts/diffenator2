@@ -3,13 +3,8 @@ import subprocess
 import tempfile
 import os
 from fontTools.ttLib import TTFont
+from . import *
 
-
-CWD = os.path.dirname(__file__)
-DATA_FP = os.path.join(CWD, "data")
-
-mavenpro_vf = os.path.join(DATA_FP, "MavenPro[wght].subset.ttf")
-mavenpro_vf_mod = os.path.join(DATA_FP, "MavenPro[wght].subset.ttf")
 
 
 @pytest.mark.parametrize(
@@ -49,3 +44,21 @@ def test_run_diffbrowsers_proof_imgs(fp):
                     imgs.append(f)
         # There should at least be an image for each html page
         assert len(imgs) >= len(html)
+
+
+
+# TODO test diffbrowsers diff
+
+
+#@pytest.mark.parametrize(
+#    "fp_before, fp_after",
+#    [
+#        (mavenpro_vf, mavenpro_vf_mod)
+#    ]
+#)
+#def test_diffenator(fp_before, fp_after):
+#    with tempfile.TemporaryDirectory() as tmp_dir:
+#        subprocess.run(["diffenator", fp_before, fp_after, "-o", tmp_dir])
+#        assert os.path.basename(fp_before) in os.listdir(tmp_dir)
+#        assert os.path.basename(fp_after) in os.listdir(tmp_dir)
+#
