@@ -17,7 +17,6 @@ import os
 import tempfile
 import ninja
 from ninja.ninja_syntax import Writer
-from diffenator.screenshot import screenshot_dir
 
 
 logger = logging.getLogger(__name__)
@@ -36,7 +35,12 @@ def run_proofing_tools(fonts, out="out", imgs=True):
         w.comment("Rules")
         w.newline()
         out_s = f"$out{os.path.sep}diffbrowsers"
-        w.rule("proofing", f"diffbrowsers proof $fonts -o {out_s}")
+
+        if imgs:
+            cmd = f"diffbrowsers proof $fonts --imgs -o {out_s}"
+        else:
+            cmd = f"diffbrowsers proof $fonts -o {out_s}"
+        w.rule("proofing", cmd)
         w.newline()
 
         # Setup build
@@ -54,8 +58,6 @@ def run_proofing_tools(fonts, out="out", imgs=True):
         os.chdir(dir_)
         ninja._program("ninja", [])
         os.chdir(cwd)
-        if imgs:
-            screenshot_dir(out, os.path.join(out, "imgs"))
 
 
 def run_diffing_tools(
@@ -71,9 +73,13 @@ def run_diffing_tools(
         w.newline()
         w.comment("Build Hinting docs")
         out_s = f"$out{os.path.sep}diffbrowsers"
+        if imgs:
+            cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after --imgs -o {out_s}"
+        else:
+            cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after -o {out_s}"
         w.rule(
             "diffbrowsers",
-            f"diffbrowsers diff -fb $fonts_before -fa $fonts_after -o {out_s}",
+            cmd,
         )
         w.newline()
 
@@ -117,8 +123,6 @@ def run_diffing_tools(
         os.chdir(dir_)
         ninja._program("ninja", [])
         os.chdir(cwd)
-        if imgs:
-            screenshot_dir(out, os.path.join(out, "imgs"))
 
 
 def _fullname(ttfont):
