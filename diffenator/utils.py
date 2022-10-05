@@ -86,55 +86,6 @@ def download_google_fonts_family(name, dst=None, ignore_static=True):
     return fonts
 
 
-def font_stylename(ttFont):
-    """Get a font's stylename using the name table. Since our fonts use the
-    RIBBI naming model, use the Typographic SubFamily Name (NAmeID 17) if it
-    exists, otherwise use the SubFamily Name (NameID 2).
-
-    Args:
-        ttFont: a TTFont instance
-    """
-    return get_name_record(ttFont, 17, fallbackID=2)
-
-
-def font_familyname(ttFont):
-    """Get a font's familyname using the name table. since our fonts use the
-    RIBBI naming model, use the Typographic Family Name (NameID 16) if it
-    exists, otherwise use the Family Name (Name ID 1).
-
-    Args:
-        ttFont: a TTFont instance
-    """
-    return get_name_record(ttFont, 16, fallbackID=1)
-
-
-def get_name_record(ttFont, nameID, fallbackID=None, platform=(3, 1, 0x409)):
-    """Return a name table record which has the specified nameID.
-
-    Args:
-        ttFont: a TTFont instance
-        nameID: nameID of name record to return,
-        fallbackID: if nameID doesn't exist, use this nameID instead
-        platform: Platform of name record. Default is Win US English
-
-    Returns:
-        str
-    """
-    name = ttFont["name"]
-    record = name.getName(nameID, 3, 1, 0x409)
-    if not record and fallbackID:
-        record = name.getName(fallbackID, 3, 1, 0x409)
-    if not record:
-        raise ValueError(f"Cannot find record with nameID {nameID}")
-    return record.toUnicode()
-
-
-def font_is_italic(ttfont):
-    """Check if the font has the word "Italic" in its stylename."""
-    stylename = ttfont["name"].getName(2, 3, 1, 0x409).toUnicode()
-    return True if "Italic" in stylename else False
-
-
 def gen_gifs(dir1, dir2, dst_dir):
     dir1_imgs = set(f for f in os.listdir(dir1) if f.endswith(("jpg", "png")))
     dir2_imgs = set(f for f in os.listdir(dir2) if f.endswith(("jpg", "png")))
