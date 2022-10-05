@@ -34,3 +34,4 @@ def test_diffenator_font_style_vf(fp, coords, expected):
     font = DFont(fp)
     font.set_variations(coords)
     assert diffenator_font_style(font) == expected
+

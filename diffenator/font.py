@@ -37,13 +37,16 @@ class DFont:
         self.hbFont.set_variations(coords)
 
     def set_variations_from_font(self, font: any):
-        # Parse static font into a variations dict
-        # TODO improve this
-        coords = {
-            "wght": font.ttFont["OS/2"].usWeightClass,
-            "wdth": font.ttFont["OS/2"].usWidthClass,
-        }
-        self.set_variations(coords)
+        assert "fvar" not in font.ttFont, "Must be a static font"
+        name_table = font.ttFont["name"]
+        name_to_find = name_table.getBestSubFamilyName()
+        for inst in self.ttFont["fvar"].instances:
+            name_id = inst.subfamilyNameID
+            inst_name = self.ttFont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
+            if inst_name == name_to_find:
+                self.set_variations(inst.coordinates)
+                return
+        raise ValueError(f"{self} does not have an instance named {name_to_find}")
 
     def __repr__(self):
         return f"<DFont: {self.path}>"
@@ -65,15 +68,18 @@ def match_fonts(
         if ratio != 1.0:
             scale_upem(old_font.ttFont, ratio)
 
-    if variations:
+    if variations and old_font.is_variable() and new_font.is_variable():
         old_font.set_variations(variations)
         new_font.set_variations(variations)
-        return old_font, new_font
+        return
+    elif variations and any([not old_font.is_variable(), new_font.is_variable()]):
+        logger.warn(
+            f"Both fonts must be variable fonts in order to use the variables "
+            "option. Matching by stylename instead"
+        )
 
     # Match VFs against statics
-    if old_font.is_variable() and new_font.is_variable():
-        return old_font, new_font
-    elif not old_font.is_variable() and new_font.is_variable():
+    if not old_font.is_variable() and new_font.is_variable():
         new_font.set_variations_from_font(old_font)
     elif old_font.is_variable() and not new_font.is_variable():
         old_font.set_variations_from_font(new_font)

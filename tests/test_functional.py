@@ -54,7 +54,7 @@ def test_run_diffbrowsers_proof_imgs(fp):
     "fp_before, fp_after",
     [
         (mavenpro_vf, mavenpro_vf_mod),
-#        (mavenpro_vf, mavenpro_extra_bold),
+        (mavenpro_vf, mavenpro_extra_bold),
     ]
 )
 def test_diffenator(fp_before, fp_after):
