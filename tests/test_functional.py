@@ -54,14 +54,14 @@ def test_run_diffbrowsers_proof_imgs(fp):
     "fp_before, fp_after",
     [
         (mavenpro_vf, mavenpro_vf_mod),
-#        (mavenpro_vf, mavenpro_extra_bold),
+        (mavenpro_vf, mavenpro_extra_bold),
     ]
 )
 def test_diffenator(fp_before, fp_after):
     with tempfile.TemporaryDirectory() as tmp_dir:
         subprocess.run(["diffenator", fp_before, fp_after, "-o", tmp_dir])
         new_font = f"old-{os.path.basename(fp_before)}"
-        old_font = f"new-{os.path.basename(fp_before)}"
+        old_font = f"new-{os.path.basename(fp_after)}"
         assert new_font in os.listdir(tmp_dir)
         assert old_font in os.listdir(tmp_dir)
         assert any(f.endswith(".html") for f in os.listdir(tmp_dir))
