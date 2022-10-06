@@ -9,7 +9,6 @@ setup(
     author="Marc Foley",
     author_email="m.foley.88@gmail.com",
     description="Compare two fonts.",
-    packages=find_packages(),
     install_requires=[
         "FontTools[ufo]",
         "fontFeatures[shaper]",
@@ -23,6 +22,7 @@ setup(
         "protobuf==3.19.2",
         "gflanguages"
     ],
+    packages=find_packages(),
     package_dir={"diffenator": "diffenator"},
     package_data={
         "diffenator": [
