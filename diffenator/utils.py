@@ -113,7 +113,7 @@ def font_sample_text(ttFont):
     """Collect words which exist in the Universal Declaration of Human Rights
     that can be formed using the ttFont instance.
     UDHR has been chosen due to the many languages it covers"""
-    with open(resource_filename("diffenator", "data/udhr_all.txt")) as doc:
+    with open(resource_filename("diffenator", "data/udhr_all.txt"), encoding="utf8") as doc:
         uhdr = doc.read()
 
     cmap = set(ttFont.getBestCmap())
