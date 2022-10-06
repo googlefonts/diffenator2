@@ -31,5 +31,11 @@ setup(
             os.path.join("data", "*.txt")
         ],
     },
-    scripts=glob(os.path.join("bin", "*")),
+    entry_points = {
+        'console_scripts': [
+            'diffbrowsers=diffenator.diffbrowsers:main',
+            'diffenator=diffenator.diffenator:main',
+            'diffenator2=diffenator.diffenator2:main',
+        ],
+    }
 )
