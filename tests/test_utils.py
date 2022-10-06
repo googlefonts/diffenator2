@@ -24,3 +24,10 @@ def test_download_google_fonts_family_not_existing():
     from diffenator.utils import download_google_fonts_family
     with pytest.raises(ValueError):
         download_google_fonts_family("foobar2")
+
+
+def test_download_latest_github_release():
+    from diffenator.utils import download_latest_github_release
+    with tempfile.TemporaryDirectory() as tmp:
+        files = download_latest_github_release("googlefonts", "Gulzar", tmp)
+        assert len(files) != 0

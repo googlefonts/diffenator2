@@ -47,7 +47,7 @@ def download_file(url, dst_path=None):
         downloaded_file.write(request.content)
 
 
-def download_latest_github_release_archive(user, repo, out=None, gh_token="GH_TOKEN"):
+def download_latest_github_release(user, repo, dst=None, gh_token="GH_TOKEN", ignore_static=True):
     headers = {"Authorization": f"Bearer {os.environ[gh_token]}"}
     latest_release = requests.get(
         f"https://api.github.com/repos/{user}/{repo}/releases/latest",
@@ -55,11 +55,19 @@ def download_latest_github_release_archive(user, repo, out=None, gh_token="GH_TO
     ).json()
     assets = latest_release["assets"]
     dl_url = assets[0]["browser_download_url"]
-    zip_file = download_file(dl_url, out)
-    zip_dir = zip_file.replace(".zip", "")
+    zip_file = download_file(dl_url)
     z = ZipFile(zip_file)
-    z.extractall(zip_dir)
-    return zip_dir
+    files = []
+    for filename in z.namelist():
+        if ignore_static and "static" in filename:
+            continue
+        if dst:
+            target = os.path.join(dst, filename)
+            z.extract(filename, dst)
+            files.append(target)
+        else:
+            files.append(BytesIO(z.read(filename)))
+    return files
 
 
 def download_google_fonts_family(name, dst=None, ignore_static=True):
