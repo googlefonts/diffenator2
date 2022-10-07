@@ -47,8 +47,11 @@ def download_file(url, dst_path=None):
         downloaded_file.write(request.content)
 
 
-def download_latest_github_release(user, repo, dst=None, gh_token="GH_TOKEN", ignore_static=True):
-    headers = {"Authorization": f"Bearer {os.environ[gh_token]}"}
+def download_latest_github_release(user, repo, dst=None, github_token=None, ignore_static=True):
+    if github_token:
+        headers = {"Authorization": f"Bearer {github_token}"}
+    else:
+        headers = {}
     latest_release = requests.get(
         f"https://api.github.com/repos/{user}/{repo}/releases/latest",
         headers=headers,
