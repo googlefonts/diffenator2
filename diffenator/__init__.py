@@ -81,8 +81,12 @@ def run_diffing_tools(
     )
     w.newline()
 
-    w.comment("Run diffenator")
-    w.rule("diffenator", "diffenator $font_before $font_after -c $coords -o $out")
+    w.comment("Run diffenator VF")
+    w.rule("diffenator-vf", "diffenator $font_before $font_after -c $coords -o $out")
+    w.newline()
+    
+    w.comment("Run diffenator static")
+    w.rule("diffenator-static", "diffenator $font_before $font_after -o $out")
     w.newline()
 
     # Setup build
@@ -103,16 +107,27 @@ def run_diffing_tools(
             fonts_before, fonts_after
         ):
             style = style.replace(" ", "-")
-            w.build(
-                os.path.join(out, style),
-                "diffenator",
-                variables=dict(
-                    font_before=font_before,
-                    font_after=font_after,
-                    coords=dict_coords_to_string(coords),
-                    out=style,
-                ),
-            )
+            if not coords:
+                w.build(
+                    os.path.join(out, style),
+                    "diffenator-static",
+                    variables=dict(
+                        font_before=font_before,
+                        font_after=font_after,
+                        out=style,
+                    ),
+                )
+            else:
+                w.build(
+                    os.path.join(out, style),
+                    "diffenator-vf",
+                    variables=dict(
+                        font_before=font_before,
+                        font_after=font_after,
+                        coords=dict_coords_to_string(coords),
+                        out=style,
+                    ),
+                )
     w.close()
     ninja._program("ninja", [])
 
