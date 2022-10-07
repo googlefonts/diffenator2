@@ -234,7 +234,7 @@ def test_words(
     font_b,
     skip_glyphs=set(),
     hash_func=gid_pos_hash,
-    threshold=0.00002,
+    threshold=0.000002,
 ):
     res = set()
     from collections import defaultdict
@@ -312,6 +312,15 @@ def test_words(
 def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
     pc = 0.0
     try:
+        if hasattr(font_a, "variations"):
+            variations_a = font_a.variations
+        else:
+            variations_a = None
+        
+        if hasattr(font_b, "variations"):
+            variations_b = font_b.variations
+        else:
+            variations_b = None
         img_a = render_text(
             font_a,
             string,
@@ -320,7 +329,7 @@ def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
             features=features,
             script=script,
             lang=lang,
-            variations=font_a.variation,
+            variations=variations_a,
         )
         img_b = render_text(
             font_b,
@@ -330,7 +339,7 @@ def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
             features=features,
             script=script,
             lang=lang,
-            variations=font_b.variation,
+            variations=variations_b,
         )
         width = min([img_a.width, img_b.width])
         height = min([img_a.height, img_b.height])
