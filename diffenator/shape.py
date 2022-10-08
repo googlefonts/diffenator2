@@ -324,7 +324,7 @@ def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
         img_a = render_text(
             font_a,
             string,
-            fontSize=12,
+            fontSize=3, # 3pt really is enough!
             margin=0,
             features=features,
             script=script,
@@ -334,7 +334,7 @@ def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
         img_b = render_text(
             font_b,
             string,
-            fontSize=12,
+            fontSize=3,
             margin=0,
             features=features,
             script=script,

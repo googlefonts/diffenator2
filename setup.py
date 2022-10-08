@@ -34,7 +34,7 @@ setup(
     entry_points = {
         'console_scripts': [
             'diffbrowsers=diffenator.diffbrowsers:main',
-            'diffenator=diffenator.diffenator:main',
+            'diffenator=diffenator.diffenatorscript:main',
             'diffenator2=diffenator.diffenator2:main',
         ],
     }

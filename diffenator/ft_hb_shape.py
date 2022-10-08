@@ -10,6 +10,7 @@ from blackrenderer.render import (
 )
 from blackrenderer.backends import getSurfaceClass
 from PIL import Image
+from diffenator.font import DFont
 
 
 logger = logging.getLogger(__name__)
@@ -73,7 +74,10 @@ if __name__ == "__main__":
     parser.add_argument("--lang", metavar="LANGUAGE")
     parser.add_argument("--script", metavar="SCRIPT")
     parser.add_argument("--features", metavar="FEATURES")
+    parser.add_argument("-pt", help="point size", default=250, type=int)
     args = parser.parse_args()
+
+    font = DFont(args.font)
     features = None
     if args.features:
         features = {}
@@ -86,10 +90,11 @@ if __name__ == "__main__":
                 features[f] = True
 
     img = render_text(
-        args.font,
+        font,
         args.string,
         features=features,
         lang=args.lang,
         script=args.script,
+        fontSize=args.pt,
     )
     img.save(args.out)
