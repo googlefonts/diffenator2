@@ -13,22 +13,11 @@ import os
 import tempfile
 import ninja
 from ninja.ninja_syntax import Writer
+from diffenator.utils import dict_coords_to_string
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-
-def dict_coords_to_string(coords):
-    return ",".join(f"{k}={v}" for k, v in coords.items())
-
-
-def string_coords_to_dict(string):
-    if not string:
-        return {}
-    return  {s.split("=")[0]: float(s.split("=")[1]) for s in string.split(",")}
-
-
 
 def run_proofing_tools(fonts, out="out", imgs=True):
     if not os.path.exists(out):

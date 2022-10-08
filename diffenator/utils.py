@@ -29,6 +29,15 @@ import tempfile
 from io import BytesIO
 
 
+def dict_coords_to_string(coords):
+    return ",".join(f"{k}={v}" for k, v in coords.items())
+
+
+def string_coords_to_dict(string):
+    if not string:
+        return {}
+    return  {s.split("=")[0]: float(s.split("=")[1]) for s in string.split(",")}
+
 
 def google_fonts_has_family(name):
     url_name = name.replace(" ", "+")

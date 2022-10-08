@@ -2,7 +2,7 @@
 """
 diffenator2
 """
-from diffenator import string_coords_to_dict
+from diffenator.utils import string_coords_to_dict
 from diffenator.diff import DiffFonts
 from diffenator.font import DFont, match_fonts
 from pkg_resources import resource_filename
