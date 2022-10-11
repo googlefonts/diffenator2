@@ -1,5 +1,6 @@
 """
 """
+from __future__ import annotations
 from dataclasses import dataclass, field
 from jinja2 import Environment, FileSystemLoader
 from fontTools.ttLib import TTFont

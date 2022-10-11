@@ -1,3 +1,4 @@
+from __future__ import annotations
 import selenium
 from selenium import webdriver
 from platform import platform

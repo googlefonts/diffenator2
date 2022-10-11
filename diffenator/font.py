@@ -1,3 +1,4 @@
+from __future__ import annotations
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
 import os

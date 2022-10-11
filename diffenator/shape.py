@@ -1,6 +1,7 @@
 """
 Check fonts for shaping regressions using real words.
 """
+from __future__ import annotations
 import argparse
 import unicodedata2 as uni
 from dataclasses import dataclass

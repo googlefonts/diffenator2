@@ -1,3 +1,4 @@
+from __future__ import annotations
 from diffenator.shape import test_words
 from diffenator.shape import test_fonts
 from diffenator.font import DFont

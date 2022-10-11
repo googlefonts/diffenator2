@@ -1,3 +1,4 @@
+from __future__ import annotations
 from copy import deepcopy as copy
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._n_a_m_e import table__n_a_m_e

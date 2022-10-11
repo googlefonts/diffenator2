@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 import argparse
 from fontTools.ttLib import TTFont
 from diffenator import run_diffing_tools, run_proofing_tools

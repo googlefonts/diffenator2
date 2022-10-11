@@ -22,6 +22,7 @@ gftools gen-html proof font1.ttf --imgs
 # Generate diff documents
 gftools gen-html diff -fb ./fonts_before/font1.ttf -fa ./fonts_after/font1.ttf
 """
+from __future__ import annotations
 from pkg_resources import resource_filename
 from diffenator.html import proof_rendering, diff_rendering
 from fontTools.ttLib import TTFont
