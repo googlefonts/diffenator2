@@ -38,7 +38,7 @@ def build_words(fp, out, keep_chars=None):
         if word_freq[word] <= 2:
             continue
         res.add(word)
-    with open(out, "w") as doc:
+    with open(out, "w", encoding="utf8") as doc:
         doc.write("\n".join(res))
 
 
@@ -240,7 +240,7 @@ def test_words(
     from collections import defaultdict
 
     seen_gids = defaultdict(int)
-    with open(word_file) as doc:
+    with open(word_file, encoding="utf8") as doc:
         words = doc.read().split("\n")
         print(f"testing {len(words)} words")
         word_total = len(words)

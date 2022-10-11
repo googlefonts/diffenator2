@@ -23,7 +23,7 @@ def run_proofing_tools(fonts, out="out", imgs=True):
     if not os.path.exists(out):
         os.mkdir(out)
 
-    w = Writer(open(os.path.join("build.ninja"), "w"))
+    w = Writer(open(os.path.join("build.ninja"), "w", encoding="utf8"))
     w.comment("Rules")
     w.newline()
     out_s = f"$out{os.path.sep}diffbrowsers"
@@ -55,7 +55,7 @@ def run_diffing_tools(
     if not os.path.exists(out):
         os.mkdir(out)
 
-    w = Writer(open(os.path.join("build.ninja"), "w"))
+    w = Writer(open(os.path.join("build.ninja"), "w", encoding="utf8"))
     # Setup rules
     w.comment("Rules")
     w.newline()
