@@ -24,17 +24,21 @@ def build_words(fps, out, keep_chars=None):
     bank = set()
     word_freq = defaultdict(int)
     for fp in fps:
-        root = objectify.parse(fp).getroot()
-        for page in root.page:
-            page_text = etree.tostring(page.revision, encoding="unicode")
-            words = page_text.split()
-            for word in words:
-                word_freq[word] += 1
-                if keep_chars and all(c in keep_chars for c in word):
-                    bank.add(word)
+        count = 0
+        with open(fp) as doc:
+            # This is memory effecient. We do not want to use doc.read()
+            # since this will try and load the whole file into memory
+            for line in doc:
+                count += 1
+                if count >= 100000000:
+                    break
+                words = line.split()
+                for word in words:
+                    word_freq[word] += 1
+                    if keep_chars and all(c in keep_chars for c in word):
+                        bank.add(word)
 
     words = remove_substring_words(bank)
-    # Remove pairs which have already been seen
     res = set()
     for word in words:
         if word_freq[word] <= 2:
