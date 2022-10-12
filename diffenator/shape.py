@@ -20,17 +20,18 @@ from threading import Thread
 # functions to build word lists
 
 
-def build_words(fp, out, keep_chars=None):
-    root = objectify.parse(fp).getroot()
+def build_words(fps, out, keep_chars=None):
     bank = set()
     word_freq = defaultdict(int)
-    for page in root.page:
-        page_text = etree.tostring(page.revision, encoding="unicode")
-        words = page_text.split()
-        for word in words:
-            word_freq[word] += 1
-            if keep_chars and all(c in keep_chars for c in word):
-                bank.add(word)
+    for fp in fps:
+        root = objectify.parse(fp).getroot()
+        for page in root.page:
+            page_text = etree.tostring(page.revision, encoding="unicode")
+            words = page_text.split()
+            for word in words:
+                word_freq[word] += 1
+                if keep_chars and all(c in keep_chars for c in word):
+                    bank.add(word)
 
     words = remove_substring_words(bank)
     # Remove pairs which have already been seen
@@ -365,15 +366,15 @@ def main():
     subparsers = parser.add_subparsers(required=True, dest="cmd")
 
     build = subparsers.add_parser("build")
-    build.add_argument("xml_fp")
-    build.add_argument("out")
-    build.add_argument("--glyphs", "-g", default=None)
+    build.add_argument("xml_files", nargs="+")
+    build.add_argument("--glyphs", "-g", required=True)
+    build.add_argument("-o", "--out", default="out.txt")
 
     args = parser.parse_args()
 
     if args.cmd == "build":
         glyphs = None if not args.glyphs else set(args.glyphs)
-        build_words(args.xml_fp, args.out, glyphs)
+        build_words(args.xml_files, args.out, glyphs)
     else:
         raise ValueError(f"{args.cmd} unsupported command")
 
