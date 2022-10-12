@@ -92,19 +92,13 @@ def run_diffing_tools(
                 font_after=font_after,
                 out=style,
             )
-            if not coords:
-                w.build(
-                    os.path.join(out, style),
-                    "diffenator",
-                    variables=diff_variables
-                )
-            else:
-                diff_variables["coords"] = dict_coords_to_string(coords)
-                w.build(
-                    os.path.join(out, style),
-                    "diffenator",
-                    variables=diff_variables
-                )
+            if coords:
+                diff_variables["coods"] = dict_coords_to_string(coords)
+            w.build(
+                os.path.join(out, style),
+                "diffenator",
+                variables=diff_variables
+            )
     w.close()
     ninja._program("ninja", [])
 
