@@ -19,7 +19,7 @@ from diffenator.utils import dict_coords_to_string
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def run_proofing_tools(fonts, out="out", imgs=True):
+def run_proofing_tools(fonts, out="out", imgs=False):
     if not os.path.exists(out):
         os.mkdir(out)
 
@@ -28,23 +28,21 @@ def run_proofing_tools(fonts, out="out", imgs=True):
     w.newline()
     out_s = f"$out{os.path.sep}diffbrowsers"
 
+    cmd = f"diffbrowsers proof $fonts -o {out_s}"
     if imgs:
-        cmd = f"diffbrowsers proof $fonts --imgs -o {out_s}"
-    else:
-        cmd = f"diffbrowsers proof $fonts -o {out_s}"
+        cmd += " --imgs"
     w.rule("proofing", cmd)
     w.newline()
 
     # Setup build
     w.comment("Build rules")
-    w.build(
-        out,
-        "proofing",
-        variables=dict(
-            fonts=[f.reader.file.name for f in fonts],
-            out=out,
-        ),
+    variables = dict(
+        fonts=[f.reader.file.name for f in fonts],
+        out=out,
     )
+    if imgs:
+        variables["imgs"] = imgs
+    w.build(out, "proofing", variables=variables)
     w.close()
     ninja._program("ninja", [])
 
