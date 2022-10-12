@@ -14,14 +14,12 @@
 # limitations under the License.
 #
 from __future__ import annotations
-import sys
 import os
 from pkg_resources import resource_filename
 from PIL import Image
 from gflanguages import LoadLanguages
 from functools import lru_cache
 import requests
-import sys
 import os
 from zipfile import ZipFile
 from io import BytesIO
@@ -158,5 +156,4 @@ def font_sample_text(ttFont):
             if hasattr(proto, "sample_text"):
                 for key, text in proto.sample_text.ListFields():
                     _add_words(words, text, seen_chars)
-
     return words
