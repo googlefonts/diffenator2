@@ -48,7 +48,7 @@ def run_proofing_tools(fonts, out="out", imgs=False):
 
 
 def run_diffing_tools(
-    fonts_before, fonts_after=None, diffbrowsers=True, diffenator=True, out="out", imgs=True,
+    fonts_before, fonts_after=None, diffbrowsers=True, diffenator=True, out="out", imgs=False,
 ):
     if not os.path.exists(out):
         os.mkdir(out)
@@ -58,24 +58,17 @@ def run_diffing_tools(
     w.comment("Rules")
     w.newline()
     w.comment("Build Hinting docs")
+    db_cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out"
     if imgs:
-        cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after --imgs -o $out"
-    else:
-        cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out"
-    w.rule(
-        "diffbrowsers",
-        cmd,
-    )
+        db_cmd += " --imgs"
+    w.rule("diffbrowsers", db_cmd)
     w.newline()
 
     w.comment("Run diffenator VF")
-    w.rule("diffenator-vf", "diffenator $font_before $font_after -c $coords -o $out")
+    diff_cmd = f"diffenator $font_before $font_after -o $out"
+    w.rule("diffenator", diff_cmd)
     w.newline()
     
-    w.comment("Run diffenator static")
-    w.rule("diffenator-static", "diffenator $font_before $font_after -o $out")
-    w.newline()
-
     # Setup build
     w.comment("Build rules")
     if diffbrowsers:
@@ -94,26 +87,23 @@ def run_diffing_tools(
             fonts_before, fonts_after
         ):
             style = style.replace(" ", "-")
+            diff_variables=dict(
+                font_before=font_before,
+                font_after=font_after,
+                out=style,
+            )
             if not coords:
                 w.build(
                     os.path.join(out, style),
-                    "diffenator-static",
-                    variables=dict(
-                        font_before=font_before,
-                        font_after=font_after,
-                        out=style,
-                    ),
+                    "diffenator",
+                    variables=diff_variables
                 )
             else:
+                diff_variables["coords"] = dict_coords_to_string(coords)
                 w.build(
                     os.path.join(out, style),
-                    "diffenator-vf",
-                    variables=dict(
-                        font_before=font_before,
-                        font_after=font_after,
-                        coords=dict_coords_to_string(coords),
-                        out=style,
-                    ),
+                    "diffenator",
+                    variables=diff_variables
                 )
     w.close()
     ninja._program("ninja", [])
