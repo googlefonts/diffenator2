@@ -30,6 +30,7 @@ def main():
     )
     diff_parser.add_argument("--fonts-before", "-fb", nargs="+", required=True)
     diff_parser.add_argument("--fonts-after", "-fa", nargs="+", required=True)
+    diff_parser.add_argument("--user-wordlist", default=None)
 
     args = parser.parse_args()
 
@@ -39,7 +40,7 @@ def main():
     elif args.command == "diff":
         fonts_before = [TTFont(f) for f in args.fonts_before]
         fonts_after = [TTFont(f) for f in args.fonts_after]
-        run_diffing_tools(fonts_before, fonts_after, out=args.out, imgs=args.imgs)
+        run_diffing_tools(fonts_before, fonts_after, out=args.out, imgs=args.imgs, user_wordlist=args.user_wordlist)
     else:
         raise NotImplementedError(f"{args.command} not supported")
 

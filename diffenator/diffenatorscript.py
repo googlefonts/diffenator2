@@ -16,7 +16,7 @@ def main():
     parser.add_argument("old_font")
     parser.add_argument("new_font")
     parser.add_argument("--template", default=resource_filename("diffenator", os.path.join("templates", "diffenator.html")))
-    parser.add_argument("--strings", help="File of strings to visually compare")
+    parser.add_argument("--user-wordlist", help="File of strings to visually compare", default=None)
     parser.add_argument("--coords", "-c", default={})
     parser.add_argument("--out", "-o", default="out", help="Output html path")
     args = parser.parse_args()
@@ -29,8 +29,8 @@ def main():
 
     diff = DiffFonts(old_font, new_font)
     diff.diff_all()
-    if args.strings:
-        diff.diff_strings(args.strings)
+    if args.user_wordlist:
+        diff.diff_strings(args.user_wordlist)
     diff.to_html(args.template, args.out)
 
 

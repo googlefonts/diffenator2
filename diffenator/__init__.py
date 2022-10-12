@@ -48,7 +48,7 @@ def run_proofing_tools(fonts, out="out", imgs=False):
 
 
 def run_diffing_tools(
-    fonts_before, fonts_after=None, diffbrowsers=True, diffenator=True, out="out", imgs=False,
+    fonts_before, fonts_after=None, diffbrowsers=True, diffenator=True, out="out", imgs=False, user_wordlist=None,
 ):
     if not os.path.exists(out):
         os.mkdir(out)
@@ -66,6 +66,8 @@ def run_diffing_tools(
 
     w.comment("Run diffenator VF")
     diff_cmd = f"diffenator $font_before $font_after -o $out"
+    if user_wordlist:
+        diff_cmd += " --user-wordlist $user_wordlist"
     w.rule("diffenator", diff_cmd)
     w.newline()
     
@@ -94,6 +96,8 @@ def run_diffing_tools(
             )
             if coords:
                 diff_variables["coods"] = dict_coords_to_string(coords)
+            if user_wordlist:
+                diff_variables["user_wordlist"] = user_wordlist
             w.build(
                 os.path.join(out, style),
                 "diffenator",
