@@ -317,7 +317,7 @@ def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
             variations_a = font_a.variations
         else:
             variations_a = None
-        
+
         if hasattr(font_b, "variations"):
             variations_b = font_b.variations
         else:
@@ -325,7 +325,7 @@ def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
         img_a = render_text(
             font_a,
             string,
-            fontSize=3, # 3pt really is enough!
+            fontSize=3,  # 3pt really is enough!
             margin=0,
             features=features,
             script=script,

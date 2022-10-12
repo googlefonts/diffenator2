@@ -10,7 +10,6 @@ Output:
 """
 import logging
 import os
-import tempfile
 import ninja
 from ninja.ninja_syntax import Writer
 from diffenator.utils import dict_coords_to_string
@@ -18,6 +17,7 @@ from diffenator.utils import dict_coords_to_string
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
 
 def run_proofing_tools(fonts, out="out", imgs=False):
     if not os.path.exists(out):
@@ -48,7 +48,13 @@ def run_proofing_tools(fonts, out="out", imgs=False):
 
 
 def run_diffing_tools(
-    fonts_before, fonts_after=None, diffbrowsers=True, diffenator=True, out="out", imgs=False, user_wordlist=None,
+    fonts_before,
+    fonts_after=None,
+    diffbrowsers=True,
+    diffenator=True,
+    out="out",
+    imgs=False,
+    user_wordlist=None,
 ):
     if not os.path.exists(out):
         os.mkdir(out)
@@ -70,7 +76,7 @@ def run_diffing_tools(
         diff_cmd += " --user-wordlist $user_wordlist"
     w.rule("diffenator", diff_cmd)
     w.newline()
-    
+
     # Setup build
     w.comment("Build rules")
     if diffbrowsers:
@@ -79,7 +85,9 @@ def run_diffing_tools(
             diffbrowsers_out,
             "diffbrowsers",
             variables=dict(
-                fonts_before=[os.path.abspath(f.reader.file.name) for f in fonts_before],
+                fonts_before=[
+                    os.path.abspath(f.reader.file.name) for f in fonts_before
+                ],
                 fonts_after=[os.path.abspath(f.reader.file.name) for f in fonts_after],
                 out=diffbrowsers_out,
             ),
@@ -89,7 +97,7 @@ def run_diffing_tools(
             fonts_before, fonts_after
         ):
             style = style.replace(" ", "-")
-            diff_variables=dict(
+            diff_variables = dict(
                 font_before=font_before,
                 font_after=font_after,
                 out=style,
@@ -98,11 +106,7 @@ def run_diffing_tools(
                 diff_variables["coods"] = dict_coords_to_string(coords)
             if user_wordlist:
                 diff_variables["user_wordlist"] = user_wordlist
-            w.build(
-                os.path.join(out, style),
-                "diffenator",
-                variables=diff_variables
-            )
+            w.build(os.path.join(out, style), "diffenator", variables=diff_variables)
     w.close()
     ninja._program("ninja", [])
 
@@ -134,7 +138,10 @@ def matcher(fonts_before, fonts_after):
             for n, coords in vf_names:
                 before[n] = (os.path.abspath(font.reader.file.name), coords)
         else:
-            before[_static_fullname(font)] = (os.path.abspath(font.reader.file.name), {})
+            before[_static_fullname(font)] = (
+                os.path.abspath(font.reader.file.name),
+                {},
+            )
 
     for font in fonts_after:
         if "fvar" in font:

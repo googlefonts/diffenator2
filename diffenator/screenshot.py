@@ -11,6 +11,7 @@ import tempfile
 
 class ScreenShotter:
     """Use selenium to take screenshots from local browsers"""
+
     def __init__(self, width=1280):
 
         self.browsers = self._get_browsers()
@@ -19,9 +20,9 @@ class ScreenShotter:
     def _file_prefix(self, browser):
         meta = browser.capabilities
         plat = platform()
-        browser = meta['browserName']
-        browser_version = meta['browserVersion']
-        return f'{plat}_{browser}_{browser_version}'.replace(" ", "-")
+        browser = meta["browserName"]
+        browser_version = meta["browserVersion"]
+        return f"{plat}_{browser}_{browser_version}".replace(" ", "-")
 
     def take(self, url, dst_dir):
         for browser in self.browsers:
@@ -31,7 +32,7 @@ class ScreenShotter:
                 diff_toggle = browser.find_element(By.ID, "font-toggle")
             except selenium.common.exceptions.NoSuchElementException:
                 diff_toggle = None
-            
+
             if diff_toggle:
                 self.take_gif(url, dst_dir)
             else:
@@ -42,23 +43,17 @@ class ScreenShotter:
         for browser in self.browsers:
             file_prefix = self._file_prefix(browser)
             filename = os.path.join(dst_dir, f"{file_prefix}.png")
-            browser.set_window_size(
-                self.width,
-                1000
-            )
+            browser.set_window_size(self.width, 1000)
             browser.get(url)
             if javascript:
                 browser.execute_script(javascript)
             # recalc since image size since we now know the height
             body_el = browser.find_element(By.TAG_NAME, "html")
-            browser.set_window_size(
-                self.width,
-                body_el.size['height']
-            )
+            browser.set_window_size(self.width, body_el.size["height"])
             browser.save_screenshot(filename)
             res.append(filename)
         return res
-    
+
     def take_gif(self, url, dst_dir):
         before_fp = os.path.join(dst_dir, "before")
         if not os.path.exists(before_fp):
@@ -93,13 +88,13 @@ class ScreenShotter:
                     options = webdriver.ChromeOptions()
                     options.add_argument("--headless")
                     options.add_argument("--hide-scrollbars")
-                    options.add_argument('--force-device-scale-factor=1')
+                    options.add_argument("--force-device-scale-factor=1")
                     browser_driver = getattr(driver, browser)(options=options)
                 elif browser == "Firefox":
                     options = webdriver.FirefoxOptions()
                     options.add_argument("--headless")
                     options.add_argument("--hide-scrollbars")
-                    options.add_argument('--force-device-scale-factor=1')
+                    options.add_argument("--force-device-scale-factor=1")
                     browser_driver = getattr(driver, browser)(options=options)
                 else:
                     browser_driver = getattr(driver, browser)()
@@ -126,7 +121,11 @@ def screenshot_dir(dir_fp, out):
             fp = os.path.join(dirpath, filename)
             # TODO does this work on FF. Works on Chrome and Safari so I think so?
             url = f"file:///{fp}"
-            img_prefix_fp = os.path.relpath(fp, dir_fp).replace(os.path.sep, "-").replace(".html", "")
+            img_prefix_fp = (
+                os.path.relpath(fp, dir_fp)
+                .replace(os.path.sep, "-")
+                .replace(".html", "")
+            )
             with tempfile.TemporaryDirectory() as tmp:
                 screenshotter.take(url, tmp)
                 for f in os.listdir(tmp):

@@ -50,12 +50,14 @@ def main():
     universal_options_parser.add_argument(
         "--templates",
         help="HTML templates. By default, diffenator/templates/diffbrowsers_*.html is used.",
-        default=glob(os.path.join(resource_filename("diffenator", "templates"), "diffbrowsers*.html")),
+        default=glob(
+            os.path.join(
+                resource_filename("diffenator", "templates"), "diffbrowsers*.html"
+            )
+        ),
     )
     universal_options_parser.add_argument(
-        "--imgs",
-        action="store_true",
-        help="Generate images using headless browsers"
+        "--imgs", action="store_true", help="Generate images using headless browsers"
     )
 
     proof_parser = subparsers.add_parser(
@@ -92,6 +94,7 @@ def main():
     if args.imgs:
         imgs_out = os.path.join(args.out, "imgs")
         from diffenator.screenshot import screenshot_dir
+
         screenshot_dir(args.out, imgs_out)
 
 

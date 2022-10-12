@@ -16,17 +16,14 @@
 from __future__ import annotations
 import sys
 import os
-from collections import namedtuple
 from pkg_resources import resource_filename
 from PIL import Image
-from configparser import ConfigParser
 from gflanguages import LoadLanguages
 from functools import lru_cache
 import requests
 import sys
 import os
 from zipfile import ZipFile
-import tempfile
 from io import BytesIO
 
 
@@ -37,7 +34,7 @@ def dict_coords_to_string(coords):
 def string_coords_to_dict(string):
     if not string:
         return {}
-    return  {s.split("=")[0]: float(s.split("=")[1]) for s in string.split(",")}
+    return {s.split("=")[0]: float(s.split("=")[1]) for s in string.split(",")}
 
 
 def google_fonts_has_family(name):
@@ -53,11 +50,13 @@ def download_file(url, dst_path=None):
     request = requests.get(url, stream=True)
     if not dst_path:
         return BytesIO(request.content)
-    with open(dst_path, 'wb') as downloaded_file:
+    with open(dst_path, "wb") as downloaded_file:
         downloaded_file.write(request.content)
 
 
-def download_latest_github_release(user, repo, dst=None, github_token=None, ignore_static=True):
+def download_latest_github_release(
+    user, repo, dst=None, github_token=None, ignore_static=True
+):
     if github_token:
         headers = {"Authorization": f"Bearer {github_token}"}
     else:
@@ -88,9 +87,7 @@ def download_google_fonts_family(name, dst=None, ignore_static=True):
     if not google_fonts_has_family(name):
         raise ValueError(f"No family on Google Fonts named {name}")
 
-    url = 'https://fonts.google.com/download?family={}'.format(
-        name.replace(' ', '%20')
-    )
+    url = "https://fonts.google.com/download?family={}".format(name.replace(" ", "%20"))
     dl = download_file(url)
     zipfile = ZipFile(dl)
     fonts = []
@@ -134,7 +131,9 @@ def font_sample_text(ttFont):
     """Collect words which exist in the Universal Declaration of Human Rights
     that can be formed using the ttFont instance.
     UDHR has been chosen due to the many languages it covers"""
-    with open(resource_filename("diffenator", "data/udhr_all.txt"), encoding="utf8") as doc:
+    with open(
+        resource_filename("diffenator", "data/udhr_all.txt"), encoding="utf8"
+    ) as doc:
         uhdr = doc.read()
 
     cmap = set(ttFont.getBestCmap())

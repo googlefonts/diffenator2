@@ -3,6 +3,7 @@ from diffenator.shape import test_words
 from diffenator.shape import test_fonts
 from diffenator.font import DFont
 from diffenator import jfont
+from diffenator.html import diffenator_report
 
 
 class DiffFonts:
@@ -26,5 +27,4 @@ class DiffFonts:
         self.glyph_diff = test_fonts(self.old_font, self.new_font)
 
     def to_html(self, templates, out):
-        from diffenator.html import diffenator_report
         diffenator_report(self, templates, dst=out)
