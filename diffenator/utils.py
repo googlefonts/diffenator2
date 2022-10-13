@@ -100,13 +100,18 @@ def download_google_fonts_family(name, dst=None, ignore_static=True):
                 fonts.append(BytesIO(zipfile.read(filename)))
     return fonts
 
+# our images can be huge so disable this
+Image.MAX_IMAGE_PIXELS = None
+
 
 def gen_gifs(dir1, dir2, dst_dir):
     dir1_imgs = set(f for f in os.listdir(dir1) if f.endswith(("jpg", "png")))
     dir2_imgs = set(f for f in os.listdir(dir2) if f.endswith(("jpg", "png")))
     shared_imgs = dir1_imgs & dir2_imgs
     for img in shared_imgs:
-        gif_filename = img[:-4] + ".gif"
+        # We use apng format since a gif's dimensions are limited to 64kx64k
+        # we have encountered many diffs which are taller than this.
+        gif_filename = img[:-4] + ".apng"
         img_a_path = os.path.join(dir1, img)
         img_b_path = os.path.join(dir2, img)
         dst = os.path.join(dst_dir, gif_filename)
