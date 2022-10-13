@@ -42,10 +42,10 @@ def google_fonts_has_family(name):
     return True if r.status_code == 200 else False
 
 
-def download_file(url, dst_path=None):
+def download_file(url, dst_path=None, headers={}):
     """Download a file from a url. If no dst_path is specified, store the file
     as a BytesIO object"""
-    request = requests.get(url, stream=True)
+    request = requests.get(url, stream=True, headers=headers)
     if not dst_path:
         return BytesIO(request.content)
     with open(dst_path, "wb") as downloaded_file:
@@ -55,17 +55,16 @@ def download_file(url, dst_path=None):
 def download_latest_github_release(
     user, repo, dst=None, github_token=None, ignore_static=True
 ):
+    headers = {}
     if github_token:
-        headers = {"Authorization": f"Bearer {github_token}"}
-    else:
-        headers = {}
+        headers["Authorization"] =  f"Token {github_token}"
     latest_release = requests.get(
         f"https://api.github.com/repos/{user}/{repo}/releases/latest",
         headers=headers,
     ).json()
-    assets = latest_release["assets"]
-    dl_url = assets[0]["browser_download_url"]
-    zip_file = download_file(dl_url)
+    headers["Accept"] = "application/octet-stream"
+    dl_url = latest_release["assets"][0]["url"]
+    zip_file = download_file(dl_url, headers=headers)
     z = ZipFile(zip_file)
     files = []
     for filename in z.namelist():
