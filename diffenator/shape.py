@@ -169,7 +169,7 @@ def test_font_glyphs(font_a, font_b):
     modified_glyphs = []
     for g in same_glyphs:
         pc = px_diff(font_a, font_b, g)
-        if pc > 0.0005:
+        if pc > 0.000002:
             try:
                 uni_name = uni.name(g)
             except ValueError:
@@ -370,7 +370,7 @@ def main():
     subparsers = parser.add_subparsers(required=True, dest="cmd")
 
     build = subparsers.add_parser("build")
-    build.add_argument("xml_files", nargs="+")
+    build.add_argument("input_files", nargs="+", help="Text files to extract words from")
     build.add_argument("--glyphs", "-g", required=True)
     build.add_argument("-o", "--out", default="out.txt")
 
