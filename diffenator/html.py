@@ -151,9 +151,9 @@ def diffenator_font_style(dfont, suffix=""):
     )
 
 
-def proof_rendering(ttFonts, templates, dst="out"):
+def proof_rendering(ttFonts, templates, dst="out", filter_styles=None):
     font_faces = [CSSFontFace(f) for f in ttFonts]
-    font_styles = get_font_styles(ttFonts)
+    font_styles = get_font_styles(ttFonts, filters=filter_styles)
     sample_text = " ".join(font_sample_text(ttFonts[0]))
     glyphs = [chr(c) for c in ttFonts[0].getBestCmap()]
     _package(
@@ -167,12 +167,12 @@ def proof_rendering(ttFonts, templates, dst="out"):
     )
 
 
-def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out"):
+def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles=None):
     font_faces_old = [CSSFontFace(f, "old") for f in ttFonts_old]
-    font_styles_old = get_font_styles(ttFonts_old, "old")
+    font_styles_old = get_font_styles(ttFonts_old, "old", filters=filter_styles)
 
     font_faces_new = [CSSFontFace(f, "new") for f in ttFonts_new]
-    font_styles_new = get_font_styles(ttFonts_new, "new")
+    font_styles_new = get_font_styles(ttFonts_new, "new", filters=filter_styles)
 
     font_styles_old, font_styles_new = _match_styles(font_styles_old, font_styles_new)
 

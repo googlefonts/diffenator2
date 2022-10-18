@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def run_proofing_tools(fonts, out="out", imgs=False):
+def run_proofing_tools(fonts, out="out", imgs=False, filter_styles=None):
     if not os.path.exists(out):
         os.mkdir(out)
 
@@ -31,6 +31,8 @@ def run_proofing_tools(fonts, out="out", imgs=False):
     cmd = f"diffbrowsers proof $fonts -o {out_s}"
     if imgs:
         cmd += " --imgs"
+    if filter_styles:
+        cmd += f" --filter-styles $filters"
     w.rule("proofing", cmd)
     w.newline()
 
@@ -42,6 +44,8 @@ def run_proofing_tools(fonts, out="out", imgs=False):
     )
     if imgs:
         variables["imgs"] = imgs
+    if filter_styles:
+        variables["filters"] = filter_styles
     w.build(out, "proofing", variables=variables)
     w.close()
     ninja._program("ninja", [])
@@ -55,6 +59,7 @@ def run_diffing_tools(
     out="out",
     imgs=False,
     user_wordlist=None,
+    filter_styles=None,
 ):
     if not os.path.exists(out):
         os.mkdir(out)
@@ -67,6 +72,8 @@ def run_diffing_tools(
     db_cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out"
     if imgs:
         db_cmd += " --imgs"
+    if filter_styles:
+        db_cmd += " --filter-styles $filters"
     w.rule("diffbrowsers", db_cmd)
     w.newline()
 
@@ -81,20 +88,23 @@ def run_diffing_tools(
     w.comment("Build rules")
     if diffbrowsers:
         diffbrowsers_out = os.path.join(out, "diffbrowsers")
+        db_variables = dict(
+            fonts_before=[
+                os.path.abspath(f.reader.file.name) for f in fonts_before
+            ],
+            fonts_after=[os.path.abspath(f.reader.file.name) for f in fonts_after],
+            out=diffbrowsers_out,
+        )
+        if filter_styles:
+            db_variables["filters"] = filter_styles
         w.build(
             diffbrowsers_out,
             "diffbrowsers",
-            variables=dict(
-                fonts_before=[
-                    os.path.abspath(f.reader.file.name) for f in fonts_before
-                ],
-                fonts_after=[os.path.abspath(f.reader.file.name) for f in fonts_after],
-                out=diffbrowsers_out,
-            ),
+            variables=db_variables
         )
     if diffenator:
         for style, font_before, font_after, coords in matcher(
-            fonts_before, fonts_after
+            fonts_before, fonts_after, filter_styles
         ):
             style = style.replace(" ", "-")
             diff_variables = dict(
@@ -117,7 +127,7 @@ def _static_fullname(ttfont):
     )
 
 
-def _vf_fullnames(ttfont):
+def _vf_fullnames(ttfont, filters=None):
     assert "fvar" in ttfont
     res = []
     family_name = ttfont["name"].getBestFamilyName()
@@ -125,16 +135,18 @@ def _vf_fullnames(ttfont):
     for inst in instances:
         name_id = inst.subfamilyNameID
         name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
+        if filters and name not in filters:
+            continue
         res.append((f"{family_name} {name}", inst.coordinates))
     return res
 
 
-def matcher(fonts_before, fonts_after):
+def matcher(fonts_before, fonts_after, filters=None):
     before = {}
     after = {}
     for font in fonts_before:
         if "fvar" in font:
-            vf_names = _vf_fullnames(font)
+            vf_names = _vf_fullnames(font, filters)
             for n, coords in vf_names:
                 before[n] = (os.path.abspath(font.reader.file.name), coords)
         else:
@@ -145,7 +157,7 @@ def matcher(fonts_before, fonts_after):
 
     for font in fonts_after:
         if "fvar" in font:
-            vf_names = _vf_fullnames(font)
+            vf_names = _vf_fullnames(font, filters)
             for n, coords in vf_names:
                 after[n] = (os.path.abspath(font.reader.file.name), coords)
         else:
