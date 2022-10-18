@@ -8,6 +8,7 @@ import os
 import shutil
 from diffenator.shape import Renderable
 from diffenator.utils import font_sample_text
+import re
 
 
 WIDTH_CLASS_TO_CSS = {
@@ -90,18 +91,23 @@ class CSSFontStyle(Renderable):
             self.class_name = f"{self.familyname} {self.stylename}".replace(" ", "-")
 
 
-def get_font_styles(ttfonts, suffix=""):
+def get_font_styles(ttfonts, suffix="", filters=None):
     res = []
     for ttfont in ttfonts:
         family_name = ttfont["name"].getBestFamilyName()
+        style_name = ttfont["name"].getBestSubFamilyName()
         if "fvar" in ttfont:
             fvar = ttfont["fvar"]
             for inst in fvar.instances:
                 name_id = inst.subfamilyNameID
                 style_name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
                 coords = inst.coordinates
+                if filters and not any(re.match(f, style_name) for f in filters):
+                    continue
                 res.append(CSSFontStyle(family_name, style_name, coords, suffix))
         else:
+            if filters and not any(re.match(f, style_name) for f in filters):
+                continue 
             res.append(static_font_style(ttfont, suffix))
     return res
 
