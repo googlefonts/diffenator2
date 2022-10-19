@@ -18,7 +18,7 @@ def main():
         "--imgs", help="Generate images", action="store_true", default=False
     )
     universal_options_parser.add_argument(
-        "--filter-styles", nargs="+", default=None
+        "--filter-styles", default=None
     )
     proof_parser = subparsers.add_parser(
         "proof",

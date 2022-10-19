@@ -60,7 +60,7 @@ def main():
         "--imgs", action="store_true", help="Generate images using headless browsers"
     )
     universal_options_parser.add_argument(
-        "--filter-styles", nargs="+", default=None
+        "--filter-styles", default=None
     )
 
     proof_parser = subparsers.add_parser(

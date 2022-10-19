@@ -102,7 +102,7 @@ def get_font_styles(ttfonts, suffix="", filters=None):
                 name_id = inst.subfamilyNameID
                 style_name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
                 coords = inst.coordinates
-                if filters and not any(re.match(f, style_name) for f in filters):
+                if filters and not re.match(filters, style_name):
                     continue
                 res.append(CSSFontStyle(family_name, style_name, coords, suffix))
         else:

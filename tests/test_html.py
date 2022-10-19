@@ -39,17 +39,17 @@ def test_diffenator_font_style_vf(fp, coords, expected):
 @pytest.mark.parametrize(
     "fps, filters, style_count",
     [
-        ([mavenpro_vf], ["Regular"], 1),
+        ([mavenpro_vf], "Regular", 1),
         # SemiBold, Bold and ExtraBold
-        ([mavenpro_vf], [".*Bold.*"], 3),
-        ([mavenpro_vf], ["Regular", "Black"], 2),
+        ([mavenpro_vf], ".*Bold.*", 3),
+        ([mavenpro_vf], "Regular|Black", 2),
         # Get all styles
-        ([mavenpro_vf], [], 6),
+        ([mavenpro_vf], None, 6),
         # Test static
         ([mavenpro_regular, mavenpro_extra_bold], [], 2),
-        ([mavenpro_extra_bold], ["Regular"], 0),
-        ([mavenpro_regular, mavenpro_extra_bold], ["Regular"], 1),
-        ([mavenpro_regular, mavenpro_extra_bold], ["Regular", ".*"], 2),
+        ([mavenpro_extra_bold], "Regular", 0),
+        ([mavenpro_regular, mavenpro_extra_bold], "Regular", 1),
+        ([mavenpro_regular, mavenpro_extra_bold], "Regular|.*", 2),
     ]
 )
 def test_get_font_style_filtering(fps, filters, style_count):

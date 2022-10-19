@@ -32,7 +32,7 @@ def run_proofing_tools(fonts, out="out", imgs=False, filter_styles=None):
     if imgs:
         cmd += " --imgs"
     if filter_styles:
-        cmd += f" --filter-styles $filters"
+        cmd += f" --filter-styles '$filters'"
     w.rule("proofing", cmd)
     w.newline()
 
@@ -73,7 +73,7 @@ def run_diffing_tools(
     if imgs:
         db_cmd += " --imgs"
     if filter_styles:
-        db_cmd += " --filter-styles $filters"
+        db_cmd += " --filter-styles '$filters'"
     w.rule("diffbrowsers", db_cmd)
     w.newline()
 
