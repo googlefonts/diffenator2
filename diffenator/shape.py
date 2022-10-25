@@ -378,7 +378,7 @@ def main():
 
     if args.cmd == "build":
         glyphs = None if not args.glyphs else set(args.glyphs)
-        build_words(args.xml_files, args.out, glyphs)
+        build_words(args.input_files, args.out, glyphs)
     else:
         raise ValueError(f"{args.cmd} unsupported command")
 
