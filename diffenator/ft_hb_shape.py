@@ -121,7 +121,7 @@ def render_text_ft(
     # TODO image is currently fliped vertically.
     ft_face = font.ftFont
     ft_face.set_char_size(fontSize * 64)
-    flags = ft.FT_LOAD_RENDER
+    flags = ft.FT_LOAD_NO_HINTING | ft.FT_LOAD_RENDER
     pen = ft.FT_Vector(0, 0)
     xmin, xmax = 0, 0
     ymin, ymax = 0, 0
@@ -173,7 +173,10 @@ def render_text_ft(
             data.extend(bitmap.buffer[j * pitch : j * pitch + width])
         if len(data):
             Z = np.array(data, dtype=np.ubyte).reshape(rows, width)
-            L[y : y + rows, x : x + width] |= Z[::-1, ::1]
+            try:
+                L[y : y + rows, x : x + width] |= Z[::-1, ::1]
+            except:
+                print(f"Couldn't render gid: {glyph.codepoint}")
         pen.x += pos.x_advance
         pen.y += pos.y_advance
     return Image.fromarray(L)

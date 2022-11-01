@@ -189,22 +189,6 @@ def test_font_glyphs(font_a, font_b):
     )
 
 
-class ThreadReturn(Thread):
-    def __init__(
-        self, group=None, target=None, name=None, args=(), kwargs={}, Verbose=None
-    ):
-        Thread.__init__(self, group, target, name, args, kwargs)
-        self._return = None
-
-    def run(self):
-        if self._target is not None:
-            self._return = self._target(*self._args, **self._kwargs)
-
-    def join(self, *args):
-        Thread.join(self, *args)
-        return self._return
-
-
 def test_font_words(font_a, font_b, skip_glyphs=set()):
     from youseedee import ucd_data
     from collections import defaultdict
@@ -219,7 +203,6 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
             continue
 
     res = {}
-    threads = []
     for script, count in scripts.items():
         if count < 10:
             continue
@@ -227,14 +210,7 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
         if not os.path.exists(wordlist):
             print(f"No wordlist for {script}")
             continue
-        th = ThreadReturn(
-            target=test_words, args=(wordlist, font_a, font_b, skip_glyphs)
-        )
-        th.start()
-        threads.append((script, th))
-
-    for script, th in threads:
-        res[script] = th.join()
+        res[script] = test_words(wordlist, font_a, font_b, skip_glyphs)
     return res
 
 
@@ -321,51 +297,54 @@ def test_words(
 
 def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
     pc = 0.0
-    try:
-        if hasattr(font_a, "variations"):
-            variations_a = font_a.variations
-        else:
-            variations_a = None
+    if hasattr(font_a, "variations"):
+        variations_a = font_a.variations
+    else:
+        variations_a = None
 
-        if hasattr(font_b, "variations"):
-            variations_b = font_b.variations
-        else:
-            variations_b = None
-        img_a = render_text(
-            font_a,
-            string,
-            fontSize=3,  # 3pt really is enough!
-            margin=0,
-            features=features,
-            script=script,
-            lang=lang,
-            variations=variations_a,
-        )
-        img_b = render_text(
-            font_b,
-            string,
-            fontSize=3,
-            margin=0,
-            features=features,
-            script=script,
-            lang=lang,
-            variations=variations_b,
-        )
-        width = min([img_a.width, img_b.width])
-        height = min([img_a.height, img_b.height])
-        diff_pixels = 0
-        for x in range(width):
-            for y in range(height):
-                px_a = img_a.getpixel((x, y))
-                px_b = img_b.getpixel((x, y))
-                if px_a != px_b:
+    if hasattr(font_b, "variations"):
+        variations_b = font_b.variations
+    else:
+        variations_b = None
+    img_a = render_text(
+        font_a,
+        string,
+        fontSize=3,  # 3pt really is enough!
+        margin=0,
+        features=features,
+        script=script,
+        lang=lang,
+        variations=variations_a,
+    )
+    img_b = render_text(
+        font_b,
+        string,
+        fontSize=3,
+        margin=0,
+        features=features,
+        script=script,
+        lang=lang,
+        variations=variations_b,
+    )
+    width = min([img_a.width, img_b.width])
+    height = min([img_a.height, img_b.height])
+    diff_pixels = 0
+    for x in range(width):
+        for y in range(height):
+            px_a = img_a.getpixel((x, y))
+            px_b = img_b.getpixel((x, y))
+            if px_a != px_b:
+                if isinstance(px_a, int) and isinstance(px_b, int):
+                    diff_pixels += abs(px_a -px_b)
+                else:
                     diff_pixels += abs(px_a[0] - px_b[0])
                     diff_pixels += abs(px_a[1] - px_b[1])
                     diff_pixels += abs(px_a[2] - px_b[2])
                     diff_pixels += abs(px_a[3] - px_b[3])
+    try:
         pc = diff_pixels / (width * height * 256 * 4)
-    except:
-        all
+    except ZeroDivisionError:
+        pc = 0
     return pc
 
 
