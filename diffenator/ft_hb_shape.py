@@ -100,6 +100,12 @@ def render_text_cairo(
             canvas.translate(glyph.xAdvance, glyph.yAdvance)
     return Image.fromarray(surface._image.toarray())
 
+from functools import cache
+@cache
+def ft_load_glyph(ft_face, codepoint, flags):
+    ft_face.load_glyph(codepoint, flags)
+
+
 
 def render_text_ft(
     font,
@@ -135,7 +141,7 @@ def render_text_ft(
         return np.array([])
 
     for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
-        ft_face.load_glyph(glyph.codepoint, flags)
+        ft_load_glyph(ft_face, glyph.codepoint, flags)
         bitmap = ft_face.glyph.bitmap
         width = bitmap.width
         rows = bitmap.rows
@@ -154,7 +160,7 @@ def render_text_ft(
     previous = 0
     pen.x, pen.y = 0, 0
     for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
-        ft_face.load_glyph(glyph.codepoint, flags)
+        ft_load_glyph(ft_face, glyph.codepoint, flags)
         pitch = ft_face.glyph.bitmap.pitch
         width = bitmap.width
         rows = bitmap.rows
