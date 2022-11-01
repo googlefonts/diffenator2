@@ -45,8 +45,8 @@ def build_words(fps, out, keep_chars=None):
     words = remove_substring_words(bank)
     res = set()
     for word in words:
-        if word_freq[word] <= 2:
-            continue
+        #if word_freq[word] <= 2:
+        #    continue
         res.add(word)
     with open(out, "w", encoding="utf8") as doc:
         doc.write("\n".join(res))
@@ -363,7 +363,7 @@ def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
                     diff_pixels += abs(px_a[1] - px_b[1])
                     diff_pixels += abs(px_a[2] - px_b[2])
                     diff_pixels += abs(px_a[3] - px_b[3])
-        pc = diff_pixels / (width * height * 256 * 3 * 3 * 3)
+        pc = diff_pixels / (width * height * 256 * 4)
     except:
         all
     return pc
