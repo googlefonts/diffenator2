@@ -12,10 +12,11 @@ from blackrenderer.render import (
 from blackrenderer.backends import getSurfaceClass
 from PIL import Image
 from diffenator.font import DFont
+import numpy as np
+import freetype as ft
 
 
 logger = logging.getLogger(__name__)
-
 
 def render_text(
     font,
@@ -25,7 +26,40 @@ def render_text(
     margin=20,
     features=None,
     variations=None,
-    backendName=None,
+    lang=None,
+    script=None,
+):
+    if font.is_color():
+        return render_text_cairo(
+            font,
+            textString,
+            fontSize=250,
+            margin=20,
+            features=None,
+            variations=None,
+            lang=None,
+            script=None, 
+        )
+    return render_text_ft(
+        font,
+        textString,
+        fontSize=250,
+        margin=20,
+        features=None,
+        variations=None,
+        lang=None,
+        script=None, 
+    )
+
+
+def render_text_cairo(
+    font,
+    textString,
+    *,
+    fontSize=250,
+    margin=20,
+    features=None,
+    variations=None,
     lang=None,
     script=None,
 ):
@@ -65,6 +99,78 @@ def render_text(
                 font.drawGlyph(glyph.name, canvas)
             canvas.translate(glyph.xAdvance, glyph.yAdvance)
     return Image.fromarray(surface._image.toarray())
+
+
+def render_text_ft(
+    font,
+    textString,
+    *,
+    fontSize=64,
+    margin=20,
+    features=None,
+    variations=None,
+    lang=None,
+    script=None,
+):
+    # TODO image is currently fliped vertically.
+    ft_face = font.ftFont
+    ft_face.set_char_size(fontSize * 64)
+    flags = ft.FT_LOAD_RENDER
+    pen = ft.FT_Vector(0, 0)
+    xmin, xmax = 0, 0
+    ymin, ymax = 0, 0
+    hb_font = font.hbFont
+    hb_font.scale = (fontSize * 64, fontSize * 64)
+    hb.ot_font_set_funcs(hb_font)
+    buf = hb.Buffer()
+    buf.add_str(textString)
+    buf.guess_segment_properties()
+    if script:
+        buf.script = str(script)
+    if lang:
+        buf.language = str(lang)
+    hb.shape(hb_font, buf, features)
+    if not buf.glyph_infos or not buf.glyph_positions:
+        logger.error("Shaping failed for string '%s'", textString)
+        return np.array([])
+
+    for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
+        ft_face.load_glyph(glyph.codepoint, flags)
+        bitmap = ft_face.glyph.bitmap
+        width = bitmap.width
+        rows = bitmap.rows
+        top = ft_face.glyph.bitmap_top
+        left = ft_face.glyph.bitmap_left
+        x0 = (pen.x >> 6) + left + (pos.x_offset >> 6)
+        x1 = x0 + width
+        y0 = (pen.y >> 6) - (rows - top) + (pos.y_offset >> 6)
+        y1 = y0 + rows
+        xmin, xmax = min(xmin, x0), max(xmax, x1)
+        ymin, ymax = min(ymin, y0), max(ymax, y1)
+        pen.x += pos.x_advance
+        pen.y += pos.y_advance
+
+    L = np.zeros((ymax - ymin, xmax - xmin), dtype=np.ubyte)
+    previous = 0
+    pen.x, pen.y = 0, 0
+    for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
+        ft_face.load_glyph(glyph.codepoint, flags)
+        pitch = ft_face.glyph.bitmap.pitch
+        width = bitmap.width
+        rows = bitmap.rows
+        top = ft_face.glyph.bitmap_top
+        left = ft_face.glyph.bitmap_left
+        x = (pen.x >> 6) - xmin + left + (pos.x_offset >> 6)
+        y = (pen.y >> 6) - ymin - (rows - top) + (pos.y_offset >> 6)
+        data = []
+        for j in range(rows):
+            data.extend(bitmap.buffer[j * pitch : j * pitch + width])
+        if len(data):
+            Z = np.array(data, dtype=np.ubyte).reshape(rows, width)
+            L[y : y + rows, x : x + width] |= Z[::-1, ::1]
+        pen.x += pos.x_advance
+        pen.y += pos.y_advance
+    return Image.fromarray(L)
 
 
 if __name__ == "__main__":

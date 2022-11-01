@@ -6,6 +6,7 @@ from diffenator import jfont
 import uharfbuzz as hb
 import logging
 from blackrenderer.font import BlackRendererFont
+import freetype as ft
 
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,7 @@ class DFont:
         self.path = path
         self.ttFont: TTFont = TTFont(self.path, recalcTimestamp=False)
         self.blackFont: BlackRendererFont = BlackRendererFont(path)
+        self.ftFont: ft.Face = ft.Face(self.path)
         with open(path, "rb") as fontfile:
             fontdata = fontfile.read()
         self.hbFont: hb.Font = hb.Font(hb.Face(fontdata))
@@ -24,6 +26,9 @@ class DFont:
 
         self.font_size: int = font_size
         self.set_font_size(self.font_size)
+
+    def is_color(self):
+        return any(t in ["SVG ", "COLR", "CBDT"] for t in self.ttFont.keys())
 
     def is_variable(self):
         return "fvar" in self.ttFont
