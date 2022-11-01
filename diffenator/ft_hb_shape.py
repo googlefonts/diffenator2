@@ -100,8 +100,8 @@ def render_text_cairo(
             canvas.translate(glyph.xAdvance, glyph.yAdvance)
     return Image.fromarray(surface._image.toarray())
 
-from functools import cache
-@cache
+from functools import lru_cache
+@lru_cache()
 def ft_load_glyph(ft_face, codepoint, flags):
     ft_face.load_glyph(codepoint, flags)
 

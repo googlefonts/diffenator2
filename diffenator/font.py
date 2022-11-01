@@ -7,7 +7,7 @@ import uharfbuzz as hb
 import logging
 from blackrenderer.font import BlackRendererFont
 import freetype as ft
-from functools import cache
+from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -27,7 +27,7 @@ class DFont:
         self.font_size: int = font_size
         self.set_font_size(self.font_size)
 
-    @cache
+    @lru_cache()
     def is_color(self):
         return any(t in ["SVG ", "COLR", "CBDT"] for t in self.ttFont.keys())
 
