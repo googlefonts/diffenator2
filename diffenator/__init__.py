@@ -81,7 +81,9 @@ def run_diffing_tools(
     diff_cmd = f"diffenator $font_before $font_after -o $out"
     if user_wordlist:
         diff_cmd += " --user-wordlist $user_wordlist"
+    diff_inst_cmd = diff_cmd + " --coords $coords"
     w.rule("diffenator", diff_cmd)
+    w.rule("diffenator-inst", diff_inst_cmd)
     w.newline()
 
     # Setup build
@@ -113,10 +115,13 @@ def run_diffing_tools(
                 out=style,
             )
             if coords:
-                diff_variables["coods"] = dict_coords_to_string(coords)
+                diff_variables["coords"] = dict_coords_to_string(coords)
             if user_wordlist:
                 diff_variables["user_wordlist"] = user_wordlist
-            w.build(os.path.join(out, style), "diffenator", variables=diff_variables)
+            if coords:
+                w.build(os.path.join(out, style), "diffenator-inst", variables=diff_variables)
+            else:
+                w.build(os.path.join(out, style), "diffenator", variables=diff_variables)
     w.close()
     ninja._program("ninja", [])
 
