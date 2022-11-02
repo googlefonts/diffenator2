@@ -40,6 +40,12 @@ class DFont:
     def set_variations(self, coords: dict[str, float]):
         if coords == {}:
             return
+        # freetype-py's api uses a tuple/list
+        ft_coords = [
+            a.defaultValue if a.axisTag not in coords else coords[a.axisTag]
+            for a in self.ttFont["fvar"].axes
+        ]
+        self.ftFont.set_var_design_coords(ft_coords)
         self.variations = coords
         self.hbFont.set_variations(coords)
 
