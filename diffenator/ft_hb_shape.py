@@ -100,12 +100,6 @@ def render_text_cairo(
             canvas.translate(glyph.xAdvance, glyph.yAdvance)
     return Image.fromarray(surface._image.toarray())
 
-from functools import lru_cache
-@lru_cache()
-def ft_load_glyph(ft_face, codepoint, flags):
-    ft_face.load_glyph(codepoint, flags)
-
-
 
 def render_text_ft(
     font,
@@ -141,7 +135,7 @@ def render_text_ft(
         return np.array([])
 
     for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
-        ft_load_glyph(ft_face, glyph.codepoint, flags)
+        ft_face.load_glyph(glyph.codepoint, flags)
         bitmap = ft_face.glyph.bitmap
         width = bitmap.width
         rows = bitmap.rows
@@ -160,7 +154,7 @@ def render_text_ft(
     previous = 0
     pen.x, pen.y = 0, 0
     for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
-        ft_load_glyph(ft_face, glyph.codepoint, flags)
+        ft_face.load_glyph(glyph.codepoint, flags)
         pitch = ft_face.glyph.bitmap.pitch
         width = bitmap.width
         rows = bitmap.rows
@@ -173,10 +167,7 @@ def render_text_ft(
             data.extend(bitmap.buffer[j * pitch : j * pitch + width])
         if len(data):
             Z = np.array(data, dtype=np.ubyte).reshape(rows, width)
-            try:
-                L[y : y + rows, x : x + width] |= Z[::-1, ::1]
-            except:
-                print(f"Couldn't render gid: {glyph.codepoint}")
+            L[y : y + rows, x : x + width] |= Z[::-1, ::1]
         pen.x += pos.x_advance
         pen.y += pos.y_advance
     return Image.fromarray(L)
