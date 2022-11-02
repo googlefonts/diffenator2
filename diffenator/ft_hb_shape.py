@@ -112,7 +112,7 @@ def render_text_ft(
     lang=None,
     script=None,
 ):
-    # TODO image is currently fliped vertically.
+    # TODO image is currently flipped vertically.
     ft_face = font.ftFont
     ft_face.set_char_size(fontSize * 64)
     flags = ft.FT_LOAD_NO_HINTING | ft.FT_LOAD_RENDER
@@ -182,6 +182,7 @@ if __name__ == "__main__":
     parser.add_argument("--script", metavar="SCRIPT")
     parser.add_argument("--features", metavar="FEATURES")
     parser.add_argument("-pt", help="point size", default=250, type=int)
+    # TODO add variations
     args = parser.parse_args()
 
     font = DFont(args.font)
