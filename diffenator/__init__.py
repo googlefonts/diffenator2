@@ -8,18 +8,19 @@ What should be checked:
 Output:
 - A single html page. No images, just pure html and js.
 """
+from __future__ import annotations
 import logging
 import os
 import ninja
 from ninja.ninja_syntax import Writer
 from diffenator.utils import dict_coords_to_string
-
+from fontTools.ttLib import TTFont
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def run_proofing_tools(fonts, out="out", imgs=False, filter_styles=None):
+def ninja_proof(fonts, out="out", imgs=False, filter_styles=None):
     if not os.path.exists(out):
         os.mkdir(out)
 
@@ -48,18 +49,17 @@ def run_proofing_tools(fonts, out="out", imgs=False, filter_styles=None):
         variables["filters"] = filter_styles
     w.build(out, "proofing", variables=variables)
     w.close()
-    ninja._program("ninja", [])
 
 
-def run_diffing_tools(
-    fonts_before,
-    fonts_after=None,
-    diffbrowsers=True,
-    diffenator=True,
-    out="out",
-    imgs=False,
-    user_wordlist=None,
-    filter_styles=None,
+def ninja_diff(
+    fonts_before: list[TTFont],
+    fonts_after: list[TTFont],
+    diffbrowsers: bool = True,
+    diffenator: bool =True,
+    out: str = "out",
+    imgs: bool = False,
+    user_wordlist: str = None,
+    filter_styles: str = None,
 ):
     if not os.path.exists(out):
         os.mkdir(out)
@@ -114,16 +114,14 @@ def run_diffing_tools(
                 font_after=font_after,
                 out=style,
             )
-            if coords:
-                diff_variables["coords"] = dict_coords_to_string(coords)
             if user_wordlist:
                 diff_variables["user_wordlist"] = user_wordlist
             if coords:
+                diff_variables["coords"] = dict_coords_to_string(coords)
                 w.build(os.path.join(out, style), "diffenator-inst", variables=diff_variables)
             else:
                 w.build(os.path.join(out, style), "diffenator", variables=diff_variables)
     w.close()
-    ninja._program("ninja", [])
 
 
 def _static_fullname(ttfont):
@@ -172,4 +170,4 @@ def matcher(fonts_before, fonts_after, filters=None):
     res = []
     for style in shared:
         res.append((style, before[style][0], after[style][0], after[style][1]))
-    return res
+    return sorted(res, key=lambda k: k[0])
