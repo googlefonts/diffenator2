@@ -1,0 +1,42 @@
+# Rules
+
+# Build Hinting docs
+rule diffbrowsers
+  command = diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out $
+      --imgs --filter-styles '$filters'
+
+# Run diffenator VF
+rule diffenator
+  command = diffenator $font_before $font_after -o $out
+rule diffenator-inst
+  command = diffenator $font_before $font_after -o $out --coords $coords
+
+# Build rules
+build out/diffbrowsers: diffbrowsers
+  fonts_before = $
+      /Users/marcfoley/Type/diffenator2/tests/data/MavenPro[wght].subset.ttf
+  fonts_after = $
+      /Users/marcfoley/Type/diffenator2/tests/data/MavenPro[wght].subset.mod.ttf
+  out = out/diffbrowsers
+  filters = Medium|ExtraBold
+build out/Maven-Pro-Bold: diffenator-inst
+  font_before = $
+      /Users/marcfoley/Type/diffenator2/tests/data/MavenPro[wght].subset.ttf
+  font_after = $
+      /Users/marcfoley/Type/diffenator2/tests/data/MavenPro[wght].subset.mod.ttf
+  out = Maven-Pro-Bold
+  coords = wght=700.0
+build out/Maven-Pro-ExtraBold: diffenator-inst
+  font_before = $
+      /Users/marcfoley/Type/diffenator2/tests/data/MavenPro[wght].subset.ttf
+  font_after = $
+      /Users/marcfoley/Type/diffenator2/tests/data/MavenPro[wght].subset.mod.ttf
+  out = Maven-Pro-ExtraBold
+  coords = wght=800.0
+build out/Maven-Pro-Medium: diffenator-inst
+  font_before = $
+      /Users/marcfoley/Type/diffenator2/tests/data/MavenPro[wght].subset.ttf
+  font_after = $
+      /Users/marcfoley/Type/diffenator2/tests/data/MavenPro[wght].subset.mod.ttf
+  out = Maven-Pro-Medium
+  coords = wght=500.0
