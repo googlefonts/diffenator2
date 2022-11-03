@@ -20,7 +20,12 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def ninja_proof(fonts, out="out", imgs=False, filter_styles=None):
+def ninja_proof(
+    fonts: list[DFont],
+    out: str = "out",
+    imgs: bool = False,
+    filter_styles: bool =None
+):
     if not os.path.exists(out):
         os.mkdir(out)
 
