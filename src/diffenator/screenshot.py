@@ -24,7 +24,7 @@ class ScreenShotter:
         browser_version = meta["browserVersion"]
         return f"{plat}_{browser}_{browser_version}".replace(" ", "-")
 
-    def take(self, url, dst_dir):
+    def take(self, url: str, dst_dir: str):
         for browser in self.browsers:
             browser.get(url)
 
@@ -38,7 +38,7 @@ class ScreenShotter:
             else:
                 self.take_png(url, dst_dir)
 
-    def take_png(self, url, dst_dir, javascript=""):
+    def take_png(self, url: str, dst_dir: str, javascript: str ="") -> list[str]:
         res = []
         for browser in self.browsers:
             file_prefix = self._file_prefix(browser)
@@ -54,7 +54,7 @@ class ScreenShotter:
             res.append(filename)
         return res
 
-    def take_gif(self, url, dst_dir):
+    def take_gif(self, url: str, dst_dir: str):
         before_fp = os.path.join(dst_dir, "before")
         if not os.path.exists(before_fp):
             os.mkdir(before_fp)
@@ -67,7 +67,7 @@ class ScreenShotter:
         self.take_png(url, after_fp, javascript="switchFonts();")
         gen_gifs(before_fp, after_fp, dst_dir)
 
-    def set_width(self, width):
+    def set_width(self, width: int):
         # we don't care about setting height since we will always return a
         # full height screenshot
         self.width = width

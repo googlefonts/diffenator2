@@ -8,7 +8,6 @@ import os
 import shutil
 from diffenator.shape import Renderable
 from diffenator.utils import font_sample_text
-from diffenator.diff import DiffFonts
 import re
 
 
@@ -63,7 +62,7 @@ class CSSFontFace(Renderable):
                 self.font_style = f"oblique {min_angle}deg {max_angle}deg"
 
 
-def _family_name(ttFont: TTFont, suffix: str=""):
+def _family_name(ttFont, suffix=""):
     familyname = ttFont["name"].getBestFamilyName()
     if suffix:
         return f"{suffix} {familyname}"
@@ -92,7 +91,7 @@ class CSSFontStyle(Renderable):
             self.class_name = f"{self.familyname} {self.stylename}".replace(" ", "-")
 
 
-def get_font_styles(ttfonts: list[TTFont], suffix: str="", filter_styles: str =None) -> list[CSSFontStyle]:
+def get_font_styles(ttfonts, suffix="", filters=None):
     res = []
     for ttfont in ttfonts:
         family_name = ttfont["name"].getBestFamilyName()
@@ -103,17 +102,17 @@ def get_font_styles(ttfonts: list[TTFont], suffix: str="", filter_styles: str =N
                 name_id = inst.subfamilyNameID
                 style_name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
                 coords = inst.coordinates
-                if filter_styles and not re.match(filter_styles, style_name):
+                if filters and not re.match(filters, style_name):
                     continue
                 res.append(CSSFontStyle(family_name, style_name, coords, suffix))
         else:
-            if filter_styles and not any(re.match(f, style_name) for f in filter_styles):
+            if filters and not any(re.match(f, style_name) for f in filters):
                 continue 
             res.append(static_font_style(ttfont, suffix))
     return res
 
 
-def static_font_style(ttfont: TTFont, suffix: str ="") -> CSSFontStyle:
+def static_font_style(ttfont, suffix=""):
     family_name = ttfont["name"].getBestFamilyName()
     style_name = ttfont["name"].getBestSubFamilyName()
     return CSSFontStyle(
@@ -127,7 +126,7 @@ def static_font_style(ttfont: TTFont, suffix: str ="") -> CSSFontStyle:
     )
 
 
-def diffenator_font_style(dfont: DFont, suffix="") -> CSSFontStyle:
+def diffenator_font_style(dfont, suffix=""):
     ttfont = dfont.ttFont
     family_name = ttfont["name"].getBestFamilyName()
     if dfont.is_variable() and hasattr(dfont, "variations"):
@@ -152,9 +151,9 @@ def diffenator_font_style(dfont: DFont, suffix="") -> CSSFontStyle:
     )
 
 
-def proof_rendering(ttFonts: list[TTFont], templates, dst: str ="out", filter_styles: str=None):
+def proof_rendering(ttFonts, templates, dst="out", filter_styles=None):
     font_faces = [CSSFontFace(f) for f in ttFonts]
-    font_styles = get_font_styles(ttFonts, filter_styles=filter_styles)
+    font_styles = get_font_styles(ttFonts, filters=filter_styles)
     sample_text = " ".join(font_sample_text(ttFonts[0]))
     glyphs = [chr(c) for c in ttFonts[0].getBestCmap()]
     _package(
@@ -168,12 +167,12 @@ def proof_rendering(ttFonts: list[TTFont], templates, dst: str ="out", filter_st
     )
 
 
-def diff_rendering(ttFonts_old: list[TTFont], ttFonts_new: list[TTFont], templates: list[str], dst: str ="out", filter_styles: str=None):
+def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles=None):
     font_faces_old = [CSSFontFace(f, "old") for f in ttFonts_old]
-    font_styles_old = get_font_styles(ttFonts_old, "old", filter_styles=filter_styles)
+    font_styles_old = get_font_styles(ttFonts_old, "old", filters=filter_styles)
 
     font_faces_new = [CSSFontFace(f, "new") for f in ttFonts_new]
-    font_styles_new = get_font_styles(ttFonts_new, "new", filter_styles=filter_styles)
+    font_styles_new = get_font_styles(ttFonts_new, "new", filters=filter_styles)
 
     font_styles_old, font_styles_new = _match_styles(font_styles_old, font_styles_new)
 
@@ -193,7 +192,7 @@ def diff_rendering(ttFonts_old: list[TTFont], ttFonts_new: list[TTFont], templat
     )
 
 
-def diffenator_report(diff, template: str, dst: str ="out"):
+def diffenator_report(diff, template, dst="out"):
     font_faces_old = [CSSFontFace(diff.old_font.ttFont, "old")]
     font_faces_new = [CSSFontFace(diff.new_font.ttFont, "new")]
 
@@ -212,7 +211,7 @@ def diffenator_report(diff, template: str, dst: str ="out"):
     )
 
 
-def _package(templates: list[str], dst: str, **kwargs):
+def _package(templates, dst, **kwargs):
     if not os.path.exists(dst):
         os.mkdir(dst)
 
@@ -236,7 +235,7 @@ def _package(templates: list[str], dst: str, **kwargs):
                 shutil.copy(font.ttfont.reader.file.name, out_fp)
 
 
-def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]) ->list[CSSFontStyle]:
+def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]):
     old = {s.full_name: s for s in styles_old}
     new = {s.full_name: s for s in styles_new}
     shared = set(old) & set(new)
