@@ -12,7 +12,7 @@ import tempfile
 class ScreenShotter:
     """Use selenium to take screenshots from local browsers"""
 
-    def __init__(self, width=1280):
+    def __init__(self, width: int=1280):
 
         self.browsers = self._get_browsers()
         self.width = width
@@ -109,7 +109,7 @@ class ScreenShotter:
             browser.quit()
 
 
-def screenshot_dir(dir_fp, out):
+def screenshot_dir(dir_fp: str, out: str):
     """Screenshot a folder of html docs. Walk the damn things"""
     if not os.path.exists(out):
         os.mkdir(out)
@@ -120,7 +120,6 @@ def screenshot_dir(dir_fp, out):
                 continue
             dir_name = os.path.join(out, filename.replace(".html", ""))
             fp = os.path.join(dirpath, filename)
-            # TODO does this work on FF. Works on Chrome and Safari so I think so?
             url = f"file:///{fp}"
             img_prefix_fp = (
                 os.path.relpath(fp, dir_fp)

@@ -19,15 +19,15 @@ import freetype as ft
 logger = logging.getLogger(__name__)
 
 def render_text(
-    font,
-    textString,
+    font: DFont,
+    textString: str,
     *,
-    fontSize=250,
-    margin=0,
-    features=None,
-    variations=None,
-    lang=None,
-    script=None,
+    fontSize: int =250,
+    margin: int =20,
+    features: dict[str, bool] = None,
+    variations: dict[str, float] = None,
+    lang: str=None,
+    script: str=None,
 ):
     if font.is_color():
         return render_text_cairo(
@@ -53,15 +53,15 @@ def render_text(
 
 
 def render_text_cairo(
-    font,
-    textString,
+    font: DFont,
+    textString: str,
     *,
-    fontSize=250,
-    margin=20,
-    features=None,
-    variations=None,
-    lang=None,
-    script=None,
+    fontSize: int =250,
+    margin: int =20,
+    features: dict[str, bool] = None,
+    variations: dict[str, float] = None,
+    lang: str=None,
+    script: str=None,
 ):
     font = font.blackFont
     glyphNames = font.glyphNames
@@ -102,15 +102,15 @@ def render_text_cairo(
 
 
 def render_text_ft(
-    font,
-    textString,
+    font: DFont,
+    textString: str,
     *,
-    fontSize=64,
-    margin=20,
-    features=None,
-    variations=None,
-    lang=None,
-    script=None,
+    fontSize: int =250,
+    margin: int =20,
+    features: dict[str, bool] = None,
+    variations: dict[str, float] = None,
+    lang: str=None,
+    script: str=None,
 ):
     # TODO image is currently flipped vertically.
     ft_face = font.ftFont

@@ -32,8 +32,6 @@ import argparse
 
 
 def main():
-    html_templates_dir = resource_filename("diffenator", "templates")
-
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(
         dest="command", required=True, metavar='"proof" or "diff"'
@@ -97,7 +95,6 @@ def main():
     if args.imgs:
         imgs_out = os.path.join(args.out, "imgs")
         from diffenator.screenshot import screenshot_dir
-
         screenshot_dir(args.out, imgs_out)
 
 

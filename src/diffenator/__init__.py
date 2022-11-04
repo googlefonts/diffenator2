@@ -1,17 +1,6 @@
-"""
-Diffenator is primarily a visual differ. Its main job is to stop users reporting visual issues to google/fonts.
-
-What should be checked:
-
-- Essential tables e.g OS/2, hhea attribs (Simon seemed keen on this so discuss implementation of this in the context of what I've found here)
-
-Output:
-- A single html page. No images, just pure html and js.
-"""
 from __future__ import annotations
 import logging
 import os
-import ninja
 from ninja.ninja_syntax import Writer
 from diffenator.utils import dict_coords_to_string
 from fontTools.ttLib import TTFont
@@ -21,10 +10,10 @@ logger.setLevel(logging.INFO)
 
 
 def ninja_proof(
-    fonts: list[DFont],
+    fonts: list[TTFont],
     out: str = "out",
     imgs: bool = False,
-    filter_styles: bool =None
+    filter_styles: bool = None
 ):
     if not os.path.exists(out):
         os.mkdir(out)
