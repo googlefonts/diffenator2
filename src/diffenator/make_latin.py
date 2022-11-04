@@ -1,3 +1,0 @@
-"""
-Make the Latin wordlist.
-"""
