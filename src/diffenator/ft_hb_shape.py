@@ -18,16 +18,17 @@ import freetype as ft
 
 logger = logging.getLogger(__name__)
 
+
 def render_text(
     font: DFont,
     textString: str,
     *,
-    fontSize: int =250,
-    margin: int =20,
+    fontSize: int = 250,
+    margin: int = 20,
     features: dict[str, bool] = None,
     variations: dict[str, float] = None,
-    lang: str=None,
-    script: str=None,
+    lang: str = None,
+    script: str = None,
 ):
     if font.is_color():
         return render_text_cairo(
@@ -38,7 +39,7 @@ def render_text(
             features=None,
             variations=None,
             lang=None,
-            script=None, 
+            script=None,
         )
     return render_text_ft(
         font,
@@ -48,7 +49,7 @@ def render_text(
         features=None,
         variations=None,
         lang=None,
-        script=None, 
+        script=None,
     )
 
 
@@ -56,12 +57,12 @@ def render_text_cairo(
     font: DFont,
     textString: str,
     *,
-    fontSize: int =250,
-    margin: int =20,
+    fontSize: int = 250,
+    margin: int = 20,
     features: dict[str, bool] = None,
     variations: dict[str, float] = None,
-    lang: str=None,
-    script: str=None,
+    lang: str = None,
+    script: str = None,
 ):
     font = font.blackFont
     glyphNames = font.glyphNames
@@ -105,12 +106,12 @@ def render_text_ft(
     font: DFont,
     textString: str,
     *,
-    fontSize: int =250,
-    margin: int =20,
+    fontSize: int = 250,
+    margin: int = 20,
     features: dict[str, bool] = None,
     variations: dict[str, float] = None,
-    lang: str=None,
-    script: str=None,
+    lang: str = None,
+    script: str = None,
 ):
     # TODO image is currently flipped vertically.
     ft_face = font.ftFont
@@ -182,7 +183,7 @@ if __name__ == "__main__":
     parser.add_argument("--script", metavar="SCRIPT")
     parser.add_argument("--features", metavar="FEATURES")
     parser.add_argument("-pt", help="point size", default=250, type=int)
-    # TODO add variations
+    # TODO add variations
     args = parser.parse_args()
 
     font = DFont(args.font)

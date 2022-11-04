@@ -29,6 +29,7 @@ from fontTools.ttLib import TTFont
 def dict_coords_to_string(coords: dict[str, float]) -> str:
     return ",".join(f"{k}={v}" for k, v in coords.items())
 
+
 def string_coords_to_dict(string: str) -> dict[str, float]:
     if not string:
         return {}
@@ -42,7 +43,7 @@ def google_fonts_has_family(name: str) -> bool:
     return True if r.status_code == 200 else False
 
 
-def download_file(url: str, dst_path: str=None, headers: dict[str, str]={}):
+def download_file(url: str, dst_path: str = None, headers: dict[str, str] = {}):
     """Download a file from a url. If no dst_path is specified, store the file
     as a BytesIO object"""
     request = requests.get(url, stream=True, headers=headers)
@@ -53,11 +54,15 @@ def download_file(url: str, dst_path: str=None, headers: dict[str, str]={}):
 
 
 def download_latest_github_release(
-    user: str, repo: str, dst: str=None, github_token: str=None, ignore_static: bool=True
+    user: str,
+    repo: str,
+    dst: str = None,
+    github_token: str = None,
+    ignore_static: bool = True,
 ):
     headers = {}
     if github_token:
-        headers["Authorization"] =  f"Token {github_token}"
+        headers["Authorization"] = f"Token {github_token}"
     latest_release = requests.get(
         f"https://api.github.com/repos/{user}/{repo}/releases/latest",
         headers=headers,
@@ -79,7 +84,9 @@ def download_latest_github_release(
     return files
 
 
-def download_google_fonts_family(name: str, dst: str=None, ignore_static: bool=True):
+def download_google_fonts_family(
+    name: str, dst: str = None, ignore_static: bool = True
+):
     """Download a font family from Google Fonts"""
     if not google_fonts_has_family(name):
         raise ValueError(f"No family on Google Fonts named {name}")
@@ -100,11 +107,12 @@ def download_google_fonts_family(name: str, dst: str=None, ignore_static: bool=T
                 fonts.append(BytesIO(zipfile.read(filename)))
     return fonts
 
+
 # our images can be huge so disable this
 Image.MAX_IMAGE_PIXELS = None
 
 
-def gen_gifs(dir1:str, dir2: str, dst_dir: str):
+def gen_gifs(dir1: str, dir2: str, dst_dir: str):
     dir1_imgs = set(f for f in os.listdir(dir1) if f.endswith(("jpg", "png")))
     dir2_imgs = set(f for f in os.listdir(dir2) if f.endswith(("jpg", "png")))
     shared_imgs = dir1_imgs & dir2_imgs

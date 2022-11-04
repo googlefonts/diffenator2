@@ -12,7 +12,7 @@ import tempfile
 class ScreenShotter:
     """Use selenium to take screenshots from local browsers"""
 
-    def __init__(self, width: int=1280):
+    def __init__(self, width: int = 1280):
 
         self.browsers = self._get_browsers()
         self.width = width
@@ -38,7 +38,7 @@ class ScreenShotter:
             else:
                 self.take_png(url, dst_dir)
 
-    def take_png(self, url: str, dst_dir: str, javascript: str ="") -> list[str]:
+    def take_png(self, url: str, dst_dir: str, javascript: str = "") -> list[str]:
         res = []
         for browser in self.browsers:
             file_prefix = self._file_prefix(browser)

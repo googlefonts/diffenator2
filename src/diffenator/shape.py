@@ -21,7 +21,7 @@ from threading import Thread
 
 
 def build_words(fps, out, keep_chars=None):
-    keep_chars |= set("'") # used for quoting obscure words in wikipedia
+    keep_chars |= set("'")  # used for quoting obscure words in wikipedia
     bank = set()
     word_freq = defaultdict(int)
     seen_keep_chars = set()
@@ -32,7 +32,7 @@ def build_words(fps, out, keep_chars=None):
             for line in doc:
                 words = line.split()
                 for word in words:
-                    word = word.replace("'","") # remove the quote marks
+                    word = word.replace("'", "")  # remove the quote marks
                     if keep_chars and all(c in keep_chars for c in word):
                         word_freq[word] += 1
                         seen_keep_chars |= set(word)
@@ -40,12 +40,14 @@ def build_words(fps, out, keep_chars=None):
 
     unseen_keep_chars = keep_chars - seen_keep_chars
     unseen_count = len(unseen_keep_chars)
-    print(f"Following {unseen_count}/{len(keep_chars)} characters not seen in any words {unseen_keep_chars}.")
+    print(
+        f"Following {unseen_count}/{len(keep_chars)} characters not seen in any words {unseen_keep_chars}."
+    )
 
     words = remove_substring_words(bank)
     res = set()
     for word in words:
-        #if word_freq[word] <= 2:
+        # if word_freq[word] <= 2:
         #    continue
         res.add(word)
     with open(out, "w", encoding="utf8") as doc:
@@ -335,7 +337,7 @@ def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
             px_b = img_b.getpixel((x, y))
             if px_a != px_b:
                 if isinstance(px_a, int) and isinstance(px_b, int):
-                    diff_pixels += abs(px_a -px_b)
+                    diff_pixels += abs(px_a - px_b)
                 else:
                     diff_pixels += abs(px_a[0] - px_b[0])
                     diff_pixels += abs(px_a[1] - px_b[1])
@@ -353,7 +355,9 @@ def main():
     subparsers = parser.add_subparsers(required=True, dest="cmd")
 
     build = subparsers.add_parser("build")
-    build.add_argument("input_files", nargs="+", help="Text files to extract words from")
+    build.add_argument(
+        "input_files", nargs="+", help="Text files to extract words from"
+    )
     build.add_argument("--glyphs", "-g", required=True)
     build.add_argument("-o", "--out", default="out.txt")
 

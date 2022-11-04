@@ -57,9 +57,7 @@ def main():
     universal_options_parser.add_argument(
         "--imgs", action="store_true", help="Generate images using headless browsers"
     )
-    universal_options_parser.add_argument(
-        "--filter-styles", default=None
-    )
+    universal_options_parser.add_argument("--filter-styles", default=None)
 
     proof_parser = subparsers.add_parser(
         "proof",
@@ -85,16 +83,25 @@ def main():
 
     if args.command == "proof":
         fonts = [TTFont(os.path.abspath(fp)) for fp in args.fonts]
-        proof_rendering(fonts, args.templates, args.out, filter_styles=args.filter_styles)
+        proof_rendering(
+            fonts, args.templates, args.out, filter_styles=args.filter_styles
+        )
 
     elif args.command == "diff":
         fonts_before = [TTFont(os.path.abspath(fp)) for fp in args.fonts_before]
         fonts_after = [TTFont(os.path.abspath(fp)) for fp in args.fonts_after]
-        diff_rendering(fonts_before, fonts_after, args.templates, args.out, filter_styles=args.filter_styles)
+        diff_rendering(
+            fonts_before,
+            fonts_after,
+            args.templates,
+            args.out,
+            filter_styles=args.filter_styles,
+        )
 
     if args.imgs:
         imgs_out = os.path.join(args.out, "imgs")
         from diffenator.screenshot import screenshot_dir
+
         screenshot_dir(args.out, imgs_out)
 
 
