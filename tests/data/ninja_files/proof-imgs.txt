@@ -1,11 +1,11 @@
 # Rules
 
 rule proofing
-  command = diffbrowsers proof $fonts -o $out/diffbrowsers --imgs
+  command = diffbrowsers proof \$fonts -o \$out/diffbrowsers --imgs
 
 # Build rules
 build out: proofing
-  fonts = $
-      /Users/marcfoley/Type/diffenator2/tests/data/MavenPro[wght].subset.ttf
+  fonts = \$
+      .*/tests/data/MavenPro\[wght\].subset.ttf
   out = out
   imgs = True

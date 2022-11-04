@@ -1,6 +1,7 @@
 from . import *
 import pytest
 from fontTools.ttLib import TTFont
+import re
 
 
 
@@ -42,7 +43,7 @@ def test_run_ninja_diff(kwargs, expected_fp):
     ninja_diff(**kwargs)
 
     with open(expected_fp) as expected, open("build.ninja") as current:
-        assert expected.read() == current.read()
+        assert re.match(expected.read(), current.read())
 
 
 @pytest.mark.parametrize(
@@ -79,4 +80,4 @@ def test_run_ninja_proof(kwargs, expected_fp):
 
     ninja_proof(**kwargs)
     with open(expected_fp) as expected, open("build.ninja") as current:
-        assert expected.read() == current.read()
+        assert re.match(expected.read(), current.read())
