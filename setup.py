@@ -23,8 +23,8 @@ setup(
         "gflanguages",
         "freetype-py",
     ],
-    packages=find_packages(),
-    package_dir={"diffenator": "diffenator"},
+    packages=find_packages("src"),
+    package_dir={"": "src"},
     package_data={
         "diffenator": [
             os.path.join("data", "wordlists", "*.txt"),
