@@ -23,26 +23,26 @@ import requests
 import os
 from zipfile import ZipFile
 from io import BytesIO
+from fontTools.ttLib import TTFont
 
 
-def dict_coords_to_string(coords):
+def dict_coords_to_string(coords: dict[str, float]) -> str:
     return ",".join(f"{k}={v}" for k, v in coords.items())
 
-
-def string_coords_to_dict(string):
+def string_coords_to_dict(string: str) -> dict[str, float]:
     if not string:
         return {}
     return {s.split("=")[0]: float(s.split("=")[1]) for s in string.split(",")}
 
 
-def google_fonts_has_family(name):
+def google_fonts_has_family(name: str) -> bool:
     url_name = name.replace(" ", "+")
     url = f"https://fonts.google.com/specimen/{url_name}"
     r = requests.get(url)
     return True if r.status_code == 200 else False
 
 
-def download_file(url, dst_path=None, headers={}):
+def download_file(url: str, dst_path: str=None, headers: dict[str, str]={}):
     """Download a file from a url. If no dst_path is specified, store the file
     as a BytesIO object"""
     request = requests.get(url, stream=True, headers=headers)
@@ -53,7 +53,7 @@ def download_file(url, dst_path=None, headers={}):
 
 
 def download_latest_github_release(
-    user, repo, dst=None, github_token=None, ignore_static=True
+    user: str, repo: str, dst: str=None, github_token: str=None, ignore_static: bool=True
 ):
     headers = {}
     if github_token:
@@ -79,7 +79,7 @@ def download_latest_github_release(
     return files
 
 
-def download_google_fonts_family(name, dst=None, ignore_static=True):
+def download_google_fonts_family(name: str, dst: str=None, ignore_static: bool=True):
     """Download a font family from Google Fonts"""
     if not google_fonts_has_family(name):
         raise ValueError(f"No family on Google Fonts named {name}")
@@ -104,7 +104,7 @@ def download_google_fonts_family(name, dst=None, ignore_static=True):
 Image.MAX_IMAGE_PIXELS = None
 
 
-def gen_gifs(dir1, dir2, dst_dir):
+def gen_gifs(dir1:str, dir2: str, dst_dir: str):
     dir1_imgs = set(f for f in os.listdir(dir1) if f.endswith(("jpg", "png")))
     dir2_imgs = set(f for f in os.listdir(dir2) if f.endswith(("jpg", "png")))
     shared_imgs = dir1_imgs & dir2_imgs
@@ -118,18 +118,18 @@ def gen_gifs(dir1, dir2, dst_dir):
         gen_gif(img_a_path, img_b_path, dst)
 
 
-def gen_gif(img_a_path, img_b_path, dst):
+def gen_gif(img_a_path: str, img_b_path: str, dst: str):
     with Image.open(img_a_path) as img_a, Image.open(img_b_path) as img_b:
         img_a.save(dst, save_all=True, append_images=[img_b], loop=10000, duration=1000)
 
 
-def partition(items, size):
+def partition(items: list[any], size: int) -> list[any]:
     """partition([1,2,3,4,5,6], 2) --> [[1,2],[3,4],[5,6]]"""
     return [items[i : i + size] for i in range(0, len(items), size)]
 
 
 @lru_cache()
-def font_sample_text(ttFont):
+def font_sample_text(ttFont: TTFont) -> str:
     """Collect words which exist in the Universal Declaration of Human Rights
     that can be formed using the ttFont instance.
     UDHR has been chosen due to the many languages it covers"""
