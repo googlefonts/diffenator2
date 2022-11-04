@@ -1,0 +1,10 @@
+# Rules
+
+rule proofing
+  command = diffbrowsers proof \$fonts -o \$out/diffbrowsers
+
+# Build rules
+build out: proofing
+  fonts = \$
+      .*/tests/data/MavenPro\[wght\].subset.ttf
+  out = out

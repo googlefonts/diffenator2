@@ -2,7 +2,8 @@
 from __future__ import annotations
 import argparse
 from fontTools.ttLib import TTFont
-from diffenator import run_diffing_tools, run_proofing_tools
+from diffenator import ninja_diff, ninja_proof
+import ninja
 
 
 def main():
@@ -39,11 +40,11 @@ def main():
 
     if args.command == "proof":
         fonts = [TTFont(f) for f in args.fonts]
-        run_proofing_tools(fonts, out=args.out, imgs=args.imgs, filter_styles=args.filter_styles)
+        ninja_proof(fonts, out=args.out, imgs=args.imgs, filter_styles=args.filter_styles)
     elif args.command == "diff":
         fonts_before = [TTFont(f) for f in args.fonts_before]
         fonts_after = [TTFont(f) for f in args.fonts_after]
-        run_diffing_tools(
+        ninja_diff(
             fonts_before,
             fonts_after,
             out=args.out,
@@ -53,6 +54,7 @@ def main():
         )
     else:
         raise NotImplementedError(f"{args.command} not supported")
+    ninja._program("ninja", [])
 
 
 if __name__ == "__main__":
