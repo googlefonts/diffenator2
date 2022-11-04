@@ -18,9 +18,7 @@ def main():
     universal_options_parser.add_argument(
         "--imgs", help="Generate images", action="store_true", default=False
     )
-    universal_options_parser.add_argument(
-        "--filter-styles", default=None
-    )
+    universal_options_parser.add_argument("--filter-styles", default=None)
     proof_parser = subparsers.add_parser(
         "proof",
         parents=[universal_options_parser],
@@ -40,7 +38,9 @@ def main():
 
     if args.command == "proof":
         fonts = [TTFont(f) for f in args.fonts]
-        ninja_proof(fonts, out=args.out, imgs=args.imgs, filter_styles=args.filter_styles)
+        ninja_proof(
+            fonts, out=args.out, imgs=args.imgs, filter_styles=args.filter_styles
+        )
     elif args.command == "diff":
         fonts_before = [TTFont(f) for f in args.fonts_before]
         fonts_after = [TTFont(f) for f in args.fonts_after]

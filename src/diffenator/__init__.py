@@ -1,17 +1,6 @@
-"""
-Diffenator is primarily a visual differ. Its main job is to stop users reporting visual issues to google/fonts.
-
-What should be checked:
-
-- Essential tables e.g OS/2, hhea attribs (Simon seemed keen on this so discuss implementation of this in the context of what I've found here)
-
-Output:
-- A single html page. No images, just pure html and js.
-"""
 from __future__ import annotations
 import logging
 import os
-import ninja
 from ninja.ninja_syntax import Writer
 from diffenator.utils import dict_coords_to_string
 from fontTools.ttLib import TTFont
@@ -21,10 +10,10 @@ logger.setLevel(logging.INFO)
 
 
 def ninja_proof(
-    fonts: list[DFont],
+    fonts: list[TTFont],
     out: str = "out",
     imgs: bool = False,
-    filter_styles: bool =None
+    filter_styles: bool = None,
 ):
     if not os.path.exists(out):
         os.mkdir(out)
@@ -60,7 +49,7 @@ def ninja_diff(
     fonts_before: list[TTFont],
     fonts_after: list[TTFont],
     diffbrowsers: bool = True,
-    diffenator: bool =True,
+    diffenator: bool = True,
     out: str = "out",
     imgs: bool = False,
     user_wordlist: str = None,
@@ -96,19 +85,13 @@ def ninja_diff(
     if diffbrowsers:
         diffbrowsers_out = os.path.join(out, "diffbrowsers")
         db_variables = dict(
-            fonts_before=[
-                os.path.abspath(f.reader.file.name) for f in fonts_before
-            ],
+            fonts_before=[os.path.abspath(f.reader.file.name) for f in fonts_before],
             fonts_after=[os.path.abspath(f.reader.file.name) for f in fonts_after],
             out=diffbrowsers_out,
         )
         if filter_styles:
             db_variables["filters"] = filter_styles
-        w.build(
-            diffbrowsers_out,
-            "diffbrowsers",
-            variables=db_variables
-        )
+        w.build(diffbrowsers_out, "diffbrowsers", variables=db_variables)
     if diffenator:
         for style, font_before, font_after, coords in matcher(
             fonts_before, fonts_after, filter_styles
@@ -123,9 +106,15 @@ def ninja_diff(
                 diff_variables["user_wordlist"] = user_wordlist
             if coords:
                 diff_variables["coords"] = dict_coords_to_string(coords)
-                w.build(os.path.join(out, style), "diffenator-inst", variables=diff_variables)
+                w.build(
+                    os.path.join(out, style),
+                    "diffenator-inst",
+                    variables=diff_variables,
+                )
             else:
-                w.build(os.path.join(out, style), "diffenator", variables=diff_variables)
+                w.build(
+                    os.path.join(out, style), "diffenator", variables=diff_variables
+                )
     w.close()
 
 

@@ -49,7 +49,7 @@ class DFont:
         self.variations = coords
         self.hbFont.set_variations(coords)
 
-    def set_variations_from_font(self, font: any):
+    def set_variations_from_static_font(self, font: any):
         assert "fvar" not in font.ttFont, "Must be a static font"
         name_table = font.ttFont["name"]
         name_to_find = name_table.getBestSubFamilyName()
@@ -82,11 +82,11 @@ def match_fonts(
         return
     elif variations and any([not old_font.is_variable(), new_font.is_variable()]):
         logger.warn(
-            f"Both fonts must be variable fonts in order to use the variables "
-            "option. Matching by stylename instead"
+            f"Both fonts must be variable fonts in order to use the variations argument. "
+            "Matching by stylename instead."
         )
     # Match VFs against statics
     if not old_font.is_variable() and new_font.is_variable():
-        new_font.set_variations_from_font(old_font)
+        new_font.set_variations_from_static_font(old_font)
     elif old_font.is_variable() and not new_font.is_variable():
-        old_font.set_variations_from_font(new_font)
+        old_font.set_variations_from_static_font(new_font)

@@ -107,7 +107,7 @@ def get_font_styles(ttfonts, suffix="", filters=None):
                 res.append(CSSFontStyle(family_name, style_name, coords, suffix))
         else:
             if filters and not any(re.match(f, style_name) for f in filters):
-                continue 
+                continue
             res.append(static_font_style(ttfont, suffix))
     return res
 

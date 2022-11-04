@@ -12,7 +12,7 @@ import tempfile
 class ScreenShotter:
     """Use selenium to take screenshots from local browsers"""
 
-    def __init__(self, width=1280):
+    def __init__(self, width: int = 1280):
 
         self.browsers = self._get_browsers()
         self.width = width
@@ -24,7 +24,7 @@ class ScreenShotter:
         browser_version = meta["browserVersion"]
         return f"{plat}_{browser}_{browser_version}".replace(" ", "-")
 
-    def take(self, url, dst_dir):
+    def take(self, url: str, dst_dir: str):
         for browser in self.browsers:
             browser.get(url)
 
@@ -38,7 +38,7 @@ class ScreenShotter:
             else:
                 self.take_png(url, dst_dir)
 
-    def take_png(self, url, dst_dir, javascript=""):
+    def take_png(self, url: str, dst_dir: str, javascript: str = "") -> list[str]:
         res = []
         for browser in self.browsers:
             file_prefix = self._file_prefix(browser)
@@ -54,7 +54,7 @@ class ScreenShotter:
             res.append(filename)
         return res
 
-    def take_gif(self, url, dst_dir):
+    def take_gif(self, url: str, dst_dir: str):
         before_fp = os.path.join(dst_dir, "before")
         if not os.path.exists(before_fp):
             os.mkdir(before_fp)
@@ -67,7 +67,7 @@ class ScreenShotter:
         self.take_png(url, after_fp, javascript="switchFonts();")
         gen_gifs(before_fp, after_fp, dst_dir)
 
-    def set_width(self, width):
+    def set_width(self, width: int):
         # we don't care about setting height since we will always return a
         # full height screenshot
         self.width = width
@@ -109,7 +109,7 @@ class ScreenShotter:
             browser.quit()
 
 
-def screenshot_dir(dir_fp, out):
+def screenshot_dir(dir_fp: str, out: str):
     """Screenshot a folder of html docs. Walk the damn things"""
     if not os.path.exists(out):
         os.mkdir(out)
@@ -120,7 +120,6 @@ def screenshot_dir(dir_fp, out):
                 continue
             dir_name = os.path.join(out, filename.replace(".html", ""))
             fp = os.path.join(dirpath, filename)
-            # TODO does this work on FF. Works on Chrome and Safari so I think so?
             url = f"file:///{fp}"
             img_prefix_fp = (
                 os.path.relpath(fp, dir_fp)
