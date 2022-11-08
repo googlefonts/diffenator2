@@ -7,6 +7,9 @@ from diffenator.shape import build_words
 import tempfile
 import bz2
 import argparse
+import logging
+
+log = logging.getLogger(__name__)
 
 
 # archive.org has the wikipedia dumps
@@ -80,9 +83,7 @@ def download_xml_files(dl_urls: list[str], dst_dir: str) -> list[str]:
     results = []
     for url in dl_urls:
         dst = os.path.join(dst_dir, os.path.basename(url))
-        print(f"Downloading {url}")
         download_file(url, dst)
-        print(f"extracting {dst}")
         zipfile = bz2.BZ2File(dst)
         newdst = dst[:-4]
         results.append(newdst)
@@ -93,11 +94,16 @@ def download_xml_files(dl_urls: list[str], dst_dir: str) -> list[str]:
 
 def make_wiki_wordlist(script: str, out: str):
     has_script(script)
+    log.info("Finding wikidump download urls.")
     dl_urls = download_urls(script)
+    log.debug(f"Found wiki dump urls {dl_urls} for '{script}' script")
     chars = characters(script)
+    log.debug(f"Following characters are used in the script: {chars}")
 
+    log.info(f"Downloading and extracting {dl_urls}.")
     with tempfile.TemporaryDirectory() as tmp_dir:
         xml_files = download_xml_files(dl_urls, tmp_dir)
+        log.info("building wordlist")
         build_words(xml_files, out, set("".join(chars)))
 
 
@@ -105,8 +111,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("script")
     parser.add_argument("out")
+    parser.add_argument("-v", "--verbose", help="verbose", action="store_true", default=False)
     args = parser.parse_args()
 
+    logging.basicConfig(level="DEBUG" if args.verbose else "INFO", format="%(name)s: %(levelname)s: %(message)s")
     make_wiki_wordlist(args.script, args.out)
 
 
