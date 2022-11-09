@@ -19,7 +19,7 @@ setup(
         "pyahocorasick",
         "selenium>=4.4.3",
         "ninja",
-        "protobuf>=3.19.2",
+        "protobuf>=3.19.2, <=3.20.3",
         "gflanguages",
         "freetype-py",
     ],
