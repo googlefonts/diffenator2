@@ -20,7 +20,7 @@ from threading import Thread
 # functions to build word lists
 
 
-def build_words(fps, out, keep_chars=None):
+def build_words(fps: list[str], out: str, keep_chars: set[str]=None):
     keep_chars |= set("'")  # used for quoting obscure words in wikipedia
     bank = set()
     word_freq = defaultdict(int)
@@ -54,7 +54,7 @@ def build_words(fps, out, keep_chars=None):
         doc.write("\n".join(res))
 
 
-def remove_substring_words(words):
+def remove_substring_words(words:set[str]) -> set[str]:
     res = set()
     auto = ahocorasick.Automaton()
     for word in words:
@@ -117,6 +117,7 @@ class WordDiff(Renderable):
     ot_features: tuple
     lang: str
     direction: str
+    diff_map: list[int]
 
     def __hash__(self):
         return hash((self.string, self.hb_a, self.hb_b, self.ot_features))
@@ -138,6 +139,7 @@ class GlyphDiff(Renderable):
     name: str
     unicode: str
     changed_pixels: float
+    diff_map: list[int]
 
     def __hash__(self):
         return hash((self.string, self.name, self.unicode))
@@ -174,13 +176,13 @@ def test_font_glyphs(font_a, font_b):
     skip_glyphs = missing_glyphs | new_glyphs
     modified_glyphs = []
     for g in same_glyphs:
-        pc = px_diff(font_a, font_b, g)
+        pc, diff_map = px_diff(font_a, font_b, g)
         if pc > 0.000002:
             try:
                 uni_name = uni.name(g)
             except ValueError:
                 uni_name = ""
-            glyph = GlyphDiff(g, uni_name, ord(g), pc)
+            glyph = GlyphDiff(g, uni_name, ord(g), pc, diff_map)
             modified_glyphs.append(glyph)
     modified_glyphs.sort(key=lambda k: k.changed_pixels, reverse=True)
 
@@ -274,7 +276,7 @@ def test_words(
 
             if all(seen_gids[hash_func(i, j)] >= 1 for i, j in zip(infos_b, pos_b)):
                 continue
-            pc = px_diff(
+            pc, diff_map = px_diff(
                 font_a, font_b, word, script=script, lang=lang, features=features
             )
             if pc >= threshold:
@@ -291,6 +293,7 @@ def test_words(
                             tuple(features.keys()),
                             ot_to_html_lang.get((script, lang)),
                             ot_to_dir.get(script, None),
+                            diff_map,
                         ),
                     )
                 )
@@ -331,23 +334,30 @@ def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
     width = min([img_a.width, img_b.width])
     height = min([img_a.height, img_b.height])
     diff_pixels = 0
+    diff_map = []
     for x in range(width):
         for y in range(height):
             px_a = img_a.getpixel((x, y))
             px_b = img_b.getpixel((x, y))
             if px_a != px_b:
                 if isinstance(px_a, int) and isinstance(px_b, int):
-                    diff_pixels += abs(px_a - px_b)
+                    diff_pixel = abs(px_a - px_b)
+                    diff_pixels += diff_pixel
+                    diff_map.append(diff_pixel)
                 else:
-                    diff_pixels += abs(px_a[0] - px_b[0])
-                    diff_pixels += abs(px_a[1] - px_b[1])
-                    diff_pixels += abs(px_a[2] - px_b[2])
-                    diff_pixels += abs(px_a[3] - px_b[3])
+                    diff_pixel += abs(px_a[0] - px_b[0])
+                    diff_pixel += abs(px_a[1] - px_b[1])
+                    diff_pixel += abs(px_a[2] - px_b[2])
+                    diff_pixel += abs(px_a[3] - px_b[3])
+                    diff_pixels += diff_pixel
+                    diff_map.append(diff_pixel)
+            else:
+                diff_map.append(0)
     try:
         pc = diff_pixels / (width * height * 256 * 4)
     except ZeroDivisionError:
         pc = 0
-    return pc
+    return pc, diff_map
 
 
 def main():
