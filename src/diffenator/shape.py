@@ -17,8 +17,9 @@ from jinja2 import pass_environment
 from threading import Thread
 
 
-# functions to build word lists
 NGRAM_SIZE = 4
+THRESHOLD = 0.000002
+
 
 def build_words(fps: list[str], out: str, keep_chars: set[str]=None):
     keep_chars |= set("'")  # used for quoting obscure words in wikipedia
@@ -186,7 +187,7 @@ def test_font_glyphs(font_a, font_b):
     modified_glyphs = []
     for g in same_glyphs:
         pc, diff_map = px_diff(font_a, font_b, g)
-        if pc > 0.000002:
+        if pc > THRESHOLD:
             try:
                 uni_name = uni.name(g)
             except ValueError:
@@ -233,7 +234,7 @@ def test_words(
     font_b,
     skip_glyphs=set(),
     hash_func=gid_pos_hash,
-    threshold=0.000002,
+    threshold=THRESHOLD,
 ):
     res = set()
     from collections import defaultdict
