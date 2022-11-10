@@ -18,7 +18,7 @@ from threading import Thread
 
 
 # functions to build word lists
-
+NGRAM_SIZE = 4
 
 def build_words(fps: list[str], out: str, keep_chars: set[str]=None):
     keep_chars |= set("'")  # used for quoting obscure words in wikipedia
@@ -54,12 +54,21 @@ def build_words(fps: list[str], out: str, keep_chars: set[str]=None):
         doc.write("\n".join(res))
 
 
+def all_ngrams(word):
+    for i in range(len(word)-NGRAM_SIZE):
+        yield word[i:i+NGRAM_SIZE]
+
+
 def remove_substring_words(words:set[str]) -> set[str]:
     res = set()
     auto = ahocorasick.Automaton()
-    for word in words:
+    ngram_auto = ahocorasick.Automaton()
+    for word in sorted(words, key=lambda w: -len(w)):
         auto.add_word(word, word)
-        res.add(word)
+        if not all(ngram in ngram_auto for ngram in all_ngrams(word)):
+            res.add(word)
+        for ngram in all_ngrams(word):
+            ngram_auto.add_word(ngram, ngram)
     auto.make_automaton()
 
     for word in words:
