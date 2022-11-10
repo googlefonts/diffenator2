@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "diffenator2"
+description = "Compare two fonts"
+version = "0.0.1"
+authors = [ "Marc Foley <m.foley.88@gmail.com>" ]
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4.0"
+fontTools = { version = ">=4.37.3", extras = ["ufo"] }
+jinja2 = "*"
+Pillow = "*"
+uharfbuzz = "*"
+pyahocorasick = "*"
+selenium = ">=4.4.3"
+ninja = "*"
+protobuf = ">=3.19.2, <=3.20.3"
+gflanguages = "*"
+freetype-py = "*"
+blackrenderer = {extras = ["skia"], version = "^0.6.0"}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+diffbrowsers = 'diffenator.diffbrowsers:main'
+diffenator = 'diffenator.diffenatorscript:main'
+diffenator2 = 'diffenator.diffenator2:main'
