@@ -1,6 +1,6 @@
 from . import *
 import pytest
-from diffenator.ft_hb_shape import render_text
+from diffenator.renderer import render_text
 from diffenator.font import DFont
 import numpy as np
 

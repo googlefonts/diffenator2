@@ -8,7 +8,7 @@ from lxml import etree
 from lxml import objectify
 import uharfbuzz as hb
 import os
-from diffenator.ft_hb_shape import render_text
+from diffenator.renderer import Renderer
 from pkg_resources import resource_filename
 from jinja2 import pass_environment
 from threading import Thread
@@ -119,8 +119,9 @@ def test_font_glyphs(font_a, font_b):
     same_glyphs = cmap_a & cmap_b
     skip_glyphs = missing_glyphs | new_glyphs
     modified_glyphs = []
+    differ = PixelDiffer(font_a, font_b)
     for g in same_glyphs:
-        pc, diff_map = px_diff(font_a, font_b, g)
+        pc, diff_map = differ.diff(g)
         if pc > THRESHOLD:
             try:
                 uni_name = uni.name(g)
@@ -174,6 +175,8 @@ def test_words(
     from collections import defaultdict
 
     seen_gids = defaultdict(int)
+
+    differ = PixelDiffer(font_a, font_b)
     with open(word_file, encoding="utf8") as doc:
         words = doc.read().split("\n")
         print(f"testing {len(words)} words")
@@ -190,28 +193,17 @@ def test_words(
             if any(c.string in word for c in skip_glyphs):
                 continue
 
-            buf_a = hb.Buffer()
-            if script:
-                buf_a.script = script
-            if lang:
-                buf_a.language = lang
-            buf_a.add_str(word)
-            buf_a.guess_segment_properties()
-            hb.shape(font_a.hbFont, buf_a, features=features)
+            differ.set_script(script)
+            differ.set_lang(lang)
+            differ.set_features(features)
+
+            buf_a = differ.renderer_a.shape(word)
+            buf_b = differ.renderer_b.shape(word)
 
             infos_a = buf_a.glyph_infos
             pos_a = buf_a.glyph_positions
             hb_a = "".join(hash_func(i, j) for i, j in zip(infos_a, pos_a))
             word_a = Word(word, hb_a)
-
-            buf_b = hb.Buffer()
-            if script:
-                buf_b.script = script
-            if lang:
-                buf_b.language = lang
-            buf_b.add_str(word)
-            buf_b.guess_segment_properties()
-            hb.shape(font_b.hbFont, buf_b, features=features)
 
             infos_b = buf_b.glyph_infos
             pos_b = buf_b.glyph_positions
@@ -220,9 +212,9 @@ def test_words(
 
             if all(seen_gids[hash_func(i, j)] >= 1 for i, j in zip(infos_b, pos_b)):
                 continue
-            pc, diff_map = px_diff(
-                font_a, font_b, word, script=script, lang=lang, features=features
-            )
+
+            pc, diff_map = differ.diff(word)
+
             if pc >= threshold:
                 for i, j in zip(infos_b, pos_b):
                     h = hash_func(i, j)
@@ -244,61 +236,74 @@ def test_words(
     return [w[1] for w in sorted(res, key=lambda k: k[0], reverse=True)]
 
 
-def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
-    pc = 0.0
-    if hasattr(font_a, "variations"):
-        variations_a = font_a.variations
-    else:
-        variations_a = None
+@dataclass
+class PixelDiffer:
+    font_a: DFont
+    font_b: DFont
+    script=None
+    lang=None
+    features=None
 
-    if hasattr(font_b, "variations"):
-        variations_b = font_b.variations
-    else:
-        variations_b = None
-    img_a = render_text(
-        font_a,
-        string,
-        fontSize=3,  # 3pt really is enough!
-        margin=0,
-        features=features,
-        script=script,
-        lang=lang,
-        variations=variations_a,
-    )
-    img_b = render_text(
-        font_b,
-        string,
-        fontSize=3,
-        margin=0,
-        features=features,
-        script=script,
-        lang=lang,
-        variations=variations_b,
-    )
-    width = min([img_a.width, img_b.width])
-    height = min([img_a.height, img_b.height])
-    diff_pixels = 0
-    diff_map = []
-    for x in range(width):
-        for y in range(height):
-            px_a = img_a.getpixel((x, y))
-            px_b = img_b.getpixel((x, y))
-            if px_a != px_b:
-                if isinstance(px_a, int) and isinstance(px_b, int):
-                    diff_pixel = abs(px_a - px_b)
-                    diff_pixels += diff_pixel
-                    diff_map.append(diff_pixel)
+    def __post_init__(self):
+        self.renderer_a = Renderer(
+            self.font_a,
+            font_size=3,
+            margin=0,
+            features=self.features,
+            script=self.script,
+            lang=self.lang,
+            variations=getattr(self.font_a, "variations", None)
+        )
+        self.renderer_b = Renderer(
+            self.font_b,
+            font_size=3,
+            margin=0,
+            features=self.features,
+            script=self.script,
+            lang=self.lang,
+            variations=getattr(self.font_b, "variations", None)
+        )
+
+    def set_script(self, script):
+        self.renderer_a.script = script
+        self.renderer_b.script = script
+
+    def set_lang(self, lang):
+        self.renderer_a.lang = lang
+        self.renderer_b.lang = lang
+
+    def set_features(self, features):
+        self.renderer_a.features = features
+        self.renderer_b.features = features
+
+    def diff(self, string):
+        pc = 0.0
+        img_a = self.renderer_a.render(string)
+        img_b = self.renderer_b.render(string)
+        width = min([img_a.width, img_b.width])
+        height = min([img_a.height, img_b.height])
+        diff_pixels = 0
+        diff_map = []
+        for x in range(width):
+            for y in range(height):
+                px_a = img_a.getpixel((x, y))
+                px_b = img_b.getpixel((x, y))
+                if px_a != px_b:
+                    if isinstance(px_a, int) and isinstance(px_b, int):
+                        diff_pixel = abs(px_a - px_b)
+                        diff_pixels += diff_pixel
+                        diff_map.append(diff_pixel)
+                    else:
+                        diff_pixel += abs(px_a[0] - px_b[0])
+                        diff_pixel += abs(px_a[1] - px_b[1])
+                        diff_pixel += abs(px_a[2] - px_b[2])
+                        diff_pixel += abs(px_a[3] - px_b[3])
+                        diff_pixels += diff_pixel
+                        diff_map.append(diff_pixel)
                 else:
-                    diff_pixel += abs(px_a[0] - px_b[0])
-                    diff_pixel += abs(px_a[1] - px_b[1])
-                    diff_pixel += abs(px_a[2] - px_b[2])
-                    diff_pixel += abs(px_a[3] - px_b[3])
-                    diff_pixels += diff_pixel
-                    diff_map.append(diff_pixel)
-            else:
-                diff_map.append(0)
-    try:
-        pc = diff_pixels / (width * height * 256 * 4)
-    except ZeroDivisionError:
-        pc = 0
-    return pc, diff_map
+                    diff_map.append(0)
+        try:
+            pc = diff_pixels / (width * height * 256 * 4)
+        except ZeroDivisionError:
+            pc = 0
+        return pc, diff_map
