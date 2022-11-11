@@ -4,28 +4,30 @@ from collections import defaultdict
 import ahocorasick
 
 
-NGRAM_SIZE = 4
+DEFAULT_NGRAM_SIZE = 4
 
 
-def all_ngrams(word):
-    for i in range(len(word)-NGRAM_SIZE):
-        yield word[i:i+NGRAM_SIZE]
+def all_ngrams(word, size=None):
+    if size is None:
+      size = DEFAULT_NGRAM_SIZE
+    for i in range(len(word)-size):
+        yield word[i:i+size]
 
 
-def maybe_add_word(bank, word, ngram_auto, keep_chars: set[str]=None):
+def maybe_add_word(bank, word, ngram_set, keep_chars: set[str]=None, size=None):
     if word in bank:
       return False
 
     if keep_chars and not all(c in keep_chars for c in word):
       return False
 
-    if all(ngram in ngram_auto for ngram in all_ngrams(word)):
+    if all(ngram in ngram_set for ngram in all_ngrams(word, size=size)):
       return False
 
     bank.add(word)
 
-    for ngram in all_ngrams(word):
-        ngram_auto.add_word(ngram, ngram)
+    for ngram in all_ngrams(word,size=size):
+        ngram_set.add(ngram)
     return True
 
 
@@ -33,7 +35,7 @@ def build_words(fps: list[str], out: str, keep_chars: set[str]=None):
     keep_chars |= set("'")  # used for quoting obscure words in wikipedia
     bank = set()
     seen_keep_chars = set()
-    ngram_auto = ahocorasick.Automaton()
+    ngram_set = set()
     for fp in fps:
         with open(fp) as doc:
             # This is memory effecient. We do not want to use doc.read()
@@ -42,7 +44,7 @@ def build_words(fps: list[str], out: str, keep_chars: set[str]=None):
                 words = line.split()
                 for word in words:
                     word = word.replace("'", "")  # remove the quote marks
-                    if maybe_add_word(bank, word, ngram_auto, keep_chars):
+                    if maybe_add_word(bank, word, ngram_set, keep_chars):
                         seen_keep_chars |= set(word)
 
     unseen_keep_chars = keep_chars - seen_keep_chars
