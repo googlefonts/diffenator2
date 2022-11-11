@@ -118,7 +118,6 @@ class Renderer:
             pen.y += pos.y_advance
 
         L = np.zeros((ymax - ymin, xmax - xmin), dtype=np.ubyte)
-        previous = 0
         pen.x, pen.y = 0, 0
         for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
             bitmap = get_cached_bitmap(ft_face, glyph.codepoint, self.cache)
@@ -201,7 +200,6 @@ class PixelDiffer:
         self.renderer_b.features = features
 
     def diff(self, string):
-        pc = 0.0
         img_a = self.renderer_a.render(string)
         img_b = self.renderer_b.render(string)
         width = min([img_a.width, img_b.width])

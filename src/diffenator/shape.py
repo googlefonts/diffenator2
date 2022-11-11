@@ -3,14 +3,11 @@ Check fonts for shaping regressions using real words.
 """
 from __future__ import annotations
 from dataclasses import dataclass
-from lxml import etree
-from lxml import objectify
 import uharfbuzz as hb
 import os
 from diffenator.renderer import PixelDiffer
 from diffenator.template_elements import WordDiff, Glyph, GlyphDiff
 from pkg_resources import resource_filename
-from threading import Thread
 import tqdm
 
 
@@ -23,8 +20,8 @@ def gid_pos_hash(info, pos):
     return f"gid={info.codepoint}, pos={pos.position}<br>"
 
 
-def gid_hash(info, _):
-    return f"gid={info.codepoint}<br>"
+# def gid_hash(info, _):
+#     return f"gid={info.codepoint}<br>"
 
 
 ot_to_html_lang = {
@@ -141,7 +138,6 @@ def test_words(
         print(f"testing {len(words)} words")
         word_total = len(words)
         for i, line in tqdm.tqdm(enumerate(words), total=word_total):
-            skip_px = False
             items = line.split(",")
             try:
                 word, script, lang, features = items[0], items[1], items[2], items[3:]

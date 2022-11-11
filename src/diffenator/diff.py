@@ -1,6 +1,5 @@
 from __future__ import annotations
-from diffenator.shape import test_words
-from diffenator.shape import test_fonts
+from diffenator.shape import test_words, test_fonts
 from diffenator.font import DFont
 from diffenator import jfont
 from diffenator.html import diffenator_report

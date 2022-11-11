@@ -118,7 +118,6 @@ def screenshot_dir(dir_fp: str, out: str):
         for filename in filenames:
             if not filename.endswith(".html") or "diffenator" in filename:
                 continue
-            dir_name = os.path.join(out, filename.replace(".html", ""))
             fp = os.path.join(dirpath, filename)
             url = f"file:///{fp}"
             img_prefix_fp = (

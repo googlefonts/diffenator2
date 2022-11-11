@@ -1,5 +1,4 @@
 import argparse
-from collections import defaultdict
 
 import ahocorasick
 
@@ -72,7 +71,7 @@ def remove_substring_words(words:set[str]) -> set[str]:
     auto.make_automaton()
 
     for word in words:
-        for end_ind, found in auto.iter(word):
+        for _, found in auto.iter(word):
             if word != found:
                 try:
                     res.remove(found)
