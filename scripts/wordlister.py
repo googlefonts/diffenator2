@@ -3,7 +3,7 @@ import requests
 from gflanguages import LoadLanguages, LoadScripts
 from functools import lru_cache
 from diffenator.utils import download_file
-from diffenator.shape import build_words
+from diffenator.wordlistbuilder import build_words
 import tempfile
 import bz2
 import argparse
