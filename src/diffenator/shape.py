@@ -115,8 +115,8 @@ def test_fonts(font_a, font_b):
 def test_font_glyphs(font_a, font_b):
     cmap_a = set(chr(c) for c in font_a.ttFont.getBestCmap())
     cmap_b = set(chr(c) for c in font_b.ttFont.getBestCmap())
-    missing_glyphs = set(Glyph(c, uni.name(c), ord(c)) for c in cmap_a - cmap_b)
-    new_glyphs = set(Glyph(c, uni.name(c), ord(c)) for c in cmap_b - cmap_a)
+    missing_glyphs = set(Glyph(c, uni.name(c), "U+%04X" % ord(c)) for c in cmap_a - cmap_b)
+    new_glyphs = set(Glyph(c, uni.name(c), "U+%04X" % ord(c)) for c in cmap_b - cmap_a)
     same_glyphs = cmap_a & cmap_b
     skip_glyphs = missing_glyphs | new_glyphs
     modified_glyphs = []
@@ -128,7 +128,7 @@ def test_font_glyphs(font_a, font_b):
                 uni_name = uni.name(g)
             except ValueError:
                 uni_name = ""
-            glyph = GlyphDiff(g, uni_name, ord(g), pc, diff_map)
+            glyph = GlyphDiff(g, uni_name, "U+%04X" % ord(g), pc, diff_map)
             modified_glyphs.append(glyph)
     modified_glyphs.sort(key=lambda k: k.changed_pixels, reverse=True)
 
