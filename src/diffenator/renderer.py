@@ -213,21 +213,13 @@ class PixelDiffer:
             for y in range(height):
                 px_a = img_a.getpixel((x, y))
                 px_b = img_b.getpixel((x, y))
-                if px_a != px_b:
-                    if isinstance(px_a, int) and isinstance(px_b, int):
-                        diff_pixel = abs(px_a - px_b)
-                        diff_pixels += diff_pixel
-                        diff_map.append(diff_pixel)
-                    else:
-                        channels = 4
-                        diff_pixel += abs(px_a[0] - px_b[0])
-                        diff_pixel += abs(px_a[1] - px_b[1])
-                        diff_pixel += abs(px_a[2] - px_b[2])
-                        diff_pixel += abs(px_a[3] - px_b[3])
-                        diff_pixels += diff_pixel
-                        diff_map.append(diff_pixel)
+                if isinstance(px_a, int) and isinstance(px_b, int):
+                    diff_pixel = abs(px_a - px_b)
                 else:
-                    diff_map.append(0)
+                    diff_pixel = sum(abs(a-b) for a,b in zip(px_a, px_b))
+                    channels = 4
+                diff_pixels += diff_pixel
+                diff_map.append(diff_pixel)
         try:
             pc = 100 * diff_pixels / (width * height * 256 * channels)
         except ZeroDivisionError:
