@@ -20,6 +20,7 @@ from PIL import Image
 from gflanguages import LoadLanguages
 from functools import lru_cache
 import requests
+from urllib.request import urlretrieve
 import os
 from zipfile import ZipFile
 from io import BytesIO
@@ -46,11 +47,10 @@ def google_fonts_has_family(name: str) -> bool:
 def download_file(url: str, dst_path: str = None, headers: dict[str, str] = {}):
     """Download a file from a url. If no dst_path is specified, store the file
     as a BytesIO object"""
-    request = requests.get(url, stream=True, headers=headers)
     if not dst_path:
+        request = requests.get(url, stream=True, headers=headers)
         return BytesIO(request.content)
-    with open(dst_path, "wb") as downloaded_file:
-        downloaded_file.write(request.content)
+    urlretrieve(url, dst_path)
 
 
 def download_latest_github_release(
