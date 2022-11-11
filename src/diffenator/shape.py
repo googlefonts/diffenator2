@@ -12,6 +12,7 @@ from diffenator.renderer import Renderer
 from pkg_resources import resource_filename
 from jinja2 import pass_environment
 from threading import Thread
+import tqdm
 
 
 THRESHOLD = 0.000002
@@ -181,7 +182,7 @@ def test_words(
         words = doc.read().split("\n")
         print(f"testing {len(words)} words")
         word_total = len(words)
-        for i, line in enumerate(words):
+        for i, line in tqdm.tqdm(enumerate(words), total=word_total):
             skip_px = False
             items = line.split(",")
             try:
