@@ -92,7 +92,6 @@ class Renderer:
 
 
     def render_text_ft(self, text: str):
-        # TODO image is currently flipped vertically.
         ft_face = self.font.ftFont
         ft_face.set_char_size(self.font_size * 64)
         buf = self.shape(text)
@@ -128,7 +127,7 @@ class Renderer:
                 data.extend(bitmap.buffer[j * bitmap.pitch : j * bitmap.pitch + bitmap.width])
             if len(data):
                 Z = np.array(data, dtype=np.ubyte).reshape(bitmap.rows, bitmap.width)
-                L[y : y + bitmap.rows, x : x + bitmap.width] |= Z[::-1, ::1]
+                L[y : y + bitmap.rows, x : x + bitmap.width] |= Z
             pen.x += pos.x_advance
             pen.y += pos.y_advance
         return Image.fromarray(L)
