@@ -158,15 +158,18 @@ def test_words(
             word_a = Word.from_buffer(word, buf_a)
             word_b = Word.from_buffer(word, buf_b)
 
-            if all(seen_gids[hash_func(i, j)] >= 1 for i, j in zip(buf_b.glyph_infos, buf_b.glyph_positions)):
+            gid_hashes = [hash_func(i, j) for i, j in zip(buf_b.glyph_infos, buf_b.glyph_positions)]
+            # I'm not entirely convinced this is a valid test; but it seems to
+            # work and speeds things up a lot...
+            if all(gid_hash in seen_gids for gid_hash in gid_hashes):
                 continue
 
             pc, diff_map = differ.diff(word)
 
-            if pc >= threshold:
-                for i, j in zip(buf_b.glyph_infos, buf_b.glyph_positions):
-                    h = hash_func(i, j)
-                    seen_gids[h] += 1
+            for gid_hash in gid_hashes:
+                seen_gids[gid_hash] = True
+
+            if pc >= THRESHOLD:
                 res.add(
                     (
                         pc,
