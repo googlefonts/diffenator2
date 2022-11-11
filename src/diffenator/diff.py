@@ -20,7 +20,7 @@ class DiffFonts:
         self.tables = jfont.Diff(self.old_font.jFont, self.new_font.jFont)
 
     def diff_strings(self, fp):
-        self.strings = test_words(fp, self.old_font, self.new_font, threshold=0.000002)
+        self.strings = test_words(fp, self.old_font, self.new_font, threshold=0.5)
 
     def diff_words(self):
         self.glyph_diff = test_fonts(self.old_font, self.new_font)
