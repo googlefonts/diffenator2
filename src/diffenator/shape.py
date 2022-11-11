@@ -2,85 +2,19 @@
 Check fonts for shaping regressions using real words.
 """
 from __future__ import annotations
-import argparse
 import unicodedata2 as uni
 from dataclasses import dataclass
 from lxml import etree
 from lxml import objectify
-from collections import defaultdict
 import uharfbuzz as hb
 import os
 from diffenator.ft_hb_shape import render_text
 from pkg_resources import resource_filename
-import ahocorasick
 from jinja2 import pass_environment
 from threading import Thread
 
 
-NGRAM_SIZE = 4
 THRESHOLD = 0.000002
-
-
-def build_words(fps: list[str], out: str, keep_chars: set[str]=None):
-    keep_chars |= set("'")  # used for quoting obscure words in wikipedia
-    bank = set()
-    word_freq = defaultdict(int)
-    seen_keep_chars = set()
-    for fp in fps:
-        with open(fp) as doc:
-            # This is memory effecient. We do not want to use doc.read()
-            # since this will try and load the whole file into memory
-            for line in doc:
-                words = line.split()
-                for word in words:
-                    word = word.replace("'", "")  # remove the quote marks
-                    if keep_chars and all(c in keep_chars for c in word):
-                        word_freq[word] += 1
-                        seen_keep_chars |= set(word)
-                        bank.add(word)
-
-    unseen_keep_chars = keep_chars - seen_keep_chars
-    unseen_count = len(unseen_keep_chars)
-    print(
-        f"Following {unseen_count}/{len(keep_chars)} characters not seen in any words {unseen_keep_chars}."
-    )
-
-    words = remove_substring_words(bank)
-    res = set()
-    for word in words:
-        # if word_freq[word] <= 2:
-        #    continue
-        res.add(word)
-    with open(out, "w", encoding="utf8") as doc:
-        doc.write("\n".join(res))
-
-
-def all_ngrams(word):
-    for i in range(len(word)-NGRAM_SIZE):
-        yield word[i:i+NGRAM_SIZE]
-
-
-def remove_substring_words(words:set[str]) -> set[str]:
-    res = set()
-    auto = ahocorasick.Automaton()
-    ngram_auto = ahocorasick.Automaton()
-    for word in sorted(words, key=lambda w: -len(w)):
-        auto.add_word(word, word)
-        if not all(ngram in ngram_auto for ngram in all_ngrams(word)):
-            res.add(word)
-        for ngram in all_ngrams(word):
-            ngram_auto.add_word(ngram, ngram)
-    auto.make_automaton()
-
-    for word in words:
-        for end_ind, found in auto.iter(word):
-            if word != found:
-                try:
-                    res.remove(found)
-                except:
-                    all
-    return res
-
 
 # Functions to test word lists
 
@@ -368,27 +302,3 @@ def px_diff(font_a, font_b, string, script=None, lang=None, features=None):
     except ZeroDivisionError:
         pc = 0
     return pc, diff_map
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(required=True, dest="cmd")
-
-    build = subparsers.add_parser("build")
-    build.add_argument(
-        "input_files", nargs="+", help="Text files to extract words from"
-    )
-    build.add_argument("--glyphs", "-g", required=True)
-    build.add_argument("-o", "--out", default="out.txt")
-
-    args = parser.parse_args()
-
-    if args.cmd == "build":
-        glyphs = None if not args.glyphs else set(args.glyphs)
-        build_words(args.input_files, args.out, glyphs)
-    else:
-        raise ValueError(f"{args.cmd} unsupported command")
-
-
-if __name__ == "__main__":
-    main()
