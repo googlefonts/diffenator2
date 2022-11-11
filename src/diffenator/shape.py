@@ -15,7 +15,7 @@ from threading import Thread
 import tqdm
 
 
-THRESHOLD = 0.000002
+THRESHOLD = 0.5  # Percent difference
 
 
 # Hashing strategies for elements of a Harfbuzz buffer

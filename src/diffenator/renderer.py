@@ -203,6 +203,7 @@ class PixelDiffer:
         height = min([img_a.height, img_b.height])
         diff_pixels = 0
         diff_map = []
+        channels = 1
         for x in range(width):
             for y in range(height):
                 px_a = img_a.getpixel((x, y))
@@ -213,6 +214,7 @@ class PixelDiffer:
                         diff_pixels += diff_pixel
                         diff_map.append(diff_pixel)
                     else:
+                        channels = 4
                         diff_pixel += abs(px_a[0] - px_b[0])
                         diff_pixel += abs(px_a[1] - px_b[1])
                         diff_pixel += abs(px_a[2] - px_b[2])
@@ -222,7 +224,7 @@ class PixelDiffer:
                 else:
                     diff_map.append(0)
         try:
-            pc = diff_pixels / (width * height * 256 * 4)
+            pc = 100 * diff_pixels / (width * height * 256 * channels)
         except ZeroDivisionError:
             pc = 0
         return pc, diff_map
