@@ -34,6 +34,8 @@ class Renderer:
 
     def shape(self, text, scale=True):
         hb_font = self.font.hbFont
+        if self.variations:
+            hb_font.set_variations(self.variations)
         if scale:
             hb_font.scale = (self.font_size * 64, self.font_size * 64)
 
@@ -47,8 +49,6 @@ class Renderer:
             buf.script = self.script
         if self.lang:
             buf.language = self.lang
-        if self.variations:
-            self.font.setLocation(variations)
 
         hb.shape(hb_font, buf, self.features)
         return buf
@@ -61,9 +61,12 @@ class Renderer:
 
     def render_text_cairo(self, text):
         font = self.font.blackFont
-        glyphNames = self.font.glyphNames
+        glyphNames = font.glyphNames
 
-        scaleFactor = self.font_size / self.font.unitsPerEm
+        scaleFactor = self.font_size / font.unitsPerEm
+        if self.variations:
+            font.setLocation(self.variations)
+
         buf = self.shape(text, scale=False)
 
         infos = buf.glyph_infos
@@ -71,11 +74,13 @@ class Renderer:
         glyphLine = buildGlyphLine(infos, positions, glyphNames)
         bounds = calcGlyphLineBounds(glyphLine, font)
         bounds = scaleRect(bounds, scaleFactor, scaleFactor)
-        bounds = insetRect(bounds, -margin, -margin)
+        bounds = insetRect(bounds, -self.margin, -self.margin)
         bounds = intRect(bounds)
         surfaceClass = getSurfaceClass("skia", ".png")
 
         surface = surfaceClass()
+        if bounds[2] == 0 and bounds[3] == 0:
+            return Image.new("RGBA", (0,0))
         with surface.canvas(bounds) as canvas:
             canvas.scale(scaleFactor)
             for glyph in glyphLine:
