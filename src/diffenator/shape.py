@@ -9,8 +9,8 @@ from lxml import objectify
 import uharfbuzz as hb
 import os
 from diffenator.renderer import PixelDiffer
+from diffenator.template_elements import WordDiff, Glyph, GlyphDiff
 from pkg_resources import resource_filename
-from jinja2 import pass_environment
 from threading import Thread
 import tqdm
 
@@ -43,14 +43,6 @@ ot_to_html_lang = {
 ot_to_dir = {None: "ltr", "arab": "rlt", "hebr": "rtl"}
 
 
-class Renderable:
-    @pass_environment
-    def render(self, jinja):
-        classname = self.__class__.__name__
-        template = jinja.get_template(f"{classname}.partial.html")
-        return template.render(self.__dict__)
-
-
 @dataclass
 class Word:
     string: str
@@ -68,42 +60,6 @@ class Word:
 
     def __hash__(self):
         return hash((self.string, self.hb))
-
-
-@dataclass
-class WordDiff(Renderable):
-    string: str
-    hb_a: str
-    hb_b: str
-    ot_features: tuple
-    lang: str
-    direction: str
-    diff_map: list[int]
-
-    def __hash__(self):
-        return hash((self.string, self.hb_a, self.hb_b, self.ot_features))
-
-
-@dataclass
-class Glyph(Renderable):
-    string: str
-    name: str
-    unicode: str
-
-    def __hash__(self):
-        return hash((self.string, self.name, self.unicode))
-
-
-@dataclass
-class GlyphDiff(Renderable):
-    string: str
-    name: str
-    unicode: str
-    changed_pixels: float
-    diff_map: list[int]
-
-    def __hash__(self):
-        return hash((self.string, self.name, self.unicode))
 
 
 @dataclass

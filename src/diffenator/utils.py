@@ -169,3 +169,11 @@ def font_sample_text(ttFont: TTFont) -> str:
                 for key, text in proto.sample_text.ListFields():
                     _add_words(words, text, seen_chars)
     return words
+
+
+def font_family_name(ttFont, suffix=""):
+    familyname = ttFont["name"].getBestFamilyName()
+    if suffix:
+        return f"{suffix} {familyname}"
+    else:
+        return familyname

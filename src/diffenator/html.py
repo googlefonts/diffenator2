@@ -1,12 +1,11 @@
 """
 """
 from __future__ import annotations
-from dataclasses import dataclass, field
 from jinja2 import Environment, FileSystemLoader
 from fontTools.ttLib import TTFont
 import os
 import shutil
-from diffenator.shape import Renderable
+from diffenator.template_elements import CSSFontStyle, CSSFontFace
 from diffenator.utils import font_sample_text
 import re
 
@@ -23,70 +22,6 @@ WIDTH_CLASS_TO_CSS = {
     9: "200",
 }
 
-
-@dataclass
-class CSSFontFace(Renderable):
-    ttfont: TTFont
-    suffix: str = ""
-    filename: str = field(init=False)
-    familyname: str = field(init=False)
-    classname: str = field(init=False)
-
-    def __post_init__(self):
-        ttf_filename = os.path.basename(self.ttfont.reader.file.name)
-        if self.suffix:
-            self.filename = f"{self.suffix}-{ttf_filename}"
-        else:
-            self.filename = ttf_filename
-        self.cssfamilyname = _family_name(self.ttfont, self.suffix)
-        self.stylename = self.ttfont["name"].getBestSubFamilyName()
-        self.classname = self.cssfamilyname.replace(" ", "-")
-        self.font_style = "normal" if "Italic" not in self.stylename else "italic"
-
-        if "fvar" in self.ttfont:
-            fvar = self.ttfont["fvar"]
-            axes = {a.axisTag: a for a in fvar.axes}
-            if "wght" in axes:
-                min_weight = int(axes["wght"].minValue)
-                max_weight = int(axes["wght"].maxValue)
-                self.font_weight = f"{min_weight} {max_weight}"
-            if "wdth" in axes:
-                min_width = int(axes["wdth"].minValue)
-                max_width = int(axes["wdth"].maxValue)
-                self.font_stretch = f"{min_width}% {max_width}%"
-            if "ital" in axes:
-                pass
-            if "slnt" in axes:
-                min_angle = int(axes["slnt"].minValue)
-                max_angle = int(axes["slnt"].maxValue)
-                self.font_style = f"oblique {min_angle}deg {max_angle}deg"
-
-
-def _family_name(ttFont, suffix=""):
-    familyname = ttFont["name"].getBestFamilyName()
-    if suffix:
-        return f"{suffix} {familyname}"
-    else:
-        return familyname
-
-
-@dataclass
-class CSSFontStyle(Renderable):
-    familyname: str
-    stylename: str
-    coords: dict
-    suffix: str = ""
-
-    def __post_init__(self):
-        self.full_name = f"{self.familyname} {self.stylename}"
-        if self.suffix:
-            self.cssfamilyname = f"{self.suffix} {self.familyname}"
-            self.class_name = (
-                f"{self.suffix} {self.familyname} {self.stylename}".replace(" ", "-")
-            )
-        else:
-            self.cssfamilyname = self.familyname
-            self.class_name = f"{self.familyname} {self.stylename}".replace(" ", "-")
 
 
 def get_font_styles(ttfonts, suffix="", filters=None):
