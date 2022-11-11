@@ -78,16 +78,14 @@ class CSSFontStyle(Renderable):
     suffix: str = ""
 
     def __post_init__(self):
-        if self.suffix:
-            self.cssfamilyname = f"{self.suffix} {self.familyname}"
-        else:
-            self.cssfamilyname = self.familyname
         self.full_name = f"{self.familyname} {self.stylename}"
         if self.suffix:
+            self.cssfamilyname = f"{self.suffix} {self.familyname}"
             self.class_name = (
                 f"{self.suffix} {self.familyname} {self.stylename}".replace(" ", "-")
             )
         else:
+            self.cssfamilyname = self.familyname
             self.class_name = f"{self.familyname} {self.stylename}".replace(" ", "-")
 
 
