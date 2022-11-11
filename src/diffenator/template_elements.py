@@ -3,6 +3,7 @@ import os
 
 from fontTools.ttLib import TTFont
 from jinja2 import pass_environment
+import unicodedata2 as uni
 
 from .utils import font_family_name
 
@@ -31,8 +32,17 @@ class WordDiff(Renderable):
 @dataclass
 class Glyph(Renderable):
     string: str
-    name: str
-    unicode: str
+    name: str=None
+    unicode: str=None
+
+    def __post_init__(self):
+        if self.name is None:
+            try:
+                self.name = uni.name(self.string)
+            except Exception:
+                self.name = ""
+        if self.unicode is None:
+            self.unicode = "U+%04X" % ord(self.string)
 
     def __hash__(self):
         return hash((self.string, self.name, self.unicode))
@@ -41,10 +51,19 @@ class Glyph(Renderable):
 @dataclass
 class GlyphDiff(Renderable):
     string: str
-    name: str
-    unicode: str
     changed_pixels: float
     diff_map: list[int]
+    name: str=None
+    unicode: str=None
+
+    def __post_init__(self):
+        if self.name is None:
+            try:
+                self.name = uni.name(self.string)
+            except Exception:
+                self.name = ""
+        if self.unicode is None:
+            self.unicode = "U+%04X" % ord(self.string)
 
     def __hash__(self):
         return hash((self.string, self.name, self.unicode))
