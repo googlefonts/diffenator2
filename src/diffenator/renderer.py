@@ -155,6 +155,79 @@ def get_cached_bitmap(ft_face, codepoint, cache):
     return cache[codepoint]
 
 
+@dataclass
+class PixelDiffer:
+    font_a: DFont
+    font_b: DFont
+    script=None
+    lang=None
+    features=None
+
+    def __post_init__(self):
+        self.renderer_a = Renderer(
+            self.font_a,
+            font_size=3,
+            margin=0,
+            features=self.features,
+            script=self.script,
+            lang=self.lang,
+            variations=getattr(self.font_a, "variations", None)
+        )
+        self.renderer_b = Renderer(
+            self.font_b,
+            font_size=3,
+            margin=0,
+            features=self.features,
+            script=self.script,
+            lang=self.lang,
+            variations=getattr(self.font_b, "variations", None)
+        )
+
+    def set_script(self, script):
+        self.renderer_a.script = script
+        self.renderer_b.script = script
+
+    def set_lang(self, lang):
+        self.renderer_a.lang = lang
+        self.renderer_b.lang = lang
+
+    def set_features(self, features):
+        self.renderer_a.features = features
+        self.renderer_b.features = features
+
+    def diff(self, string):
+        pc = 0.0
+        img_a = self.renderer_a.render(string)
+        img_b = self.renderer_b.render(string)
+        width = min([img_a.width, img_b.width])
+        height = min([img_a.height, img_b.height])
+        diff_pixels = 0
+        diff_map = []
+        for x in range(width):
+            for y in range(height):
+                px_a = img_a.getpixel((x, y))
+                px_b = img_b.getpixel((x, y))
+                if px_a != px_b:
+                    if isinstance(px_a, int) and isinstance(px_b, int):
+                        diff_pixel = abs(px_a - px_b)
+                        diff_pixels += diff_pixel
+                        diff_map.append(diff_pixel)
+                    else:
+                        diff_pixel += abs(px_a[0] - px_b[0])
+                        diff_pixel += abs(px_a[1] - px_b[1])
+                        diff_pixel += abs(px_a[2] - px_b[2])
+                        diff_pixel += abs(px_a[3] - px_b[3])
+                        diff_pixels += diff_pixel
+                        diff_map.append(diff_pixel)
+                else:
+                    diff_map.append(0)
+        try:
+            pc = diff_pixels / (width * height * 256 * 4)
+        except ZeroDivisionError:
+            pc = 0
+        return pc, diff_map
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Draw some text")
     parser.add_argument("font", metavar="TTF")
