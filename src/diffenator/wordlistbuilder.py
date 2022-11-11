@@ -10,7 +10,7 @@ DEFAULT_NGRAM_SIZE = 4
 def all_ngrams(word, size=None):
     if size is None:
       size = DEFAULT_NGRAM_SIZE
-    for i in range(len(word)-size):
+    for i in range(max(1,len(word)-size)):
         yield word[i:i+size]
 
 
