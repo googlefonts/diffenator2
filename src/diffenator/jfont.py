@@ -84,11 +84,10 @@ def TTJ(ttFont):
     return _TTJ(ttFont, root)
 
 
-def _TTJ(obj, root=None):
+def _TTJ(obj, root=None,depth=1):
     """Convert a TTFont to Basic python types"""
     if isinstance(obj, (float, int, str, bool)):
         return obj
-
     # custom
     elif isinstance(obj, table__n_a_m_e):
         return serialise_name_table(obj)
@@ -103,13 +102,15 @@ def _TTJ(obj, root=None):
         return serialise_cmap(obj)
 
     elif isinstance(obj, TTFont):
+        if depth > 1:
+            return None
         return {k: _TTJ(obj[k], root) for k in obj.keys() if k not in ["loca"]}
     elif isinstance(obj, dict):
         return {k: _TTJ(v) for k, v in obj.items()}
     elif isinstance(obj, (list, tuple, set)):
         return [_TTJ(i) for i in obj]
     elif hasattr(obj, "__dict__"):
-        return {k: _TTJ(getattr(obj, k)) for k in vars(obj)}
+        return {k: _TTJ(getattr(obj, k), depth=depth+1) for k in vars(obj)}
     return obj
 
 
