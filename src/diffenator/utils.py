@@ -24,6 +24,7 @@ from urllib.request import urlretrieve
 import os
 from io import BytesIO
 from fontTools.ttLib import TTFont
+from zipfile import ZipFile
 
 
 def dict_coords_to_string(coords: dict[str, float]) -> str:
@@ -36,6 +37,13 @@ def string_coords_to_dict(string: str) -> dict[str, float]:
     return {s.split("=")[0]: float(s.split("=")[1]) for s in string.split(",")}
 
 
+def google_fonts_has_family(name: str) -> bool:
+    url_name = name.replace(" ", "+")
+    url = f"https://fonts.google.com/specimen/{url_name}"
+    r = requests.get(url)
+    return True if r.status_code == 200 else False
+
+
 def download_file(url: str, dst_path: str = None, headers: dict[str, str] = {}):
     """Download a file from a url. If no dst_path is specified, store the file
     as a BytesIO object"""
@@ -43,6 +51,61 @@ def download_file(url: str, dst_path: str = None, headers: dict[str, str] = {}):
         request = requests.get(url, stream=True, headers=headers)
         return BytesIO(request.content)
     urlretrieve(url, dst_path)
+
+
+def download_latest_github_release(
+    user: str,
+    repo: str,
+    dst: str = None,
+    github_token: str = None,
+    ignore_static: bool = True,
+):
+    headers = {}
+    if github_token:
+        headers["Authorization"] = f"Token {github_token}"
+    latest_release = requests.get(
+        f"https://api.github.com/repos/{user}/{repo}/releases/latest",
+        headers=headers,
+    ).json()
+    headers["Accept"] = "application/octet-stream"
+    dl_url = latest_release["assets"][0]["url"]
+    zip_file = download_file(dl_url, headers=headers)
+    z = ZipFile(zip_file)
+    files = []
+    for filename in z.namelist():
+        if ignore_static and "static" in filename:
+            continue
+        if dst:
+            target = os.path.join(dst, filename)
+            z.extract(filename, dst)
+            files.append(target)
+        else:
+            files.append(BytesIO(z.read(filename)))
+    return files
+
+
+def download_google_fonts_family(
+    name: str, dst: str = None, ignore_static: bool = True
+):
+    """Download a font family from Google Fonts"""
+    if not google_fonts_has_family(name):
+        raise ValueError(f"No family on Google Fonts named {name}")
+
+    url = "https://fonts.google.com/download?family={}".format(name.replace(" ", "%20"))
+    dl = download_file(url)
+    zipfile = ZipFile(dl)
+    fonts = []
+    for filename in zipfile.namelist():
+        if ignore_static and "static" in filename:
+            continue
+        if filename.endswith(".ttf"):
+            if dst:
+                target = os.path.join(dst, filename)
+                zipfile.extract(filename, dst)
+                fonts.append(target)
+            else:
+                fonts.append(BytesIO(zipfile.read(filename)))
+    return fonts
 
 
 # our images can be huge so disable this
