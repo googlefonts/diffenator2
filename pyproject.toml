@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "diffenator2"
+name = "diffenator"
 description = "Compare two fonts"
 version = "0.0.1"
 authors = [ "Marc Foley <m.foley.88@gmail.com>" ]
@@ -17,6 +17,9 @@ protobuf = ">=3.19.2, <=3.20.3"
 gflanguages = "*"
 freetype-py = "*"
 blackrenderer = {extras = ["skia"], version = "^0.6.0"}
+unicodedata2 = "^15.0.0"
+tqdm = "^4.64.1"
+youseedee = "^0.3.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
