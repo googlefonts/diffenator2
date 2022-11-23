@@ -6,9 +6,9 @@ from diffenator.html import CSSFontStyle
 @pytest.mark.parametrize(
     "fp, expected",
     [
-        (mavenpro_regular, CSSFontStyle("Maven Pro", "Regular", {"wght": 400})),
-        (mavenpro_extra_bold, CSSFontStyle("Maven Pro", "ExtraBold", {"wght": 800})),
-        (mavenpro_black, CSSFontStyle("Maven Pro", "Black", {"wght": 900})),
+        (mavenpro_regular, CSSFontStyle("font", "style", {"wght": 400})),
+        (mavenpro_extra_bold, CSSFontStyle("font", "style", {"wght": 800})),
+        (mavenpro_black, CSSFontStyle("font", "style", {"wght": 900})),
     ]
 )
 def test_diffenator_font_style_static(fp, expected):
@@ -22,9 +22,9 @@ def test_diffenator_font_style_static(fp, expected):
 @pytest.mark.parametrize(
     "fp, coords, expected",
     [
-        (mavenpro_vf, {}, CSSFontStyle("Maven Pro", "Regular", {"wght": 400})),
-        (mavenpro_vf, {"wght": 800}, CSSFontStyle("Maven Pro", "ExtraBold", {"wght": 800})),
-        (mavenpro_vf, {"wght": 900}, CSSFontStyle("Maven Pro", "Black", {"wght": 900}))
+        (mavenpro_vf, {}, CSSFontStyle("font", "style", {"wght": 400})),
+        (mavenpro_vf, {"wght": 800}, CSSFontStyle("font", "style", {"wght": 800})),
+        (mavenpro_vf, {"wght": 900}, CSSFontStyle("font", "style", {"wght": 900}))
     ]
 )
 def test_diffenator_font_style_vf(fp, coords, expected):
