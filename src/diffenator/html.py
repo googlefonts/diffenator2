@@ -59,9 +59,14 @@ def static_font_style(ttfont, suffix=""):
     )
 
 
+def diffenator_font_face(dfont, suffix=""):
+    face = CSSFontFace(dfont, suffix)
+    face.cssfamilyname = f"{suffix} font"
+    return face
+
+
 def diffenator_font_style(dfont, suffix=""):
     ttfont = dfont.ttFont
-    family_name = ttfont["name"].getBestFamilyName()
     if dfont.is_variable() and hasattr(dfont, "variations"):
         name_id = next(
             (
@@ -77,8 +82,8 @@ def diffenator_font_style(dfont, suffix=""):
         style_name = ttfont["name"].getBestSubFamilyName()
         coords = {"wght": ttfont["OS/2"].usWeightClass}
     return CSSFontStyle(
-        family_name,
-        style_name,
+        "font",
+        "style",
         coords,
         suffix,
     )
@@ -126,8 +131,8 @@ def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles
 
 
 def diffenator_report(diff, template, dst="out"):
-    font_faces_old = [CSSFontFace(diff.old_font.ttFont, "old")]
-    font_faces_new = [CSSFontFace(diff.new_font.ttFont, "new")]
+    font_faces_old = [diffenator_font_face(diff.old_font.ttFont, "old")]
+    font_faces_new = [diffenator_font_face(diff.new_font.ttFont, "new")]
 
     font_styles_old = [diffenator_font_style(diff.old_font, "old")]
     font_styles_new = [diffenator_font_style(diff.new_font, "new")]
