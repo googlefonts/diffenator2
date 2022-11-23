@@ -84,11 +84,10 @@ def TTJ(ttFont):
     return _TTJ(ttFont, root)
 
 
-def _TTJ(obj, root=None):
+def _TTJ(obj, root=None,depth=1):
     """Convert a TTFont to Basic python types"""
     if isinstance(obj, (float, int, str, bool)):
         return obj
-
     # custom
     elif isinstance(obj, table__n_a_m_e):
         return serialise_name_table(obj)
@@ -103,13 +102,15 @@ def _TTJ(obj, root=None):
         return serialise_cmap(obj)
 
     elif isinstance(obj, TTFont):
+        if depth > 1:
+            return None
         return {k: _TTJ(obj[k], root) for k in obj.keys() if k not in ["loca"]}
     elif isinstance(obj, dict):
         return {k: _TTJ(v) for k, v in obj.items()}
     elif isinstance(obj, (list, tuple, set)):
         return [_TTJ(i) for i in obj]
     elif hasattr(obj, "__dict__"):
-        return {k: _TTJ(getattr(obj, k)) for k in vars(obj)}
+        return {k: _TTJ(getattr(obj, k), depth=depth+1) for k in vars(obj)}
     return obj
 
 
@@ -211,66 +212,66 @@ class Diff:
         raise NotImplementedError()
 
 
-class TTJDiff(Diff):
-    def summary(self):
-        doc = []
-        obj = self.diff
-        try:
-            font_revision = obj["head"]["fontRevision"]
-            if font_revision[0] == font_revision[1]:
-                doc.append(f"<li>head.fontRevision is same {font_revision[0]}</li>")
-            elif font_revision[0] > font_revision[1]:
-                doc.append(
-                    f"<li>head.fontRevision is less than older version {font_revision[0]} {font_revision[1]}</li>"
-                )
-            else:
-                doc.append(
-                    f"<li>head.fontRevision has been incremented from {font_revision[0]} to {font_revision[1]}</li>"
-                )
-        except:
-            pass
+# class TTJDiff(Diff):
+#     def summary(self):
+#         doc = []
+#         obj = self.diff
+#         try:
+#             font_revision = obj["head"]["fontRevision"]
+#             if font_revision[0] == font_revision[1]:
+#                 doc.append(f"<li>head.fontRevision is same {font_revision[0]}</li>")
+#             elif font_revision[0] > font_revision[1]:
+#                 doc.append(
+#                     f"<li>head.fontRevision is less than older version {font_revision[0]} {font_revision[1]}</li>"
+#                 )
+#             else:
+#                 doc.append(
+#                     f"<li>head.fontRevision has been incremented from {font_revision[0]} to {font_revision[1]}</li>"
+#                 )
+#         except:
+#             pass
 
-        try:
-            avar = obj["avar"]["segments"]
-            if avar:
-                doc.append(
-                    "<li>Avar table has been modified. Please check all diffs to see if glyph color is lighter/darker.</li>"
-                )
-        except:
-            pass
+#         try:
+#             avar = obj["avar"]["segments"]
+#             if avar:
+#                 doc.append(
+#                     "<li>Avar table has been modified. Please check all diffs to see if glyph color is lighter/darker.</li>"
+#                 )
+#         except:
+#             pass
 
-        try:
-            names = obj["name"]
-            nameids = set(k[0] for k, v in names.items() if v)
-            menu_nameids = set([1, 2, 4, 6, 16, 17, 21, 22])
+#         try:
+#             names = obj["name"]
+#             nameids = set(k[0] for k, v in names.items() if v)
+#             menu_nameids = set([1, 2, 4, 6, 16, 17, 21, 22])
 
-            changed_menu_nameids = menu_nameids & nameids
-            if changed_menu_nameids:
-                doc.append(
-                    f"<li>NameIDs {changed_menu_nameids} have changed. This may affect application font menus.</li>"
-                )
+#             changed_menu_nameids = menu_nameids & nameids
+#             if changed_menu_nameids:
+#                 doc.append(
+#                     f"<li>NameIDs {changed_menu_nameids} have changed. This may affect application font menus.</li>"
+#                 )
 
-            changed_ps_nameid = set([6]) & nameids
-            if changed_ps_nameid:
-                doc.append(
-                    f"<li>Postscript name has changed. This may cause issues for Adobe users if they update their fonts.</li>"
-                )
+#             changed_ps_nameid = set([6]) & nameids
+#             if changed_ps_nameid:
+#                 doc.append(
+#                     f"<li>Postscript name has changed. This may cause issues for Adobe users if they update their fonts.</li>"
+#                 )
 
-            changed_vf_ps_name = set([25]) & nameids
-            if changed_vf_ps_name:
-                doc.append(
-                    f"<li>nameID {25} has changed (Variations PostScript Name Prefix)</li>"
-                )
-        except:
-            pass
+#             changed_vf_ps_name = set([25]) & nameids
+#             if changed_vf_ps_name:
+#                 doc.append(
+#                     f"<li>nameID {25} has changed (Variations PostScript Name Prefix)</li>"
+#                 )
+#         except:
+#             pass
 
-        # FIX THIS
-        try:
-            for k, v in obj.items():
-                if all(vv[0] == None for kk, vv in v.items()):
-                    doc.append(f"<li>{k} table has been added</li>")
-                elif all(vv[1] == None for kk, vv in v.items()):
-                    doc.append(f"<li>{k} table has been removed</li>")
-        except:
-            pass
-        return "\n".join(doc)
+#         # FIX THIS
+#         try:
+#             for k, v in obj.items():
+#                 if all(vv[0] == None for _, vv in v.items()):
+#                     doc.append(f"<li>{k} table has been added</li>")
+#                 elif all(vv[1] == None for _, vv in v.items()):
+#                     doc.append(f"<li>{k} table has been removed</li>")
+#         except:
+#             pass
+#         return "\n".join(doc)

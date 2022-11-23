@@ -20,10 +20,11 @@ from PIL import Image
 from gflanguages import LoadLanguages
 from functools import lru_cache
 import requests
+from urllib.request import urlretrieve
 import os
-from zipfile import ZipFile
 from io import BytesIO
 from fontTools.ttLib import TTFont
+from zipfile import ZipFile
 
 
 def dict_coords_to_string(coords: dict[str, float]) -> str:
@@ -46,11 +47,10 @@ def google_fonts_has_family(name: str) -> bool:
 def download_file(url: str, dst_path: str = None, headers: dict[str, str] = {}):
     """Download a file from a url. If no dst_path is specified, store the file
     as a BytesIO object"""
-    request = requests.get(url, stream=True, headers=headers)
     if not dst_path:
+        request = requests.get(url, stream=True, headers=headers)
         return BytesIO(request.content)
-    with open(dst_path, "wb") as downloaded_file:
-        downloaded_file.write(request.content)
+    urlretrieve(url, dst_path)
 
 
 def download_latest_github_release(
@@ -131,11 +131,6 @@ def gen_gif(img_a_path: str, img_b_path: str, dst: str):
         img_a.save(dst, save_all=True, append_images=[img_b], loop=10000, duration=1000)
 
 
-def partition(items: list[any], size: int) -> list[any]:
-    """partition([1,2,3,4,5,6], 2) --> [[1,2],[3,4],[5,6]]"""
-    return [items[i : i + size] for i in range(0, len(items), size)]
-
-
 @lru_cache()
 def font_sample_text(ttFont: TTFont) -> str:
     """Collect words which exist in the Universal Declaration of Human Rights
@@ -166,6 +161,14 @@ def font_sample_text(ttFont: TTFont) -> str:
         languages = LoadLanguages()
         for file, proto in languages.items():
             if hasattr(proto, "sample_text"):
-                for key, text in proto.sample_text.ListFields():
+                for _, text in proto.sample_text.ListFields():
                     _add_words(words, text, seen_chars)
     return words
+
+
+def font_family_name(ttFont, suffix=""):
+    familyname = ttFont["name"].getBestFamilyName()
+    if suffix:
+        return f"{suffix} {familyname}"
+    else:
+        return familyname

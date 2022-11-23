@@ -1,12 +1,11 @@
 """
 """
 from __future__ import annotations
-from dataclasses import dataclass, field
 from jinja2 import Environment, FileSystemLoader
 from fontTools.ttLib import TTFont
 import os
 import shutil
-from diffenator.shape import Renderable
+from diffenator.template_elements import CSSFontStyle, CSSFontFace
 from diffenator.utils import font_sample_text
 import re
 
@@ -23,72 +22,6 @@ WIDTH_CLASS_TO_CSS = {
     9: "200",
 }
 
-
-@dataclass
-class CSSFontFace(Renderable):
-    ttfont: TTFont
-    suffix: str = ""
-    filename: str = field(init=False)
-    familyname: str = field(init=False)
-    classname: str = field(init=False)
-
-    def __post_init__(self):
-        ttf_filename = os.path.basename(self.ttfont.reader.file.name)
-        if self.suffix:
-            self.filename = f"{self.suffix}-{ttf_filename}"
-        else:
-            self.filename = ttf_filename
-        self.cssfamilyname = _family_name(self.ttfont, self.suffix)
-        self.stylename = self.ttfont["name"].getBestSubFamilyName()
-        self.classname = self.cssfamilyname.replace(" ", "-")
-        self.font_style = "normal" if "Italic" not in self.stylename else "italic"
-
-        if "fvar" in self.ttfont:
-            fvar = self.ttfont["fvar"]
-            axes = {a.axisTag: a for a in fvar.axes}
-            if "wght" in axes:
-                min_weight = int(axes["wght"].minValue)
-                max_weight = int(axes["wght"].maxValue)
-                self.font_weight = f"{min_weight} {max_weight}"
-            if "wdth" in axes:
-                min_width = int(axes["wdth"].minValue)
-                max_width = int(axes["wdth"].maxValue)
-                self.font_stretch = f"{min_width}% {max_width}%"
-            if "ital" in axes:
-                pass
-            if "slnt" in axes:
-                min_angle = int(axes["slnt"].minValue)
-                max_angle = int(axes["slnt"].maxValue)
-                self.font_style = f"oblique {min_angle}deg {max_angle}deg"
-
-
-def _family_name(ttFont, suffix=""):
-    familyname = ttFont["name"].getBestFamilyName()
-    if suffix:
-        return f"{suffix} {familyname}"
-    else:
-        return familyname
-
-
-@dataclass
-class CSSFontStyle(Renderable):
-    familyname: str
-    stylename: str
-    coords: dict
-    suffix: str = ""
-
-    def __post_init__(self):
-        if self.suffix:
-            self.cssfamilyname = f"{self.suffix} {self.familyname}"
-        else:
-            self.cssfamilyname = self.familyname
-        self.full_name = f"{self.familyname} {self.stylename}"
-        if self.suffix:
-            self.class_name = (
-                f"{self.suffix} {self.familyname} {self.stylename}".replace(" ", "-")
-            )
-        else:
-            self.class_name = f"{self.familyname} {self.stylename}".replace(" ", "-")
 
 
 def get_font_styles(ttfonts, suffix="", filters=None):
@@ -126,9 +59,14 @@ def static_font_style(ttfont, suffix=""):
     )
 
 
+def diffenator_font_face(dfont, suffix=""):
+    face = CSSFontFace(dfont, suffix)
+    face.cssfamilyname = f"{suffix} font"
+    return face
+
+
 def diffenator_font_style(dfont, suffix=""):
     ttfont = dfont.ttFont
-    family_name = ttfont["name"].getBestFamilyName()
     if dfont.is_variable() and hasattr(dfont, "variations"):
         name_id = next(
             (
@@ -144,8 +82,8 @@ def diffenator_font_style(dfont, suffix=""):
         style_name = ttfont["name"].getBestSubFamilyName()
         coords = {"wght": ttfont["OS/2"].usWeightClass}
     return CSSFontStyle(
-        family_name,
-        style_name,
+        "font",
+        "style",
         coords,
         suffix,
     )
@@ -193,8 +131,8 @@ def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles
 
 
 def diffenator_report(diff, template, dst="out"):
-    font_faces_old = [CSSFontFace(diff.old_font.ttFont, "old")]
-    font_faces_new = [CSSFontFace(diff.new_font.ttFont, "new")]
+    font_faces_old = [diffenator_font_face(diff.old_font.ttFont, "old")]
+    font_faces_new = [diffenator_font_face(diff.new_font.ttFont, "new")]
 
     font_styles_old = [diffenator_font_style(diff.old_font, "old")]
     font_styles_new = [diffenator_font_style(diff.new_font, "new")]
