@@ -152,10 +152,7 @@ def test_words(
             differ.set_lang(lang)
             differ.set_features(features)
 
-            buf_a = differ.renderer_a.shape(word)
             buf_b = differ.renderer_b.shape(word)
-
-            word_a = Word.from_buffer(word, buf_a)
             word_b = Word.from_buffer(word, buf_b)
 
             gid_hashes = [hash_func(i, j) for i, j in zip(buf_b.glyph_infos, buf_b.glyph_positions)]
@@ -163,6 +160,9 @@ def test_words(
             # work and speeds things up a lot...
             if all(gid_hash in seen_gids for gid_hash in gid_hashes):
                 continue
+
+            buf_a = differ.renderer_a.shape(word)
+            word_a = Word.from_buffer(word, buf_a)
 
             pc, diff_map = differ.diff(word)
 
