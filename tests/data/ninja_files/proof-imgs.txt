@@ -1,7 +1,7 @@
 # Rules
 
 rule proofing
-  command = diffbrowsers proof \$fonts -o \$out/diffbrowsers --imgs
+  command = _diffbrowsers proof \$fonts -o \$out/diffbrowsers --imgs
 
 # Build rules
 build out: proofing

@@ -2,14 +2,14 @@
 
 # Build Hinting docs
 rule diffbrowsers
-  command = diffbrowsers diff -fb \$fonts_before -fa \$fonts_after -o \$out \$
+  command = _diffbrowsers diff -fb \$fonts_before -fa \$fonts_after -o \$out \$
       --imgs
 
 # Run diffenator VF
 rule diffenator
-  command = diffenator \$font_before \$font_after -o \$out
+  command = _diffenator \$font_before \$font_after -o \$out
 rule diffenator-inst
-  command = diffenator \$font_before \$font_after -o \$out --coords \$coords
+  command = _diffenator \$font_before \$font_after -o \$out --coords \$coords
 
 # Build rules
 build out/diffbrowsers: diffbrowsers

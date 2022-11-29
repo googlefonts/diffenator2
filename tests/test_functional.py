@@ -15,7 +15,7 @@ from . import *
 )
 def test_run_diffbrowsers_proof(fp):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        subprocess.run(["diffbrowsers", "proof", fp, "-o", tmp_dir], check=True)
+        subprocess.run(["_diffbrowsers", "proof", fp, "-o", tmp_dir], check=True)
 
         # check files are packaged
         assert any(f.endswith(".html") for f in os.listdir(tmp_dir))
@@ -30,7 +30,7 @@ def test_run_diffbrowsers_proof(fp):
 )
 def test_run_diffbrowsers_proof_imgs(fp):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        subprocess.run(["diffbrowsers", "proof", fp, "--imgs", "-o", tmp_dir], check=True)
+        subprocess.run(["_diffbrowsers", "proof", fp, "--imgs", "-o", tmp_dir], check=True)
 
         imgs, html = [], []
         # check images have been generated and there's an image for every html page
@@ -59,7 +59,7 @@ def test_run_diffbrowsers_proof_imgs(fp):
 )
 def test_diffenator(fp_before, fp_after):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        subprocess.run(["diffenator", fp_before, fp_after, "-o", tmp_dir])
+        subprocess.run(["_diffenator", fp_before, fp_after, "-o", tmp_dir])
         new_font = f"old-{os.path.basename(fp_before)}"
         old_font = f"new-{os.path.basename(fp_after)}"
         assert new_font in os.listdir(tmp_dir)

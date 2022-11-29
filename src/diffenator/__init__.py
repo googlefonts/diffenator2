@@ -23,7 +23,7 @@ def ninja_proof(
     w.newline()
     out_s = f"$out{os.path.sep}diffbrowsers"
 
-    cmd = f"diffbrowsers proof $fonts -o {out_s}"
+    cmd = f"_diffbrowsers proof $fonts -o {out_s}"
     if imgs:
         cmd += " --imgs"
     if filter_styles:
@@ -63,7 +63,7 @@ def ninja_diff(
     w.comment("Rules")
     w.newline()
     w.comment("Build Hinting docs")
-    db_cmd = f"diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out"
+    db_cmd = f"_diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out"
     if imgs:
         db_cmd += " --imgs"
     if filter_styles:
@@ -72,7 +72,7 @@ def ninja_diff(
     w.newline()
 
     w.comment("Run diffenator VF")
-    diff_cmd = f"diffenator $font_before $font_after -o $out"
+    diff_cmd = f"_diffenator $font_before $font_after -o $out"
     if user_wordlist:
         diff_cmd += " --user-wordlist $user_wordlist"
     diff_inst_cmd = diff_cmd + " --coords $coords"
