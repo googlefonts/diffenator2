@@ -9,7 +9,7 @@ This tool replaces the original [fontdiffenator](https://github.com/googlefonts/
 
 ## Features
 
-- Diff COLR v1 fonts (Uses [BlackRenderer](https://github.com/BlackFoundryCom/black-renderer)
+- Diff COLR v1 fonts (Uses [BlackRenderer](https://github.com/BlackFoundryCom/black-renderer))
 - Diff fonts with different upms
 - Diff fonts with different glyph names
 - Diff static fonts against variable font fvar instances
@@ -48,10 +48,10 @@ Proof and include browser images
 
 Compare two font families 
 
-`
+```
 # -fb == --fonts-before, -fa == --fonts-after
-diffenator2 diff -fb font1.ttf -fafont2.ttf -o out_dir
-`
+diffenator2 diff -fb font1.ttf -fa font2.ttf -o out_dir
+```
 
 
 Compare two font families and include a custom wordlist
@@ -62,13 +62,13 @@ A wordlist is basically a csv file with the following columns.
 
 `string, script, lang, ot features...`
 
-script, lang and ot features are optional. An arbitrary number of ot features can be included.
+script, lang and ot features are optional. An arbitrary number of ot features can be included e.g
 
 ```
 a,latn,dflt,ss01
 1/4,,,frac
 10/23,,,frac
-0123456789,,,numr
+0123456789,,,numr,tnum
 ```
 
 Only diff regular and bold styles
@@ -76,6 +76,6 @@ Only diff regular and bold styles
 `diffenator2 diff -fb font1.ttf -fa font2.ttf --filter-styles "Regular|Bold"`
 
 
-`--filter-styles` accept wildcards so let's diff all Bold styles
+--filter-styles accept wildcards so let's diff all Bold styles
 
 `diffenator2 diff -fb font1.ttf -fa font2.ttf --filter-styles "Bold*"`
