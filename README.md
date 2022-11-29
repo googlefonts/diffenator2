@@ -18,6 +18,14 @@ This tool replaces the original [fontdiffenator](https://github.com/googlefonts/
 - Use [ninja](https://ninja-build.org/) to diff multiple fonts at the same time. Diffing all styles Noto Sans takes (XXXX)
 
 
+## Install
+
+`pip install git+https://github.com/m4rc1e/diffenator2`
+
+There's also a [github action](https://github.com/f-actions/diffenator2) for testing upstream font repositories.
+
+
+
 ## Caveats
 
 Since we're comparing words, we cannot guarantee that abbreviations, names and optional OpenType features haven't regressed. In order to check these, users should create their own wordlist which contains the combinations they'd like to check. See Usage section for examples on how to do this.  
@@ -26,12 +34,6 @@ Words are compared by pixel diffing FreeType bitmaps at 3ppem. This size may sou
 
 In order to test fonts on the correct words, we first determine what scripts are supported within the font and then select the appropriate script specific wordlist. There are still a few scripts which we don't have wordlists for. Please ask M Foley to generate one if it's missing for your project.
 
-
-## Install
-
-`pip install git+https://github.com/googlefonts/diffenator2`
-
-There's also a [github action](https://github.com/f-actions/diffenator2) for testing upstream font repositories.
 
 
 ## Usage
