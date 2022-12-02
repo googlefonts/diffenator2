@@ -4,9 +4,14 @@ import os
 from ninja.ninja_syntax import Writer
 from diffenator.utils import dict_coords_to_string
 from fontTools.ttLib import TTFont
+import ninja
+from diffenator.utils import partition
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+MAX_STYLES = 4
 
 
 def ninja_proof(
@@ -15,9 +20,27 @@ def ninja_proof(
     imgs: bool = False,
     filter_styles: bool = None,
 ):
+    if filter_styles:
+        _ninja_proof(fonts, out, imgs, filter_styles)
+        return
+    styles = styles_in_fonts(fonts)
+    partitioned = partition(styles, MAX_STYLES)
     if not os.path.exists(out):
         os.mkdir(out)
+    for p in partitioned:
+        filter_styles = "|".join(s[0] for s in p)
+        o = os.path.join(out, filter_styles.replace("|", "-"))
+        if not os.path.exists(o):
+            os.mkdir(o)
+        _ninja_proof(fonts, o, imgs, filter_styles)
 
+
+def _ninja_proof(
+    fonts: list[TTFont],
+    out: str = "out",
+    imgs: bool = False,
+    filter_styles: bool = None,
+):
     w = Writer(open(os.path.join("build.ninja"), "w", encoding="utf8"))
     w.comment("Rules")
     w.newline()
@@ -43,6 +66,7 @@ def ninja_proof(
         variables["filters"] = filter_styles
     w.build(out, "proofing", variables=variables)
     w.close()
+    ninja._program("ninja", [])
 
 
 def ninja_diff(
@@ -118,13 +142,21 @@ def ninja_diff(
     w.close()
 
 
-def _static_fullname(ttfont):
-    return (
-        f"{ttfont['name'].getBestFamilyName()} {ttfont['name'].getBestSubFamilyName()}"
-    )
+def styles_in_fonts(fonts):
+    styles = []
+    for font in fonts:
+        if "fvar" in font:
+            styles += styles_in_variable_font(font)
+        else:
+            styles.append(style_in_static_font(font))
+    return styles
 
 
-def _vf_fullnames(ttfont, filters=None):
+def style_in_static_font(ttfont):
+    return (ttfont['name'].getBestSubFamilyName(), {})
+
+
+def styles_in_variable_font(ttfont):
     assert "fvar" in ttfont
     res = []
     family_name = ttfont["name"].getBestFamilyName()
@@ -132,34 +164,13 @@ def _vf_fullnames(ttfont, filters=None):
     for inst in instances:
         name_id = inst.subfamilyNameID
         name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
-        if filters and name not in filters:
-            continue
-        res.append((f"{family_name} {name}", inst.coordinates))
+        res.append((name, inst.coordinates))
     return res
 
 
 def matcher(fonts_before, fonts_after, filters=None):
-    before = {}
-    after = {}
-    for font in fonts_before:
-        if "fvar" in font:
-            vf_names = _vf_fullnames(font, filters)
-            for n, coords in vf_names:
-                before[n] = (os.path.abspath(font.reader.file.name), coords)
-        else:
-            before[_static_fullname(font)] = (
-                os.path.abspath(font.reader.file.name),
-                {},
-            )
-
-    for font in fonts_after:
-        if "fvar" in font:
-            vf_names = _vf_fullnames(font, filters)
-            for n, coords in vf_names:
-                after[n] = (os.path.abspath(font.reader.file.name), coords)
-        else:
-            after[_static_fullname(font)] = (os.path.abspath(font.reader.file.name), {})
-
+    before = {k: v for k,v in styles_in_fonts(fonts_before)}
+    after = {k: v for k,v in styles_in_fonts(fonts_after)}
     shared = set(before.keys()) & set(after.keys())
     res = []
     for style in shared:
