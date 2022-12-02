@@ -56,7 +56,6 @@ def main(**kwargs):
         )
     else:
         raise NotImplementedError(f"{args.command} not supported")
-    ninja._program("ninja", [])
 
 
 if __name__ == "__main__":

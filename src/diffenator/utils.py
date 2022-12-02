@@ -172,3 +172,8 @@ def font_family_name(ttFont, suffix=""):
         return f"{suffix} {familyname}"
     else:
         return familyname
+
+
+def partition(items, size):
+    """partition([1,2,3,4,5,6], 2) --> [[1,2],[3,4],[5,6]]"""
+    return [items[i : i + size] for i in range(0, len(items), size)]

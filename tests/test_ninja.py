@@ -38,12 +38,14 @@ import re
     ]
 )
 def test_run_ninja_diff(kwargs, expected_fp):
-    from diffenator import ninja_diff
+    from diffenator import _ninja_diff
 
-    ninja_diff(**kwargs)
+    _ninja_diff(**kwargs)
 
     with open(expected_fp) as expected, open("build.ninja") as current:
-        assert re.match(expected.read(), current.read())
+        exp = expected.read()
+        cur = current.read()
+        assert re.match(exp, cur)
 
 
 @pytest.mark.parametrize(
@@ -76,8 +78,10 @@ def test_run_ninja_diff(kwargs, expected_fp):
     ]
 )
 def test_run_ninja_proof(kwargs, expected_fp):
-    from diffenator import ninja_proof
+    from diffenator import _ninja_proof
 
-    ninja_proof(**kwargs)
+    _ninja_proof(**kwargs)
     with open(expected_fp) as expected, open("build.ninja") as current:
-        assert re.match(expected.read(), current.read())
+        exp = expected.read()
+        cur = current.read()
+        assert re.match(exp, cur)
