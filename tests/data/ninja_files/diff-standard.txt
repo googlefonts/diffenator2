@@ -17,45 +17,45 @@ build out/diffbrowsers: diffbrowsers
   fonts_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
   out = out/diffbrowsers
-build out/Maven-Pro-Black: diffenator-inst
+build out/Black: diffenator-inst
   font_before = \$
       .*/tests/data/MavenPro\[wght\].subset.ttf
   font_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
-  out = Maven-Pro-Black
+  out = Black
   coords = wght=900.0
-build out/Maven-Pro-Bold: diffenator-inst
+build out/Bold: diffenator-inst
   font_before = \$
       .*/tests/data/MavenPro\[wght\].subset.ttf
   font_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
-  out = Maven-Pro-Bold
+  out = Bold
   coords = wght=700.0
-build out/Maven-Pro-ExtraBold: diffenator-inst
+build out/ExtraBold: diffenator-inst
   font_before = \$
       .*/tests/data/MavenPro\[wght\].subset.ttf
   font_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
-  out = Maven-Pro-ExtraBold
+  out = ExtraBold
   coords = wght=800.0
-build out/Maven-Pro-Medium: diffenator-inst
+build out/Medium: diffenator-inst
   font_before = \$
       .*/tests/data/MavenPro\[wght\].subset.ttf
   font_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
-  out = Maven-Pro-Medium
+  out = Medium
   coords = wght=500.0
-build out/Maven-Pro-Regular: diffenator-inst
+build out/Regular: diffenator-inst
   font_before = \$
       .*/tests/data/MavenPro\[wght\].subset.ttf
   font_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
-  out = Maven-Pro-Regular
+  out = Regular
   coords = wght=400.0
-build out/Maven-Pro-SemiBold: diffenator-inst
+build out/SemiBold: diffenator-inst
   font_before = \$
       .*/tests/data/MavenPro\[wght\].subset.ttf
   font_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
-  out = Maven-Pro-SemiBold
+  out = SemiBold
   coords = wght=600.0

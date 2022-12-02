@@ -19,24 +19,24 @@ build out/diffbrowsers: diffbrowsers
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
   out = out/diffbrowsers
   filters = Medium|ExtraBold
-build out/Maven-Pro-Bold: diffenator-inst
+build out/Bold: diffenator-inst
   font_before = \$
       .*/tests/data/MavenPro\[wght\].subset.ttf
   font_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
-  out = Maven-Pro-Bold
+  out = Bold
   coords = wght=700.0
-build out/Maven-Pro-ExtraBold: diffenator-inst
+build out/ExtraBold: diffenator-inst
   font_before = \$
       .*/tests/data/MavenPro\[wght\].subset.ttf
   font_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
-  out = Maven-Pro-ExtraBold
+  out = ExtraBold
   coords = wght=800.0
 build out/Maven-Pro-Medium: diffenator-inst
   font_before = \$
       .*/tests/data/MavenPro\[wght\].subset.ttf
   font_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
-  out = Maven-Pro-Medium
+  out = Medium
   coords = wght=500.0
