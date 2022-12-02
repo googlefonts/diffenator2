@@ -28,7 +28,7 @@ def ninja_proof(
     if not os.path.exists(out):
         os.mkdir(out)
     for p in partitioned:
-        filter_styles = "|".join(s[0] for s in p)
+        filter_styles = "|".join(style for _, style, _ in p)
         o = os.path.join(out, filter_styles.replace("|", "-"))
         if not os.path.exists(o):
             os.mkdir(o)
@@ -79,9 +79,48 @@ def ninja_diff(
     user_wordlist: str = None,
     filter_styles: str = None,
 ):
+    if filter_styles:
+        _ninja_diff(
+            fonts_before,
+            fonts_after,
+            diffbrowsers,
+            diffenator,
+            out,
+            imgs,
+            user_wordlist,
+            filter_styles
+        )
+        return
+    styles = styles_in_fonts(fonts_after)
+    partitioned = partition(styles, MAX_STYLES)
     if not os.path.exists(out):
         os.mkdir(out)
+    for p in partitioned:
+        filter_styles = "|".join(style for _, style, _ in p)
+        o = os.path.join(out, filter_styles.replace("|", "-"))
+        if not os.path.exists(o):
+            os.mkdir(o)
+        _ninja_diff(
+            fonts_before,
+            fonts_after,
+            diffbrowsers,
+            diffenator,
+            o,
+            imgs,
+            user_wordlist,
+            filter_styles
+        )
 
+def _ninja_diff(
+    fonts_before: list[TTFont],
+    fonts_after: list[TTFont],
+    diffbrowsers: bool = True,
+    diffenator: bool = True,
+    out: str = "out",
+    imgs: bool = False,
+    user_wordlist: str = None,
+    filter_styles: str = None,
+):
     w = Writer(open(os.path.join("build.ninja"), "w", encoding="utf8"))
     # Setup rules
     w.comment("Rules")
@@ -118,8 +157,10 @@ def ninja_diff(
         w.build(diffbrowsers_out, "diffbrowsers", variables=db_variables)
     if diffenator:
         for style, font_before, font_after, coords in matcher(
-            fonts_before, fonts_after, filter_styles
+            fonts_before, fonts_after
         ):
+            if filter_styles and style not in filter_styles:
+                continue
             style = style.replace(" ", "-")
             diff_variables = dict(
                 font_before=font_before,
@@ -140,6 +181,7 @@ def ninja_diff(
                     os.path.join(out, style), "diffenator", variables=diff_variables
                 )
     w.close()
+    ninja._program("ninja", [])
 
 
 def styles_in_fonts(fonts):
@@ -153,7 +195,7 @@ def styles_in_fonts(fonts):
 
 
 def style_in_static_font(ttfont):
-    return (ttfont['name'].getBestSubFamilyName(), {})
+    return (ttfont, ttfont['name'].getBestSubFamilyName(), {})
 
 
 def styles_in_variable_font(ttfont):
@@ -164,15 +206,22 @@ def styles_in_variable_font(ttfont):
     for inst in instances:
         name_id = inst.subfamilyNameID
         name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
-        res.append((name, inst.coordinates))
+        res.append((ttfont, name, inst.coordinates))
     return res
 
 
-def matcher(fonts_before, fonts_after, filters=None):
-    before = {k: v for k,v in styles_in_fonts(fonts_before)}
-    after = {k: v for k,v in styles_in_fonts(fonts_after)}
+def matcher(fonts_before, fonts_after):
+    before = {s: (f, s, c) for f,s,c in styles_in_fonts(fonts_before)}
+    after = {s: (f, s, c) for f,s,c in styles_in_fonts(fonts_after)}
     shared = set(before.keys()) & set(after.keys())
     res = []
     for style in shared:
-        res.append((style, before[style][0], after[style][0], after[style][1]))
+        res.append(
+            (
+                style,
+                before[style][0].reader.file.name,
+                after[style][0].reader.file.name,
+                after[style][2]
+            )
+        )
     return sorted(res, key=lambda k: k[0])
