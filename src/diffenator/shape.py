@@ -164,6 +164,10 @@ def test_words(
             buf_a = differ.renderer_a.shape(word)
             word_a = Word.from_buffer(word, buf_a)
 
+            # skip any words which cannot be shaped correctly
+            if any([g.codepoint == 0 for g in buf_a.glyph_infos+buf_b.glyph_infos]):
+                continue
+
             pc, diff_map = differ.diff(word)
 
             for gid_hash in gid_hashes:
