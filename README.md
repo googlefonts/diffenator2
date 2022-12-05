@@ -20,7 +20,7 @@ This tool replaces the original [fontdiffenator](https://github.com/googlefonts/
 
 ## Install
 
-`pip install git+https://github.com/m4rc1e/diffenator2`
+`pip install git+https://github.com/googlefonts/diffenator2`
 
 There's also a [github action](https://github.com/f-actions/diffenator2) for testing upstream font repositories.
 
