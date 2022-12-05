@@ -36,6 +36,7 @@ def main(**kwargs):
         diff_parser.add_argument("--fonts-before", "-fb", nargs="+", required=True)
         diff_parser.add_argument("--fonts-after", "-fa", nargs="+", required=True)
         diff_parser.add_argument("--user-wordlist", default=None)
+        diff_parser.add_argument("--no-diffenator", default=False, action="store_true")
         args = parser.parse_args()
 
     if args.command == "proof":
@@ -51,6 +52,7 @@ def main(**kwargs):
             fonts_after,
             out=args.out,
             imgs=args.imgs,
+            diffenator=False if args.no_diffenator else True,
             user_wordlist=args.user_wordlist,
             filter_styles=args.filter_styles,
         )
