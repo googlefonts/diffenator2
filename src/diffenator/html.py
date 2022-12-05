@@ -68,15 +68,7 @@ def diffenator_font_face(dfont, suffix=""):
 def diffenator_font_style(dfont, suffix=""):
     ttfont = dfont.ttFont
     if dfont.is_variable() and hasattr(dfont, "variations"):
-        name_id = next(
-            (
-                i.subfamilyNameID
-                for i in ttfont["fvar"].instances
-                if i.coordinates == dfont.variations
-            ),
-            None,
-        )
-        style_name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
+        style_name = ttfont["name"].getBestSubFamilyName()
         coords = dfont.variations
     else:
         style_name = ttfont["name"].getBestSubFamilyName()
