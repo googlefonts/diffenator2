@@ -171,6 +171,6 @@ def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]
     shared = set(old) & set(new)
     if not shared:
         raise ValueError("No matching fonts found")
-    return [s for s in styles_old if s.full_name in shared], [
-        s for s in styles_new if s.full_name in shared
+    return [s for s in styles_old if s.stylename in shared], [
+        s for s in styles_new if s.stylename in shared
     ]
