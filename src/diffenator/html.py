@@ -81,7 +81,7 @@ def diffenator_font_style(dfont, suffix=""):
     )
 
 
-def proof_rendering(ttFonts, templates, dst="out", filter_styles=None):
+def proof_rendering(ttFonts, templates, dst="out", filter_styles=None, pt_size=20):
     font_faces = [CSSFontFace(f) for f in ttFonts]
     font_styles = get_font_styles(ttFonts, filters=filter_styles)
     sample_text = " ".join(font_sample_text(ttFonts[0]))
@@ -93,11 +93,11 @@ def proof_rendering(ttFonts, templates, dst="out", filter_styles=None):
         font_styles=font_styles,
         sample_text=sample_text,
         glyphs=glyphs,
-        pt_size=20,
+        pt_size=pt_size,
     )
 
 
-def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles=None):
+def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles=None, pt_size=20):
     font_faces_old = [CSSFontFace(f, "old") for f in ttFonts_old]
     font_styles_old = get_font_styles(ttFonts_old, "old", filters=filter_styles)
 
@@ -118,7 +118,7 @@ def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles
         include_ui=True,
         sample_text=sample_text,
         glyphs=glyphs,
-        pt_size=20,
+        pt_size=pt_size,
     )
 
 

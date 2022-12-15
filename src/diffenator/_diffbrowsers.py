@@ -84,7 +84,7 @@ def main():
     if args.command == "proof":
         fonts = [TTFont(os.path.abspath(fp)) for fp in args.fonts]
         proof_rendering(
-            fonts, args.templates, args.out, filter_styles=args.filter_styles
+            fonts, args.templates, args.out, filter_styles=args.filter_styles, pt_size=args.pt_size
         )
 
     elif args.command == "diff":
@@ -96,6 +96,7 @@ def main():
             args.templates,
             args.out,
             filter_styles=args.filter_styles,
+            pt_size=args.pt_size,
         )
 
     if args.imgs:

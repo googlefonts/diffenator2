@@ -169,7 +169,7 @@ class PixelDiffer:
     def __post_init__(self):
         self.renderer_a = Renderer(
             self.font_a,
-            font_size=3,
+            font_size=28,
             margin=0,
             features=self.features,
             script=self.script,
@@ -178,7 +178,7 @@ class PixelDiffer:
         )
         self.renderer_b = Renderer(
             self.font_b,
-            font_size=3,
+            font_size=28,
             margin=0,
             features=self.features,
             script=self.script,

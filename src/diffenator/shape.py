@@ -11,7 +11,7 @@ from pkg_resources import resource_filename
 import tqdm
 
 
-THRESHOLD = 0.1  # Percent difference
+THRESHOLD = 0.90  # Percent difference
 
 
 # Hashing strategies for elements of a Harfbuzz buffer

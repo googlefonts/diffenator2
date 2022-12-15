@@ -19,6 +19,7 @@ def ninja_proof(
     out: str = "out",
     imgs: bool = False,
     filter_styles: bool = None,
+    pt_size: int = 20,
 ):
     if filter_styles:
         _ninja_proof(fonts, out, imgs, filter_styles)
@@ -32,7 +33,7 @@ def ninja_proof(
         o = os.path.join(out, filter_styles.replace("|", "-"))
         if not os.path.exists(o):
             os.mkdir(o)
-        _ninja_proof(fonts, o, imgs, filter_styles)
+        _ninja_proof(fonts, o, imgs, filter_styles, pt_size)
 
 
 def _ninja_proof(
@@ -40,13 +41,14 @@ def _ninja_proof(
     out: str = "out",
     imgs: bool = False,
     filter_styles: bool = None,
+    pt_size: int = 20,
 ):
     w = Writer(open(os.path.join("build.ninja"), "w", encoding="utf8"))
     w.comment("Rules")
     w.newline()
     out_s = f"$out{os.path.sep}diffbrowsers"
 
-    cmd = f"_diffbrowsers proof $fonts -o {out_s}"
+    cmd = f"_diffbrowsers proof $fonts -o {out_s} -pt $pt_size"
     if imgs:
         cmd += " --imgs"
     if filter_styles:
@@ -59,6 +61,7 @@ def _ninja_proof(
     variables = dict(
         fonts=[f.reader.file.name for f in fonts],
         out=out,
+        pt_size=pt_size
     )
     if imgs:
         variables["imgs"] = imgs
@@ -78,6 +81,7 @@ def ninja_diff(
     imgs: bool = False,
     user_wordlist: str = None,
     filter_styles: str = None,
+    pt_size: int = 20,
 ):
     if filter_styles:
         _ninja_diff(
@@ -88,7 +92,8 @@ def ninja_diff(
             out,
             imgs,
             user_wordlist,
-            filter_styles
+            filter_styles,
+            pt_size,
         )
         return
     styles = styles_in_fonts(fonts_after)
@@ -108,7 +113,8 @@ def ninja_diff(
             o,
             imgs,
             user_wordlist,
-            filter_styles
+            filter_styles,
+            pt_size
         )
 
 def _ninja_diff(
@@ -120,13 +126,14 @@ def _ninja_diff(
     imgs: bool = False,
     user_wordlist: str = None,
     filter_styles: str = None,
+    pt_size: int = 20,
 ):
     w = Writer(open(os.path.join("build.ninja"), "w", encoding="utf8"))
     # Setup rules
     w.comment("Rules")
     w.newline()
     w.comment("Build Hinting docs")
-    db_cmd = f"_diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out"
+    db_cmd = f"_diffbrowsers diff -fb $fonts_before -fa $fonts_after -o $out -pt $pt_size"
     if imgs:
         db_cmd += " --imgs"
     if filter_styles:
@@ -151,6 +158,7 @@ def _ninja_diff(
             fonts_before=[os.path.abspath(f.reader.file.name) for f in fonts_before],
             fonts_after=[os.path.abspath(f.reader.file.name) for f in fonts_after],
             out=diffbrowsers_out,
+            pt_size=pt_size
         )
         if filter_styles:
             db_variables["filters"] = filter_styles
