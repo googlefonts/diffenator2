@@ -1,13 +1,14 @@
 # Rules
 
 rule proofing
-  command = _diffbrowsers proof \$fonts -o \$out/diffbrowsers --imgs \$
-      --filter-styles '\$filters'
+  command = _diffbrowsers proof \$fonts -o \$out/diffbrowsers -pt \$pt_size \$
+      --imgs --filter-styles '\$filters'
 
 # Build rules
 build out: proofing
   fonts = \$
       .*/tests/data/MavenPro\[wght\].subset.ttf
   out = out
+  pt_size = 20
   imgs = True
   filters = Medium|Bold
