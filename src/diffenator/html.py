@@ -143,7 +143,7 @@ def diffenator_report(diff, template, dst="out"):
 
 def _package(templates, dst, **kwargs):
     if not os.path.exists(dst):
-        os.mkdir(dst)
+        os.makedirs(dst)
 
     # write docs
     for template_fp in templates:

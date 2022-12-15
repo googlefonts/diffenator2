@@ -22,7 +22,7 @@ def ninja_proof(
     pt_size: int = 20,
 ):
     if filter_styles:
-        _ninja_proof(fonts, out, imgs, filter_styles)
+        _ninja_proof(fonts, out, imgs, filter_styles, pt_size)
         return
     styles = styles_in_fonts(fonts)
     partitioned = partition(styles, MAX_STYLES)
@@ -114,7 +114,7 @@ def ninja_diff(
             imgs,
             user_wordlist,
             filter_styles,
-            pt_size
+            pt_size,
         )
 
 def _ninja_diff(
