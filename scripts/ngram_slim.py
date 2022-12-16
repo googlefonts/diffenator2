@@ -1,4 +1,4 @@
-from diffenator.wordlistbuilder import maybe_add_word
+from diffenator2.wordlistbuilder import maybe_add_word
 
 
 def slim_file(file, size=None):

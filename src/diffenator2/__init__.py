@@ -2,10 +2,10 @@ from __future__ import annotations
 import logging
 import os
 from ninja.ninja_syntax import Writer
-from diffenator.utils import dict_coords_to_string
+from diffenator2.utils import dict_coords_to_string
 from fontTools.ttLib import TTFont
 import ninja
-from diffenator.utils import partition
+from diffenator2.utils import partition
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

@@ -38,7 +38,7 @@ import re
     ]
 )
 def test_run_ninja_diff(kwargs, expected_fp):
-    from diffenator import _ninja_diff
+    from diffenator2 import _ninja_diff
 
     _ninja_diff(**kwargs)
 
@@ -78,7 +78,7 @@ def test_run_ninja_diff(kwargs, expected_fp):
     ]
 )
 def test_run_ninja_proof(kwargs, expected_fp):
-    from diffenator import _ninja_proof
+    from diffenator2 import _ninja_proof
 
     _ninja_proof(**kwargs)
     with open(expected_fp) as expected, open("build.ninja") as current:

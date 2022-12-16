@@ -4,7 +4,7 @@ from selenium import webdriver
 from platform import platform
 import os
 from selenium.webdriver.common.by import By
-from diffenator.utils import gen_gifs
+from diffenator2.utils import gen_gifs
 import shutil
 import tempfile
 

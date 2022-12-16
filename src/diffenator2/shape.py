@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import uharfbuzz as hb
 import os
-from diffenator.renderer import PixelDiffer
-from diffenator.template_elements import WordDiff, Glyph, GlyphDiff
+from diffenator2.renderer import PixelDiffer
+from diffenator2.template_elements import WordDiff, Glyph, GlyphDiff
 from pkg_resources import resource_filename
 import tqdm
 
@@ -111,7 +111,7 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
     for script, count in scripts.items():
         if count < 10:
             continue
-        wordlist = resource_filename("diffenator", f"data/wordlists/{script}.txt")
+        wordlist = resource_filename("diffenator2", f"data/wordlists/{script}.txt")
         if not os.path.exists(wordlist):
             print(f"No wordlist for {script}")
             continue

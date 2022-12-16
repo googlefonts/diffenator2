@@ -1,8 +1,8 @@
 import pytest
 from . import *
-from diffenator.font import match_fonts
-from diffenator.font import DFont
-from diffenator.html import diffenator_font_style
+from diffenator2.font import match_fonts
+from diffenator2.font import DFont
+from diffenator2.html import diffenator_font_style
 
 
 @pytest.mark.parametrize(

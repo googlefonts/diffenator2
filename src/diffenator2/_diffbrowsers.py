@@ -24,7 +24,7 @@ gftools gen-html diff -fb ./fonts_before/font1.ttf -fa ./fonts_after/font1.ttf
 """
 from __future__ import annotations
 from pkg_resources import resource_filename
-from diffenator.html import proof_rendering, diff_rendering
+from diffenator2.html import proof_rendering, diff_rendering
 from fontTools.ttLib import TTFont
 from glob import glob
 import os
@@ -50,7 +50,7 @@ def main():
         help="HTML templates. By default, diffenator/templates/diffbrowsers_*.html is used.",
         default=glob(
             os.path.join(
-                resource_filename("diffenator", "templates"), "diffbrowsers*.html"
+                resource_filename("diffenator2", "templates"), "diffbrowsers*.html"
             )
         ),
     )
@@ -101,7 +101,7 @@ def main():
 
     if args.imgs:
         imgs_out = os.path.join(args.out, "imgs")
-        from diffenator.screenshot import screenshot_dir
+        from diffenator2.screenshot import screenshot_dir
 
         screenshot_dir(args.out, imgs_out)
 

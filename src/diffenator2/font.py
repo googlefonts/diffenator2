@@ -2,7 +2,7 @@ from __future__ import annotations
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
 import os
-from diffenator import jfont
+from diffenator2 import jfont
 import uharfbuzz as hb
 import logging
 from blackrenderer.font import BlackRendererFont

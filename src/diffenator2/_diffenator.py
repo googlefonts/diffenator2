@@ -3,15 +3,15 @@
 diffenator2
 """
 from __future__ import annotations
-from diffenator.utils import string_coords_to_dict
-from diffenator.font import DFont, match_fonts
+from diffenator2.utils import string_coords_to_dict
+from diffenator2.font import DFont, match_fonts
 from pkg_resources import resource_filename
 import os
 import argparse
-from diffenator.shape import test_words, test_fonts
-from diffenator.font import DFont
-from diffenator import jfont
-from diffenator.html import diffenator_report
+from diffenator2.shape import test_words, test_fonts
+from diffenator2.font import DFont
+from diffenator2 import jfont
+from diffenator2.html import diffenator_report
 
 
 class DiffFonts:
@@ -45,7 +45,7 @@ def main():
     parser.add_argument(
         "--template",
         default=resource_filename(
-            "diffenator", os.path.join("templates", "diffenator.html")
+            "diffenator2", os.path.join("templates", "diffenator.html")
         ),
     )
     parser.add_argument(
