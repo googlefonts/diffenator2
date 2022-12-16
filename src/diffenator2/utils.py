@@ -137,7 +137,7 @@ def font_sample_text(ttFont: TTFont) -> str:
     that can be formed using the ttFont instance.
     UDHR has been chosen due to the many languages it covers"""
     with open(
-        resource_filename("diffenator", "data/udhr_all.txt"), encoding="utf8"
+        resource_filename("diffenator2", "data/udhr_all.txt"), encoding="utf8"
     ) as doc:
         uhdr = doc.read()
 

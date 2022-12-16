@@ -11,7 +11,7 @@ from blackrenderer.render import (
 )
 from blackrenderer.backends import getSurfaceClass
 from PIL import Image
-from diffenator.font import DFont
+from diffenator2.font import DFont
 import numpy as np
 import freetype as ft
 from dataclasses import dataclass, field

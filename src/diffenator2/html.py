@@ -5,8 +5,8 @@ from jinja2 import Environment, FileSystemLoader
 from fontTools.ttLib import TTFont
 import os
 import shutil
-from diffenator.template_elements import CSSFontStyle, CSSFontFace
-from diffenator.utils import font_sample_text
+from diffenator2.template_elements import CSSFontStyle, CSSFontFace
+from diffenator2.utils import font_sample_text
 import re
 
 

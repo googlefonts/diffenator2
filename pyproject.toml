@@ -26,6 +26,6 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-_diffbrowsers = 'diffenator._diffbrowsers:main'
-_diffenator = 'diffenator._diffenator:main'
-diffenator2 = 'diffenator.__main__:main'
+_diffbrowsers = 'diffenator2._diffbrowsers:main'
+_diffenator = 'diffenator2._diffenator:main'
+diffenator2 = 'diffenator2.__main__:main'

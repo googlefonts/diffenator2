@@ -1,6 +1,6 @@
 import pytest
 from tests import *
-from diffenator.html import CSSFontStyle
+from diffenator2.html import CSSFontStyle
 
 
 @pytest.mark.parametrize(
@@ -12,8 +12,8 @@ from diffenator.html import CSSFontStyle
     ]
 )
 def test_diffenator_font_style_static(fp, expected):
-    from diffenator.html import diffenator_font_style
-    from diffenator.font import DFont
+    from diffenator2.html import diffenator_font_style
+    from diffenator2.font import DFont
 
     font = DFont(fp)
     assert diffenator_font_style(font) == expected
@@ -28,8 +28,8 @@ def test_diffenator_font_style_static(fp, expected):
     ]
 )
 def test_diffenator_font_style_vf(fp, coords, expected):
-    from diffenator.html import diffenator_font_style
-    from diffenator.font import DFont
+    from diffenator2.html import diffenator_font_style
+    from diffenator2.font import DFont
 
     font = DFont(fp)
     font.set_variations(coords)
@@ -54,7 +54,7 @@ def test_diffenator_font_style_vf(fp, coords, expected):
 )
 def test_get_font_style_filtering(fps, filters, style_count):
     from fontTools.ttLib import TTFont
-    from diffenator.html import get_font_styles
+    from diffenator2.html import get_font_styles
 
     ttfonts = [TTFont(fp) for fp in fps]
     styles = get_font_styles(ttfonts, filters=filters)
