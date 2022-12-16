@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "diffenator"
+name = "diffenator2"
 description = "Compare two fonts"
 version = "0.0.1"
 authors = [ "Marc Foley <m.foley.88@gmail.com>" ]
