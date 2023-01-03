@@ -190,8 +190,7 @@
 	}
 	}
 	fontToggle.addEventListener("click", switchFonts);
-	</script>
-    <script>
+
     const divs = document.querySelectorAll('.node');
     divs.forEach(el => el.addEventListener('click', event => {
     var children = event.target.querySelectorAll(".node");
@@ -203,6 +202,83 @@
         }
     })
     }));
+
+	// break text so that no reflow happens
+	async function breakText() {
+	boxContent = document.getElementsByClassName("box")
+	for (i in boxContent) {
+		box = boxContent[i]
+		switchFonts()
+		await sleep(1)
+		break1 = getLineBreaks(box.children[1])
+		switchFonts()
+		await sleep(1)
+		break2 = getLineBreaks(box.children[1])
+
+		if (break1.length > break2.length) {
+		breaks = break1
+		} else {
+		breaks = break2
+		}
+		insertBreaks(box.children[1], breaks)
+	}
+	}
+
+	function getLineBreaks(elem) {
+	const nodes = grabTextNodes(elem);
+	for (const node of nodes) { // each node is a big block of text
+		let rangeIndex = 1;
+		let textIndex = 0;
+		let nodeText = node.textContent;
+		const textLength = nodeText.length;
+
+		linebreaks = []
+		prevLeft = 0;
+		while (rangeIndex <= textLength) {
+		const range = document.createRange();
+		range.setStart(node, rangeIndex-1);
+		range.setEnd(node, rangeIndex)
+		currentLeft = range.getBoundingClientRect().left
+		if (currentLeft < prevLeft) {
+			linebreaks.push(rangeIndex-2)
+		}
+		rangeIndex += 1;
+		prevLeft = currentLeft
+		}
+	}
+	return linebreaks
+	}
+
+	function grabTextNodes(elem) {
+	const walker = document.createTreeWalker(elem, NodeFilter.SHOW_TEXT, null);
+	const nodes = [];
+	while (walker.nextNode()) {
+		nodes.push(walker.currentNode);
+	}
+	return nodes;
+	}
+
+	function sleep(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+
+	function insertBreaks(node, breaks) {
+	console.log(node, breaks)
+	newText = ""
+	currentText = node.textContent
+	for (i=0; i<currentText.length; i++) {
+		if (breaks.includes(i)) {
+		newText += "<br>"
+		} else {
+		newText += currentText[i]
+		}
+	}
+	node.innerHTML = newText
+	}
+
+	breakText()
+
     </script>
 </html>
 
