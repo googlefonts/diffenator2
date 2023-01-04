@@ -63,7 +63,10 @@ class ScreenShotter:
         if not os.path.exists(after_fp):
             os.mkdir(after_fp)
 
+        import time
+        time.sleep(1)
         self.take_png(url, before_fp)
+        time.sleep(1)
         self.take_png(url, after_fp, javascript="switchFonts();")
         gen_gifs(before_fp, after_fp, dst_dir)
 
