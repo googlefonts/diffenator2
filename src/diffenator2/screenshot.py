@@ -44,7 +44,6 @@ class ScreenShotter:
             file_prefix = self._file_prefix(browser)
             filename = os.path.join(dst_dir, f"{file_prefix}.png")
             browser.set_window_size(self.width, 1000)
-            browser.get(url)
             if javascript:
                 browser.execute_script(javascript)
             # recalc since image size since we now know the height

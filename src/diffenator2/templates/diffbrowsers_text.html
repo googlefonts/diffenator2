@@ -17,8 +17,7 @@
 	// break text so that no reflow happens
 	async function breakText() {
 	boxContent = document.getElementsByClassName("box-text")
-	for (i in boxContent) {
-		box = boxContent[i]
+	for (let box of boxContent) {
 		switchFonts()
 		await sleep(1)
 		break1 = getLineBreaks(box)
