@@ -112,3 +112,46 @@
     </div>
   {% endfor %}
 {% endblock %}
+{% block js %}
+function wordBreaks() {
+  words = document.getElementsByClassName("cell-word")
+  res = []
+  prevLine = 0
+  for (i=0; i<words.length; i++) {
+      word = words[i]
+      if (word.getBoundingClientRect().y != prevLine) {
+          res.push(i)
+          prevLine = word.getBoundingClientRect().y
+      }
+  }
+  return res
+}
+
+function insertBreaks() {
+  breaksBefore = wordBreaks()
+  switchFonts()
+  breaksAfter = wordBreaks()
+
+  console.log(breaksBefore.length, breaksAfter.length)
+
+  if (breaksBefore.length > breaksAfter.length) {
+    breaks = beaksAfter
+  } else {
+    breaks = breaksBefore
+  }
+
+  words = document.getElementsByClassName("cell-word")
+  breaks.forEach(function(i) {
+    if (i != 0) {
+      i = i
+    }
+    word = words[i]
+    spacer = document.createElement("div")
+    spacer.className = "spacer"
+    word.parentNode.insertBefore(spacer, word)
+    console.log("inserted")
+  })
+}
+  
+insertBreaks()
+{% endblock %}
