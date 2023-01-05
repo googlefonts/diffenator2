@@ -34,24 +34,20 @@ class ScreenShotter:
                 diff_toggle = None
 
             if diff_toggle:
-                self.take_gif(url, dst_dir)
+                self.take_gif(browser, dst_dir)
             else:
-                self.take_png(url, dst_dir)
+                self.take_png(browser, dst_dir)
 
-    def take_png(self, url: str, dst_dir: str, javascript: str = "") -> list[str]:
-        res = []
-        for browser in self.browsers:
-            file_prefix = self._file_prefix(browser)
-            filename = os.path.join(dst_dir, f"{file_prefix}.png")
-            browser.set_window_size(self.width, 1000)
-            if javascript:
-                browser.execute_script(javascript)
-            # recalc since image size since we now know the height
-            body_el = browser.find_element(By.TAG_NAME, "html")
-            browser.set_window_size(self.width, body_el.size["height"])
-            browser.save_screenshot(filename)
-            res.append(filename)
-        return res
+    def take_png(self, browser: any, dst_dir: str, javascript: str = ""):
+        file_prefix = self._file_prefix(browser)
+        filename = os.path.join(dst_dir, f"{file_prefix}.png")
+        browser.set_window_size(self.width, 1000)
+        if javascript:
+            browser.execute_script(javascript)
+        # recalc since image size since we now know the height
+        body_el = browser.find_element(By.TAG_NAME, "html")
+        browser.set_window_size(self.width, body_el.size["height"])
+        browser.save_screenshot(filename)
 
     def take_gif(self, url: str, dst_dir: str):
         before_fp = os.path.join(dst_dir, "before")
