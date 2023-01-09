@@ -36,6 +36,7 @@ def get_font_styles(ttfonts, suffix="", filters=None):
                 style_name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
                 coords = inst.coordinates
                 if filters and not re.match(filters, style_name):
+                    print(f"Cannot match '{style_name}' in '{filters}'")
                     continue
                 res.append(CSSFontStyle(family_name, style_name, coords, suffix))
         else:
