@@ -36,7 +36,6 @@ def get_font_styles(ttfonts, suffix="", filters=None):
                 style_name = ttfont["name"].getName(name_id, 3, 1, 0x409).toUnicode()
                 coords = inst.coordinates
                 if filters and not re.match(filters, style_name):
-                    print(f"Cannot match '{style_name}' in '{filters}'")
                     continue
                 res.append(CSSFontStyle(family_name, style_name, coords, suffix))
         else:
@@ -170,8 +169,6 @@ def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]
     old = {s.stylename: s for s in styles_old}
     new = {s.stylename: s for s in styles_new}
     shared = set(old) & set(new)
-    print(old, "old")
-    print(new, "new")
     if not shared:
         raise ValueError("No matching fonts found")
     return [s for s in styles_old if s.stylename in shared], [
