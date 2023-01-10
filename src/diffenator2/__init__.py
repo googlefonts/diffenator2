@@ -137,7 +137,7 @@ def _ninja_diff(
     if imgs:
         db_cmd += " --imgs"
     if filter_styles:
-        db_cmd += " --filter-styles '$filters'"
+        db_cmd += ' --filter-styles "$filters"'
     w.rule("diffbrowsers", db_cmd)
     w.newline()
 
