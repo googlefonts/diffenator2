@@ -54,10 +54,7 @@ class Renderer:
         return buf
 
     def render(self, text):
-        if self.font.is_color():
-            return self.render_text_cairo(text)
-        else:
-            return self.render_text_ft(text)
+        return self.render_text_cairo(text)
 
     def render_text_cairo(self, text):
         font = self.font.blackFont
