@@ -11,6 +11,7 @@ from . import *
     "fp, cmd",
     [
         (mavenpro_vf, ["_diffbrowsers", "proof", mavenpro_vf]),
+        (mavenpro_vf, ["_diffbrowsers", "proof", mavenpro_vf, "--imgs"]),
         (mavenpro_vf, ["_diffbrowsers", "proof", mavenpro_vf, "--filter-styles=Medium|ExtraBold"]),
     ]
 )
