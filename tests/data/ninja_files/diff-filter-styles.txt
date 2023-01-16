@@ -3,7 +3,7 @@
 # Build Hinting docs
 rule diffbrowsers
   command = _diffbrowsers diff -fb \$fonts_before -fa \$fonts_after -o \$out \$
-      -pt \$pt_size --imgs --filter-styles '\$filters'
+      -pt \$pt_size --imgs --filter-styles "\$filters"
 
 # Run diffenator VF
 rule diffenator
