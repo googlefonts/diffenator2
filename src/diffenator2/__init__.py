@@ -52,7 +52,7 @@ def _ninja_proof(
     if imgs:
         cmd += " --imgs"
     if filter_styles:
-        cmd += f" --filter-styles '$filters'"
+        cmd += f' --filter-styles "$filters"'
     w.rule("proofing", cmd)
     w.newline()
 
