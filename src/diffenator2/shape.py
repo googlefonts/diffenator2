@@ -152,6 +152,9 @@ def test_words(
             differ.set_lang(lang)
             differ.set_features(features)
 
+            if not word:
+                continue
+
             buf_b = differ.renderer_b.shape(word)
             word_b = Word.from_buffer(word, buf_b)
 

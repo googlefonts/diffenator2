@@ -32,13 +32,10 @@ class Renderer:
     cache: dict[int,any] = field(default_factory=dict)
 
 
-    def shape(self, text, scale=True):
+    def shape(self, text):
         hb_font = self.font.hbFont
         if self.variations:
             hb_font.set_variations(self.variations)
-        if scale:
-            hb_font.scale = (self.font_size * 64, self.font_size * 64)
-
         hb.ot_font_set_funcs(hb_font)
 
         buf = hb.Buffer()
@@ -54,10 +51,8 @@ class Renderer:
         return buf
 
     def render(self, text):
-        if self.font.is_color():
-            return self.render_text_cairo(text)
-        else:
-            return self.render_text_ft(text)
+        # See render_text_ft below
+        return self.render_text_cairo(text)
 
     def render_text_cairo(self, text):
         font = self.font.blackFont
@@ -67,7 +62,7 @@ class Renderer:
         if self.variations:
             font.setLocation(self.variations)
 
-        buf = self.shape(text, scale=False)
+        buf = self.shape(text)
 
         infos = buf.glyph_infos
         positions = buf.glyph_positions
@@ -90,47 +85,52 @@ class Renderer:
                 canvas.translate(glyph.xAdvance, glyph.yAdvance)
         return Image.fromarray(surface._image.toarray())
 
+    # This code was an attempt to render black-and-white fonts
+    # quickly using Freetype and numpy. It was very fast and very
+    # clever, but there were various things we couldn't get working
+    # (in particular, vertical placement of glyphs with offsets)
+    # so we've parked it for now.
 
-    def render_text_ft(self, text: str):
-        ft_face = self.font.ftFont
-        ft_face.set_char_size(self.font_size * 64)
-        buf = self.shape(text)
-        pen = ft.FT_Vector(0, 0)
-        xmin, xmax = 0, 0
-        ymin, ymax = 0, 0
+    # def render_text_ft(self, text: str):
+    #     ft_face = self.font.ftFont
+    #     ft_face.set_char_size(self.font_size * 64)
+    #     buf = self.shape(text)
+    #     pen = ft.FT_Vector(0, 0)
+    #     xmin, xmax = 0, 0
+    #     ymin, ymax = 0, 0
 
-        if not buf.glyph_infos or not buf.glyph_positions:
-            logger.error("Shaping failed for string '%s'", textString)
-            return np.array([])
+    #     if not buf.glyph_infos or not buf.glyph_positions:
+    #         logger.error("Shaping failed for string '%s'", textString)
+    #         return np.array([])
 
-        for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
-            bitmap = get_cached_bitmap(ft_face, glyph.codepoint, self.cache)
-            width = bitmap.width
-            rows = bitmap.rows
-            x0 = (pen.x >> 6) + bitmap.left + (pos.x_offset >> 6)
-            x1 = x0 + width
-            y0 = (pen.y >> 6) - (bitmap.rows - bitmap.top) + (pos.y_offset >> 6)
-            y1 = y0 + rows
-            xmin, xmax = min(xmin, x0), max(xmax, x1)
-            ymin, ymax = min(ymin, y0), max(ymax, y1)
-            pen.x += pos.x_advance
-            pen.y += pos.y_advance
+    #     for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
+    #         bitmap = get_cached_bitmap(ft_face, glyph.codepoint, self.cache)
+    #         width = bitmap.width
+    #         rows = bitmap.rows
+    #         x0 = (pen.x >> 6) + bitmap.left + (pos.x_offset >> 6)
+    #         x1 = x0 + width
+    #         y0 = (pen.y >> 6) - (bitmap.rows - bitmap.top) + (pos.y_offset >> 6)
+    #         y1 = y0 + rows
+    #         xmin, xmax = min(xmin, x0), max(xmax, x1)
+    #         ymin, ymax = min(ymin, y0), max(ymax, y1)
+    #         pen.x += pos.x_advance
+    #         pen.y += pos.y_advance
 
-        L = np.zeros((ymax - ymin, xmax - xmin), dtype=np.ubyte)
-        pen.x, pen.y = 0, 0
-        for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
-            bitmap = get_cached_bitmap(ft_face, glyph.codepoint, self.cache)
-            x = (pen.x >> 6) - xmin + bitmap.left + (pos.x_offset >> 6)
-            y = (pen.y >> 6) - ymin - (bitmap.rows - bitmap.top) + (pos.y_offset >> 6)
-            data = []
-            for j in range(bitmap.rows):
-                data.extend(bitmap.buffer[j * bitmap.pitch : j * bitmap.pitch + bitmap.width])
-            if len(data):
-                Z = np.array(data, dtype=np.ubyte).reshape(bitmap.rows, bitmap.width)
-                L[y : y + bitmap.rows, x : x + bitmap.width] |= Z
-            pen.x += pos.x_advance
-            pen.y += pos.y_advance
-        return Image.fromarray(L)
+    #     L = np.zeros((ymax - ymin, xmax - xmin), dtype=np.ubyte)
+    #     pen.x, pen.y = 0, 0
+    #     for glyph, pos in zip(buf.glyph_infos, buf.glyph_positions):
+    #         bitmap = get_cached_bitmap(ft_face, glyph.codepoint, self.cache)
+    #         x = (pen.x >> 6) - xmin + bitmap.left + (pos.x_offset >> 6)
+    #         y = (pen.y >> 6) - ymin - (bitmap.rows - bitmap.top) + (pos.y_offset >> 6)
+    #         data = []
+    #         for j in range(bitmap.rows):
+    #             data.extend(bitmap.buffer[j * bitmap.pitch : j * bitmap.pitch + bitmap.width])
+    #         if len(data):
+    #             Z = np.array(data, dtype=np.ubyte).reshape(bitmap.rows, bitmap.width)
+    #             L[y : y + bitmap.rows, x : x + bitmap.width] |= Z
+    #         pen.x += pos.x_advance
+    #         pen.y += pos.y_advance
+    #     return Image.fromarray(L)
 
 @dataclass
 class Bitmap:
@@ -203,24 +203,13 @@ class PixelDiffer:
         img_b = self.renderer_b.render(string)
         width = min([img_a.width, img_b.width])
         height = min([img_a.height, img_b.height])
-        diff_pixels = 0
-        diff_map = []
-        channels = 1
-        for x in range(width):
-            for y in range(height):
-                px_a = img_a.getpixel((x, y))
-                px_b = img_b.getpixel((x, y))
-                if isinstance(px_a, int) and isinstance(px_b, int):
-                    diff_pixel = abs(px_a - px_b)
-                else:
-                    diff_pixel = sum(abs(a-b) for a,b in zip(px_a, px_b))
-                    channels = 4
-                diff_pixels += diff_pixel
-                diff_map.append(diff_pixel)
-        try:
-            pc = 100 * diff_pixels / (width * height * 256 * channels)
-        except ZeroDivisionError:
-            pc = 0
+        img_a = np.asarray(img_a)[0:height, 0:width, :]
+        img_b = np.asarray(img_b)[0:height, 0:width, :]
+
+        diff_map = np.abs(img_a-img_b)
+        if np.size(diff_map) == 0:
+            return 0, []
+        pc = np.sum(diff_map) / np.size(diff_map)
         return pc, diff_map
 
 
