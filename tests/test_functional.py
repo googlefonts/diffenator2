@@ -8,14 +8,15 @@ from . import *
 
 
 @pytest.mark.parametrize(
-    "fp",
+    "fp, cmd",
     [
-        (mavenpro_vf),
+        (mavenpro_vf, ["_diffbrowsers", "proof", mavenpro_vf]),
+        (mavenpro_vf, ["_diffbrowsers", "proof", mavenpro_vf, "--filter-styles=Medium|ExtraBold"]),
     ]
 )
-def test_run_diffbrowsers_proof(fp):
+def test_run_diffbrowsers_proof(fp, cmd):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        subprocess.run(["_diffbrowsers", "proof", fp, "-o", tmp_dir], check=True)
+        subprocess.run(cmd+["-o", tmp_dir], check=True)
 
         # check files are packaged
         assert any(f.endswith(".html") for f in os.listdir(tmp_dir))
