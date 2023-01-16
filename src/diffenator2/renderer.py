@@ -32,13 +32,10 @@ class Renderer:
     cache: dict[int,any] = field(default_factory=dict)
 
 
-    def shape(self, text, scale=True):
+    def shape(self, text):
         hb_font = self.font.hbFont
         if self.variations:
             hb_font.set_variations(self.variations)
-        if scale:
-            hb_font.scale = (self.font_size * 64, self.font_size * 64)
-
         hb.ot_font_set_funcs(hb_font)
 
         buf = hb.Buffer()
@@ -64,7 +61,7 @@ class Renderer:
         if self.variations:
             font.setLocation(self.variations)
 
-        buf = self.shape(text, scale=False)
+        buf = self.shape(text)
 
         infos = buf.glyph_infos
         positions = buf.glyph_positions
