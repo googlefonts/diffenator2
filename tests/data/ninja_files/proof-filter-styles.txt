@@ -2,7 +2,7 @@
 
 rule proofing
   command = _diffbrowsers proof \$fonts -o \$out/diffbrowsers -pt \$pt_size \$
-      --imgs --filter-styles '\$filters'
+      --imgs --filter-styles "\$filters"
 
 # Build rules
 build out: proofing
