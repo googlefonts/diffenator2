@@ -197,24 +197,13 @@ class PixelDiffer:
         img_b = self.renderer_b.render(string)
         width = min([img_a.width, img_b.width])
         height = min([img_a.height, img_b.height])
-        diff_pixels = 0
-        diff_map = []
-        channels = 1
-        for x in range(width):
-            for y in range(height):
-                px_a = img_a.getpixel((x, y))
-                px_b = img_b.getpixel((x, y))
-                if isinstance(px_a, int) and isinstance(px_b, int):
-                    diff_pixel = abs(px_a - px_b)
-                else:
-                    diff_pixel = sum(abs(a-b) for a,b in zip(px_a, px_b))
-                    channels = 4
-                diff_pixels += diff_pixel
-                diff_map.append(diff_pixel)
-        try:
-            pc = 100 * diff_pixels / (width * height * 256 * channels)
-        except ZeroDivisionError:
-            pc = 0
+        img_a = np.asarray(img_a)[0:height, 0:width, :]
+        img_b = np.asarray(img_b)[0:height, 0:width, :]
+
+        diff_map = np.abs(img_a-img_b)
+        if np.size(diff_map) == 0:
+            return 0, []
+        pc = np.sum(diff_map) / np.size(diff_map)
         return pc, diff_map
 
 
