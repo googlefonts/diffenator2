@@ -46,9 +46,9 @@ def _ninja_proof(
     w = Writer(open(os.path.join("build.ninja"), "w", encoding="utf8"))
     w.comment("Rules")
     w.newline()
-    out_s = f"$out{os.path.sep}diffbrowsers"
+    out_s = os.path.join("out", "diffbrowsers")
 
-    cmd = f"_diffbrowsers proof $fonts -o {out_s} -pt $pt_size"
+    cmd = f"_diffbrowsers proof $fonts -o $out -pt $pt_size"
     if imgs:
         cmd += " --imgs"
     if filter_styles:
@@ -59,8 +59,8 @@ def _ninja_proof(
     # Setup build
     w.comment("Build rules")
     variables = dict(
-        fonts=[f.reader.file.name for f in fonts],
-        out=out,
+        fonts=[os.path.abspath(f.reader.file.name) for f in fonts],
+        out=out_s,
         pt_size=pt_size
     )
     if imgs:

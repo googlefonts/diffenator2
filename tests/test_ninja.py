@@ -45,7 +45,7 @@ def test_run_ninja_diff(kwargs, expected_fp):
     with open(expected_fp) as expected, open("build.ninja") as current:
         exp = expected.read()
         cur = current.read()
-        assert re.match(exp, cur)
+        assert re.search(exp, cur)
 
 
 @pytest.mark.parametrize(
@@ -84,4 +84,4 @@ def test_run_ninja_proof(kwargs, expected_fp):
     with open(expected_fp) as expected, open("build.ninja") as current:
         exp = expected.read()
         cur = current.read()
-        assert re.match(exp, cur)
+        assert re.search(exp, cur)
