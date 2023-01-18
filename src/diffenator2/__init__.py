@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-MAX_STYLES = 4
+MAX_STYLES = 2
 
 
 def ninja_proof(
