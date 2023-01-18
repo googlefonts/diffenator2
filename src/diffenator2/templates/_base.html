@@ -197,7 +197,9 @@
 	  }
 	}
 	}
-	fontToggle.addEventListener("click", switchFonts);
+	if (fontToggle !== null) {
+		fontToggle.addEventListener("click", switchFonts);
+	}
 
     const divs = document.querySelectorAll('.node');
     divs.forEach(el => el.addEventListener('click', event => {
