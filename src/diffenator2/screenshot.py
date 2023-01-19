@@ -25,6 +25,7 @@ class ScreenShotter:
         return f"{plat}_{browser}_{browser_version}".replace(" ", "-")
 
     def take(self, url: str, dst_dir: str):
+        print(f"taking {url}")
         for browser in self.browsers:
             browser.get(url)
 
@@ -47,8 +48,12 @@ class ScreenShotter:
         if javascript:
             browser.execute_script(javascript)
         # recalc since image size since we now know the height
+
+        print(f"finding tag")
         body_el = browser.find_element(By.TAG_NAME, "html")
+        print(f"setting window size")
         browser.set_window_size(self.width, body_el.size["height"])
+        print(f"saving screenshot")
         browser.save_screenshot(filename)
 
     def take_gif(self, url: str, dst_dir: str):
