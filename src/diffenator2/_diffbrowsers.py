@@ -99,6 +99,11 @@ def main():
             pt_size=args.pt_size,
         )
 
+    if args.imgs:
+        imgs_out = os.path.join(args.out, "imgs")
+        from diffenator2.screenshot import screenshot_dir
+
+        screenshot_dir(args.out, imgs_out)
 
 
 if __name__ == "__main__":

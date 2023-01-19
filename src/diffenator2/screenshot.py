@@ -51,7 +51,7 @@ class ScreenShotter:
         browser.set_window_size(self.width, body_el.size["height"])
         browser.save_screenshot(filename)
 
-    def take_gif(self, browser: any, dst_dir: str):
+    def take_gif(self, url: str, dst_dir: str):
         before_fp = os.path.join(dst_dir, "before")
         if not os.path.exists(before_fp):
             os.mkdir(before_fp)
@@ -62,9 +62,9 @@ class ScreenShotter:
 
         import time
         time.sleep(1)
-        self.take_png(browser, before_fp)
+        self.take_png(url, before_fp)
         time.sleep(1)
-        self.take_png(browser, after_fp, javascript="switchFonts();")
+        self.take_png(url, after_fp, javascript="switchFonts();")
         gen_gifs(before_fp, after_fp, dst_dir)
 
     def set_width(self, width: int):
