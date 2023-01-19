@@ -30,12 +30,14 @@ class ScreenShotter:
 
             try:
                 diff_toggle = browser.find_element(By.ID, "font-toggle")
-            except selenium.common.exceptions.NoSuchElementException:
+            except:
                 diff_toggle = None
 
             if diff_toggle:
                 self.take_gif(browser, dst_dir)
             else:
+                import time
+                time.sleep(1)
                 self.take_png(browser, dst_dir)
 
     def take_png(self, browser: any, dst_dir: str, javascript: str = ""):
