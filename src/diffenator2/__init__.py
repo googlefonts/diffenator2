@@ -69,7 +69,7 @@ def _ninja_proof(
         variables["filters"] = filter_styles
     w.build(out, "proofing", variables=variables)
     w.close()
-    ninja._program("ninja", [])
+    ninja._program("ninja", ["-j 1"])
 
 
 def ninja_diff(
