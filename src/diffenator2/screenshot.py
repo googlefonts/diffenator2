@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from diffenator2.utils import gen_gifs
 import shutil
 import tempfile
+import sys
 
 
 class ScreenShotter:
@@ -34,11 +35,11 @@ class ScreenShotter:
             except:
                 diff_toggle = None
 
-            if diff_toggle:
-                self.take_gif(browser, dst_dir)
+            # Windows doesnt like take_png. I've debugged it for ages so
+            # I'm giving up for the time being
+            if diff_toggle or sys.platform in ["win32", "cygwin"]:
+                self.take_gif(browser, dst_dir, diff_toggle)
             else:
-                import time
-                time.sleep(1)
                 self.take_png(browser, dst_dir)
 
     def take_png(self, browser: any, dst_dir: str, javascript: str = ""):
@@ -56,7 +57,7 @@ class ScreenShotter:
         print(f"saving screenshot")
         browser.save_screenshot(filename)
 
-    def take_gif(self, url: str, dst_dir: str):
+    def take_gif(self, url: str, dst_dir: str, font_toggle):
         before_fp = os.path.join(dst_dir, "before")
         if not os.path.exists(before_fp):
             os.mkdir(before_fp)
@@ -69,7 +70,7 @@ class ScreenShotter:
         time.sleep(1)
         self.take_png(url, before_fp)
         time.sleep(1)
-        self.take_png(url, after_fp, javascript="switchFonts();")
+        self.take_png(url, after_fp, javascript="switchFonts();" if font_toggle else None)
         gen_gifs(before_fp, after_fp, dst_dir)
 
     def set_width(self, width: int):
