@@ -67,7 +67,7 @@ def _ninja_proof(
         variables["imgs"] = imgs
     if filter_styles:
         variables["filters"] = filter_styles
-    w.build(out, "proofing", variables=variables)
+    w.build(out_s, "proofing", variables=variables)
     w.close()
     ninja._program("ninja", [])
 
