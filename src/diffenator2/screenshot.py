@@ -7,7 +7,6 @@ from selenium.webdriver.common.by import By
 from diffenator2.utils import gen_gifs
 import shutil
 import tempfile
-import time
 
 
 class ScreenShotter:
@@ -27,8 +26,6 @@ class ScreenShotter:
 
     def take(self, url: str, dst_dir: str):
         print(f"taking {url}")
-        if not os.path.exists(dst_dir):
-            os.mkdir(dst_dir)
         for browser in self.browsers:
             browser.get(url)
 
@@ -40,15 +37,15 @@ class ScreenShotter:
             if diff_toggle:
                 self.take_gif(browser, dst_dir)
             else:
-                self.take_proof(browser, dst_dir)
+                import time
+                time.sleep(1)
+                self.take_png(browser, dst_dir)
 
     def take_png(self, browser: any, dst_dir: str, javascript: str = ""):
         file_prefix = self._file_prefix(browser)
         filename = os.path.join(dst_dir, f"{file_prefix}.png")
-        if os.path.exists(filename):
-            os.remove(filename)
         browser.set_window_size(self.width, 1000)
-        if javascript != "":
+        if javascript:
             browser.execute_script(javascript)
         # recalc since image size since we now know the height
 
@@ -68,17 +65,12 @@ class ScreenShotter:
         if not os.path.exists(after_fp):
             os.mkdir(after_fp)
 
+        import time
         time.sleep(1)
         self.take_png(url, before_fp)
         time.sleep(1)
         self.take_png(url, after_fp, javascript="switchFonts();")
         gen_gifs(before_fp, after_fp, dst_dir)
-    
-    def take_proof(self, browser: any, dst_dir: str):
-        time.sleep(1)
-        self.take_png(browser, dst_dir)
-        time.sleep(1)
-
 
     def set_width(self, width: int):
         # we don't care about setting height since we will always return a
