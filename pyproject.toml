@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "diffenator2"
 description = "Compare two fonts"
-version = "0.0.1"
 authors = [ "Marc Foley <m.foley.88@gmail.com>" ]
+version = "0"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+source = "git-tag"
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
@@ -22,8 +26,8 @@ tqdm = "^4.64.1"
 youseedee = "^0.3.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry.scripts]
 _diffbrowsers = 'diffenator2._diffbrowsers:main'
