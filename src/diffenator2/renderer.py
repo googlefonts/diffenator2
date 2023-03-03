@@ -68,14 +68,16 @@ class Renderer:
         infos = buf.glyph_infos
         positions = buf.glyph_positions
         glyphLine = buildGlyphLine(infos, positions, glyphNames)
-        bounds = calcGlyphLineBounds(glyphLine, font)
+        orig_bounds = calcGlyphLineBounds(glyphLine, font)
+        extents = self.font.hbFont.get_font_extents(buf.direction)
+        bounds = (0, extents.descender, orig_bounds[2], extents.ascender)
         bounds = scaleRect(bounds, scaleFactor, scaleFactor)
         bounds = insetRect(bounds, -self.margin, -self.margin)
         bounds = intRect(bounds)
         surfaceClass = getSurfaceClass("skia", ".png")
 
         surface = surfaceClass()
-        if bounds[2] == 0 and bounds[3] == 0:
+        if orig_bounds[2] == 0 and orig_bounds[3] ==0:
             return Image.new("RGBA", (0,0))
         with surface.canvas(bounds) as canvas:
             canvas.scale(scaleFactor)
