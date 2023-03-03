@@ -71,10 +71,8 @@ def match_fonts(
     logger.info(
         f"Matching {os.path.basename(old_font.path)} to {os.path.basename(new_font.path)}"
     )
-    if scale_upm:
-        ratio = new_font.ttFont["head"].unitsPerEm / old_font.ttFont["head"].unitsPerEm
-        if ratio != 1.0:
-            scale_upem(old_font.ttFont, ratio)
+    if scale_upm and new_font.ttFont["head"].unitsPerEm != old_font.ttFont["head"].unitsPerEm:
+        scale_upem(old_font.ttFont, new_font.ttFont["head"].unitsPerEm)
 
     if variations and old_font.is_variable() and new_font.is_variable():
         old_font.set_variations(variations)
