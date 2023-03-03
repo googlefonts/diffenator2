@@ -16,6 +16,7 @@ import numpy as np
 import freetype as ft
 from dataclasses import dataclass, field
 
+FONT_SIZE = 28
 
 logger = logging.getLogger(__name__)
 
@@ -67,14 +68,16 @@ class Renderer:
         infos = buf.glyph_infos
         positions = buf.glyph_positions
         glyphLine = buildGlyphLine(infos, positions, glyphNames)
-        bounds = calcGlyphLineBounds(glyphLine, font)
+        orig_bounds = calcGlyphLineBounds(glyphLine, font)
+        extents = self.font.hbFont.get_font_extents(buf.direction)
+        bounds = (0, extents.descender, orig_bounds[2], extents.ascender)
         bounds = scaleRect(bounds, scaleFactor, scaleFactor)
         bounds = insetRect(bounds, -self.margin, -self.margin)
         bounds = intRect(bounds)
         surfaceClass = getSurfaceClass("skia", ".png")
 
         surface = surfaceClass()
-        if bounds[2] == 0 and bounds[3] == 0:
+        if orig_bounds[2] == 0 and orig_bounds[3] ==0:
             return Image.new("RGBA", (0,0))
         with surface.canvas(bounds) as canvas:
             canvas.scale(scaleFactor)
@@ -169,7 +172,7 @@ class PixelDiffer:
     def __post_init__(self):
         self.renderer_a = Renderer(
             self.font_a,
-            font_size=28,
+            font_size=FONT_SIZE,
             margin=0,
             features=self.features,
             script=self.script,
@@ -178,7 +181,7 @@ class PixelDiffer:
         )
         self.renderer_b = Renderer(
             self.font_b,
-            font_size=28,
+            font_size=FONT_SIZE,
             margin=0,
             features=self.features,
             script=self.script,
