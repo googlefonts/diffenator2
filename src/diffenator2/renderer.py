@@ -16,6 +16,7 @@ import numpy as np
 import freetype as ft
 from dataclasses import dataclass, field
 
+FONT_SIZE = 28
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +170,7 @@ class PixelDiffer:
     def __post_init__(self):
         self.renderer_a = Renderer(
             self.font_a,
-            font_size=28,
+            font_size=FONT_SIZE,
             margin=0,
             features=self.features,
             script=self.script,
@@ -178,7 +179,7 @@ class PixelDiffer:
         )
         self.renderer_b = Renderer(
             self.font_b,
-            font_size=28,
+            font_size=FONT_SIZE,
             margin=0,
             features=self.features,
             script=self.script,
