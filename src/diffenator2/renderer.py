@@ -70,7 +70,7 @@ class Renderer:
         glyphLine = buildGlyphLine(infos, positions, glyphNames)
         orig_bounds = calcGlyphLineBounds(glyphLine, font)
         extents = self.font.hbFont.get_font_extents(buf.direction)
-        bounds = (0, extents.descender, orig_bounds[2], extents.ascender)
+        bounds = (orig_bounds[0], extents.descender, orig_bounds[2], extents.ascender)
         bounds = scaleRect(bounds, scaleFactor, scaleFactor)
         bounds = insetRect(bounds, -self.margin, -self.margin)
         bounds = intRect(bounds)
