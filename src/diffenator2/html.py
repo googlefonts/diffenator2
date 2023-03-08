@@ -7,6 +7,7 @@ import os
 import shutil
 from diffenator2.template_elements import CSSFontStyle, CSSFontFace
 from diffenator2.utils import font_sample_text
+from glyphsets import GFTestData
 import re
 
 
@@ -85,6 +86,7 @@ def proof_rendering(ttFonts, templates, dst="out", filter_styles=None, pt_size=2
     font_faces = [CSSFontFace(f) for f in ttFonts]
     font_styles = get_font_styles(ttFonts, filters=filter_styles)
     sample_text = " ".join(font_sample_text(ttFonts[0]))
+    test_strings = GFTestData.test_strings_in_font(ttFonts[0])
     glyphs = [chr(c) for c in ttFonts[0].getBestCmap()]
     _package(
         templates,
@@ -93,6 +95,7 @@ def proof_rendering(ttFonts, templates, dst="out", filter_styles=None, pt_size=2
         font_styles=font_styles,
         sample_text=sample_text,
         glyphs=glyphs,
+        test_strings=test_strings,
         pt_size=pt_size,
     )
 
