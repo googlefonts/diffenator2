@@ -1,24 +1,114 @@
 {% extends "_base.html" %}
 {% block title %}Proofer{% endblock %}
+{% block style %}
+{{ super() }}
+#toolbar {
+    float:right;
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    cursor: default;
+    user-select: none; /* Standard */
+    border: 1px solid black;
+    font-size: 9pt;
+}
+#toggle {
+    padding: 5px;
+    color: white;
+    background-color: black;
+
+}
+#pt-dropdown {
+    padding: 5px;
+    background-color: white;
+}
+{% endblock %}
 
 {% block content_name %}
 <b>Proofer</b>
 {% endblock %}
 {% block content %}
-    {% for glyph_set, section in test_strings.items() %}
+<div id="toolbar">
+    <div id="toggle">
+        Line by line
+    </div>
+    <div id="pt-dropdown">
+        <label for="pt-size">Font Size:</label>
+            <select id="pt-selector" name="pt">
+            <option value="10pt">10pt</option>
+            <option selected="selected" value="{{ pt_size }}pt">{{ pt_size }}pt</option>
+            <option value="48pt">48pt</option>
+            <option value="96pt">96pt</option>
+        </select>
+    </div>
+</div>
+
+    <div id="family-grouped">
+        {% for glyph_set, section in test_strings.items() %}
         <h3>Glyphset: {{ glyph_set }}</h3>
         {% for section_title, strings in section.items() %}
             <div class="box">
             <div class="box-title">{{ section_title }}</div>
             {% for string in strings %}
             {% for font_class in font_styles or font_styles_old or font_styles_new %}
-                <span class="{{ font_class.class_name }}" style="font-size: {{ pt_size }}pt">
+                <div class="{{ font_class.class_name }} texty" style="font-size: {{ pt_size }}pt">
                     {{ string }}<br>
-                </span>
+                </div>
             {% endfor %}
             <br>
             {% endfor %}
         </div>
         {% endfor %}
     {% endfor %}
+    </div>
+
+    <div id="side-grouped">
+        {% for glyph_set, section in test_strings.items() %}
+        <h3>Glyphset: {{ glyph_set }}</h3>
+        {% for font_class in font_styles or font_styles_old or font_styles_new %}
+        <div class="box-title">{{ font_class.class_name }} {{ pt_size }}pt</div>
+        {% for section_title, strings in section.items() %}
+            <div class="box">
+            <div class="box-title">{{ section_title }}</div>
+            {% for string in strings %}
+                <div class="{{ font_class.class_name }} texty" style="font-size: {{ pt_size }}pt">
+                    {{ string }}<br>
+                </div>
+            {% endfor %}
+            <br>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    {% endfor %} 
+    </div>
+
+    <script>
+        visible = true
+        function toggleGroup() {
+            var toggle = document.getElementById("toggle")
+            if (visible === true) {
+                document.getElementById("family-grouped").style.display = "none"
+                document.getElementById("side-grouped").style.display = "block"
+                visible = false
+                toggle.innerHTML = "Fonts stacked"
+            } else {
+                document.getElementById("family-grouped").style.display = "block"
+                document.getElementById("side-grouped").style.display = "none"
+                visible = true
+                toggle.innerHTML = "Line by line"
+            }
+        }
+        document.getElementById("toggle").addEventListener("click", toggleGroup)
+        
+        var ptSelector = document.getElementById("pt-selector");
+        ptSelector.addEventListener("change", function(e) {
+            var newPtSize = e.target.value
+            textBoxes = document.getElementsByClassName("texty")
+            for (i=0; i<textBoxes.length; i++) {
+                var textBox = textBoxes[i]
+                textBox.style.fontSize = newPtSize
+            }
+
+        })
+    </script>
 {% endblock %}
