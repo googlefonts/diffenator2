@@ -110,6 +110,7 @@ def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles
     font_styles_old, font_styles_new = _match_styles(font_styles_old, font_styles_new)
 
     sample_text = " ".join(font_sample_text(ttFonts_old[0]))
+    test_strings = GFTestData.test_strings_in_font(ttFonts_old[0])
     glyphs = [chr(c) for c in ttFonts_old[0].getBestCmap()]
     _package(
         templates,
@@ -121,6 +122,7 @@ def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles
         include_ui=True,
         sample_text=sample_text,
         glyphs=glyphs,
+        test_strings=test_strings,
         pt_size=pt_size,
     )
 
