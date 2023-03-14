@@ -224,6 +224,7 @@ if __name__ == "__main__":
     parser.add_argument("--lang", metavar="LANGUAGE")
     parser.add_argument("--script", metavar="SCRIPT")
     parser.add_argument("--features", metavar="FEATURES")
+    parser.add_argument("--variations", metavar="VARIATIONS")
     parser.add_argument("-pt", help="point size", default=250, type=int)
     # TODO add variations
     args = parser.parse_args()
@@ -240,11 +241,19 @@ if __name__ == "__main__":
             else:
                 features[f] = True
 
+    variations = None
+    if args.variations:
+        variations = {}
+        for f in args.variations.split(","):
+            axis, loc = f.split("=")
+            variations[axis] = float(loc)
+
     img = Renderer(
         font,
         features=features,
         lang=args.lang,
         script=args.script,
         font_size=args.pt,
+        variations=variations
     ).render(args.string)
     img.save(args.out)
