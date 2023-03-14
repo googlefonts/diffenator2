@@ -12,7 +12,7 @@
     border: 1px solid black;
     font-size: 9pt;
 }
-#toggle {
+#view-button {
     padding: 5px;
     color: white;
     background-color: black;
@@ -22,6 +22,15 @@
     padding: 5px;
     background-color: white;
 }
+#side-by-side {
+    width: 6000px;
+}
+.box-side-by-side {
+    word-break: break-all;
+    float: left;
+    min-width: 200px;
+    max-width: 500px;
+}
 {% endblock %}
 
 {% block content_name %}
@@ -29,7 +38,7 @@
 {% endblock %}
 {% block content %}
 <div id="toolbar">
-    <div id="toggle">
+    <div id="view-button">
         Line by line
     </div>
     <div id="pt-dropdown">
@@ -43,7 +52,7 @@
     </div>
 </div>
 
-    <div id="family-grouped">
+<div id="line-by-line" style="display: block;">
         {% for glyph_set, section in test_strings.items() %}
         <h3>Glyphset: {{ glyph_set }}</h3>
         {% for section_title, strings in section.items() %}
@@ -62,53 +71,171 @@
     {% endfor %}
     </div>
 
-    <div id="side-grouped">
-        {% for glyph_set, section in test_strings.items() %}
-        <h3>Glyphset: {{ glyph_set }}</h3>
-        {% for font_class in font_styles or font_styles_old or font_styles_new %}
+    
+
+<div id="font-by-font" style="display: none;">
+{% for glyph_set, section in test_strings.items() %}
+    <h3>Glyphset: {{ glyph_set }}</h3>
+    {% for font_class in font_styles or font_styles_old or font_styles_new %}
         <div class="box-title">{{ font_class.class_name }} {{ pt_size }}pt</div>
         {% for section_title, strings in section.items() %}
             <div class="box">
-            <div class="box-title">{{ section_title }}</div>
-            {% for string in strings %}
-                <div class="{{ font_class.class_name }} texty" style="font-size: {{ pt_size }}pt">
-                    {{ string }}<br>
+                <div class="box-title">{{ section_title }}</div>
+                {% for string in strings %}
+                    <div class="{{ font_class.class_name }}" style="font-size: {{ pt_size }}pt">{{ string }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% endfor %}
+{% endfor %} 
+</div>
+
+
+<div id="side-by-side" style="display: none;">
+{% for glyph_set, section in test_strings.items() %}
+    <h3>Glyphset: {{ glyph_set }}</h3>
+    {% for font_class in font_styles or font_styles_old or font_styles_new %}
+        <div class="box-side-by-side">
+            <div class="box-title">{{ font_class.class_name }} {{ pt_size }}pt</div>
+            {% for section_title, strings in section.items() %}
+                <div class="box">
+                    <div class="box-title">{{ section_title }}</div>
+                    {% for string in strings %}
+                        <div class="{{ font_class.class_name }} texty" style="font-size: {{ pt_size }}pt">{{ string }}</div>
+                    {% endfor %}
                 </div>
             {% endfor %}
-            <br>
-            {% endfor %}
         </div>
-        {% endfor %}
-    {% endfor %} 
-    </div>
+    {% endfor %}
+{% endfor %} 
+</div>
 
-    <script>
-        visible = true
-        function toggleGroup() {
-            var toggle = document.getElementById("toggle")
-            if (visible === true) {
-                document.getElementById("family-grouped").style.display = "none"
-                document.getElementById("side-grouped").style.display = "block"
-                visible = false
-                toggle.innerHTML = "Fonts stacked"
-            } else {
-                document.getElementById("family-grouped").style.display = "block"
-                document.getElementById("side-grouped").style.display = "none"
-                visible = true
-                toggle.innerHTML = "Line by line"
+
+{% endblock %}
+{% block js %}
+    
+state = "line-by-line"
+function viewMode() {
+    var viewButton = document.getElementById("view-button")
+    if (state === "line-by-line") {
+        document.getElementById("line-by-line").style.display = "none"
+        document.getElementById("font-by-font").style.display = "block"
+        document.getElementById("side-by-side").style.display = "none"
+        state = "font-by-font"
+        viewButton.innerHTML = "Font by font"
+    } else if (state === "font-by-font") {
+        document.getElementById("line-by-line").style.display = "none"
+        document.getElementById("font-by-font").style.display = "none"
+        document.getElementById("side-by-side").style.display = "block"
+        state = "side-by-side"
+        viewButton.innerHTML = "Side by side"
+    } else if (state === "side-by-side") {
+        document.getElementById("line-by-line").style.display = "block"
+        document.getElementById("font-by-font").style.display = "none"
+        document.getElementById("side-by-side").style.display = "none"
+        state = "line-by-line"
+        viewButton.innerHTML = "Line by line"
+    }
+}
+document.getElementById("view-button").addEventListener("click", viewMode)
+    
+    var ptSelector = document.getElementById("pt-selector");
+    ptSelector.addEventListener("change", function(e) {
+        var newPtSize = e.target.value
+        textBoxes = document.getElementsByClassName("texty")
+        for (i=0; i<textBoxes.length; i++) {
+            var textBox = textBoxes[i]
+            textBox.style.fontSize = newPtSize
+        }
+
+    })
+
+// break text for side by side view
+async function breakText() {
+var boxContent = document.getElementsByClassName("box-side-by-side")
+var paragraphs = boxContent[0].getElementsByClassName("texty")
+
+for (j=0; j<paragraphs.length; j++) {
+    res = []
+    for (i=0; i<boxContent.length; i++) {
+        box = boxContent[i]
+        paras = box.getElementsByClassName("texty")
+        para = paras[j]
+        breaks = getLineBreaks(para)
+        // populate if empty
+        if (res.length === 0) {
+            res = breaks
+        // replace tighter linebreaks
+        } else {
+            for (k=0; k<breaks.length; k++) {
+                if (k >= res.length) {
+                    res.push(breaks[k])
+                } else if (breaks[k] <= res[k]) {
+                    res[k] = breaks[k]
+                }
             }
         }
-        document.getElementById("toggle").addEventListener("click", toggleGroup)
-        
-        var ptSelector = document.getElementById("pt-selector");
-        ptSelector.addEventListener("change", function(e) {
-            var newPtSize = e.target.value
-            textBoxes = document.getElementsByClassName("texty")
-            for (i=0; i<textBoxes.length; i++) {
-                var textBox = textBoxes[i]
-                textBox.style.fontSize = newPtSize
-            }
 
-        })
-    </script>
+    }
+    for (ii=0; ii<boxContent.length; ii++) {
+        box = boxContent[ii]
+        paras = box.getElementsByClassName("texty")
+        para = paras[j]
+        insertBreaks(para, res)
+    }
+}
+}
+
+
+function getLineBreaks(elem) {
+const nodes = grabTextNodes(elem);
+for (const node of nodes) { // each node is a big block of text
+    let rangeIndex = 1;
+    let textIndex = 0;
+    let nodeText = node.textContent;
+    const textLength = nodeText.length;
+
+    linebreaks = []
+    prevTop = 0;
+    while (rangeIndex <= textLength) {
+        const range = document.createRange();
+        range.setStart(node, rangeIndex-1);
+        range.setEnd(node, rangeIndex)
+        currentTop = range.getBoundingClientRect().top
+    if (currentTop > prevTop) {
+        if (rangeIndex-2 !== -1) {
+            linebreaks.push(rangeIndex-2)
+        }
+    }
+    rangeIndex += 1;
+    prevTop = currentTop
+    }
+}
+return linebreaks
+}
+
+function grabTextNodes(elem) {
+const walker = document.createTreeWalker(elem, NodeFilter.SHOW_TEXT, null);
+const nodes = [];
+while (walker.nextNode()) {
+    nodes.push(walker.currentNode);
+}
+return nodes;
+}
+
+function insertBreaks(node, breaks) {
+console.log(node.innerHTML, breaks)
+newText = ""
+currentText = node.textContent
+for (jj=0; jj<currentText.length; jj++) {
+    if (breaks.includes(jj)) {
+        newText += "<br>"
+    } else {
+        newText += currentText[jj]
+    }
+}
+node.innerHTML = newText
+}
+
+
 {% endblock %}
