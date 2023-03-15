@@ -70,14 +70,23 @@ class Renderer:
         glyphLine = buildGlyphLine(infos, positions, glyphNames)
         orig_bounds = calcGlyphLineBounds(glyphLine, font)
         extents = self.font.hbFont.get_font_extents(buf.direction)
-        bounds = (orig_bounds[0], extents.descender, orig_bounds[2], extents.ascender)
+        # bounds is a tuple defined as (xMin, yMin, xMax, yMax)
+        bounds = (
+            min(orig_bounds[0], orig_bounds[2]),
+            min(extents.descender, extents.ascender),
+            max(orig_bounds[0], orig_bounds[2]),
+            max(extents.descender, extents.ascender),
+        )
         bounds = scaleRect(bounds, scaleFactor, scaleFactor)
         bounds = insetRect(bounds, -self.margin, -self.margin)
         bounds = intRect(bounds)
         surfaceClass = getSurfaceClass("skia", ".png")
 
         surface = surfaceClass()
-        if orig_bounds[2] == 0 and orig_bounds[3] ==0:
+        # return empty canvas if either width or height == 0. Not doing so
+        # causes Skia to raise a null pointer error
+        if orig_bounds[0] == orig_bounds[2] or \
+            orig_bounds[1] == orig_bounds[3]:
             return Image.new("RGBA", (0,0))
         with surface.canvas(bounds) as canvas:
             canvas.scale(scaleFactor)
