@@ -58,7 +58,7 @@
             <div class="box-title">{{ section_title }}</div>
             {% for string in strings %}
             {% for font_class in font_styles or font_styles_old or font_styles_new %}
-                <div class="{{ font_class.class_name }} texty" style="font-size: {{ pt_size }}pt">
+                <div class="box-text {{ font_class.class_name }}" style="font-size: {{ pt_size }}pt">
                     {{ string }}<br>
                 </div>
             {% endfor %}
@@ -80,7 +80,7 @@
             <div class="box">
                 <div class="box-title">{{ section_title }}</div>
                 {% for string in strings %}
-                    <div class="{{ font_class.class_name }}" style="font-size: {{ pt_size }}pt">{{ string }}</div>
+                    <div class="box-text {{ font_class.class_name }}" style="font-size: {{ pt_size }}pt">{{ string }}</div>
                 {% endfor %}
             </div>
         {% endfor %}
@@ -99,7 +99,7 @@
                 <div class="box">
                     <div class="box-title">{{ section_title }}</div>
                     {% for string in strings %}
-                        <div class="{{ font_class.class_name }} texty" style="font-size: {{ pt_size }}pt">{{ string }}</div>
+                        <div class="box-text {{ font_class.class_name }} box-text" style="font-size: {{ pt_size }}pt">{{ string }}</div>
                     {% endfor %}
                 </div>
             {% endfor %}
@@ -141,7 +141,7 @@ document.getElementById("view-button").addEventListener("click", viewMode)
     var ptSelector = document.getElementById("pt-selector");
     ptSelector.addEventListener("change", function(e) {
         var newPtSize = e.target.value
-        textBoxes = document.getElementsByClassName("texty")
+        textBoxes = document.getElementsByClassName("box-text")
         for (i=0; i<textBoxes.length; i++) {
             var textBox = textBoxes[i]
             textBox.style.fontSize = newPtSize
@@ -152,13 +152,13 @@ document.getElementById("view-button").addEventListener("click", viewMode)
 // break text for side by side view
 async function breakText() {
 var boxContent = document.getElementsByClassName("box-side-by-side")
-var paragraphs = boxContent[0].getElementsByClassName("texty")
+var paragraphs = boxContent[0].getElementsByClassName("box-text")
 
 for (j=0; j<paragraphs.length; j++) {
     res = []
     for (i=0; i<boxContent.length; i++) {
         box = boxContent[i]
-        paras = box.getElementsByClassName("texty")
+        paras = box.getElementsByClassName("box-text")
         para = paras[j]
         breaks = getLineBreaks(para)
         // populate if empty
@@ -178,7 +178,7 @@ for (j=0; j<paragraphs.length; j++) {
     }
     for (ii=0; ii<boxContent.length; ii++) {
         box = boxContent[ii]
-        paras = box.getElementsByClassName("texty")
+        paras = box.getElementsByClassName("box-text")
         para = paras[j]
         insertBreaks(para, res)
     }
@@ -237,7 +237,7 @@ node.innerHTML = newText
 }
 
 function longestLine() {
-    var paragraphs = document.getElementsByClassName("texty")
+    var paragraphs = document.getElementsByClassName("box-text")
     var res = 0
     for (i=0; i<paragraphs.length; i++) {
         var cur = lineLength(paragraphs[i])
