@@ -13,14 +13,13 @@
     font-size: 9pt;
 }
 #view-button {
-    padding: 5px;
-    color: white;
-    background-color: black;
-
 }
 #pt-dropdown {
     padding: 5px;
-    background-color: white;
+}
+#pt-selector {
+    background-color: black;
+    color: white;
 }
 #side-by-side {
     width: 6000px;
@@ -36,12 +35,10 @@
 {% block content_name %}
 <b>Proofer</b>
 {% endblock %}
-{% block content %}
-<div id="toolbar">
-    <div id="view-button">
-        Line by line
-    </div>
-    <div id="pt-dropdown">
+
+{% block nav %}
+    <div class="nav-item" id="view-button">Line by line</div>
+    <div class="nav-item" id="pt-dropdown">
         <label for="pt-size">Font Size:</label>
             <select id="pt-selector" name="pt">
             <option value="10pt">10pt</option>
@@ -50,8 +47,9 @@
             <option value="96pt">96pt</option>
         </select>
     </div>
-</div>
+{% endblock %}
 
+{% block content %}
 <div id="line-by-line" style="display: block;">
         {% for glyph_set, section in test_strings.items() %}
         <h3>Glyphset: {{ glyph_set }}</h3>

@@ -35,19 +35,21 @@
 	  z-index: 100;
 	}
 	#font-toggle{
-	  display: block;
-	  font-weight: 700;
-	  cursor: pointer;
-	  -webkit-user-select: none; /* Safari */        
-	  -moz-user-select: none; /* Firefox */
-          -ms-user-select: none; /* IE10+/Edge */
-	  user-select: none; /* Standard */
-	  text-align: center;
-	  color: white;
-	  background-color: black;
-	  width: 50px;
-	  display: block;
-	  padding: 10px;
+	}
+	.nav-item{
+		display: block;
+		cursor: pointer;
+		-webkit-user-select: none; /* Safari */        
+		-moz-user-select: none; /* Firefox */
+			-ms-user-select: none; /* IE10+/Edge */
+		user-select: none; /* Standard */
+		text-align: center;
+		color: white;
+		background-color: black;
+		display: block;
+		font-size: 9pt;
+		padding: 5px;
+		margin: 2px;
 	}
 	.tooltip {
 	position: relative;
@@ -163,7 +165,8 @@
 <body>
     {% if include_ui %}
     <div id="nav">
-        <div id="font-toggle">old</div>
+        <div class="nav-item" id="font-toggle">old</div>
+		{% block nav %}{% endblock %}
      </div>
     {% endif %}
     <div id="content">
@@ -184,7 +187,7 @@
 	  POSITION = "new"
 	  for (item of items) {
 	    item.firstElementChild.textContent = item.firstElementChild.textContent.replace("old", "new")
-            item.lastElementChild.className = item.lastElementChild.className.replace("old", "new")
+		item.lastElementChild.className = item.lastElementChild.className.replace("old", "new")
 	    fontToggle.textContent = "new"
 	  }
 
@@ -192,7 +195,7 @@
 	  POSITION = "old"
 	  for (item of items) {
 	    item.firstElementChild.textContent = item.firstElementChild.textContent.replace("new", "old")
-            item.lastElementChild.className = item.lastElementChild.className.replace("new", "old")
+		item.lastElementChild.className = item.lastElementChild.className.replace("new", "old")
 	    fontToggle.textContent = "old"
 	  }
 	}
