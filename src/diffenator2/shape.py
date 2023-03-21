@@ -83,7 +83,7 @@ def test_font_glyphs(font_a, font_b):
     for g in same_glyphs:
         pc, diff_map = differ.diff(g)
         if pc > THRESHOLD:
-            glyph = GlyphDiff(g, pc, diff_map)
+            glyph = GlyphDiff(g, "%.2f" % pc, diff_map)
             modified_glyphs.append(glyph)
     modified_glyphs.sort(key=lambda k: k.changed_pixels, reverse=True)
 

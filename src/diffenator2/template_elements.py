@@ -52,7 +52,7 @@ class Glyph(Renderable):
 @dataclass
 class GlyphDiff(Renderable):
     string: str
-    changed_pixels: float
+    changed_pixels: str
     diff_map: list[int]
     name: str=None
     unicode: str=None
