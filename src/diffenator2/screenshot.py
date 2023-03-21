@@ -111,14 +111,18 @@ class ScreenShotter:
             browser.quit()
 
 
-def screenshot_dir(dir_fp: str, out: str):
+def screenshot_dir(
+        dir_fp: str,
+        out: str,
+        skip=["diffbrowsers_proofer.html", "diffenator.html"],
+):
     """Screenshot a folder of html docs. Walk the damn things"""
     if not os.path.exists(out):
         os.mkdir(out)
     screenshotter = ScreenShotter()
     for dirpath, _, filenames in os.walk(dir_fp):
         for filename in filenames:
-            if not filename.endswith(".html") or "diffenator" in filename:
+            if not filename.endswith(".html") or filename in skip:
                 continue
             fp = os.path.join(dirpath, filename)
             fp = os.path.abspath(fp)
