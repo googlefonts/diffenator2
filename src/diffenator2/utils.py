@@ -119,7 +119,7 @@ def gen_gifs(dir1: str, dir2: str, dst_dir: str):
     for img in shared_imgs:
         # We use apng format since a gif's dimensions are limited to 64kx64k
         # we have encountered many diffs which are taller than this.
-        gif_filename = img[:-4] + ".apng"
+        gif_filename = img[:-4] + ".gif"
         img_a_path = os.path.join(dir1, img)
         img_b_path = os.path.join(dir2, img)
         dst = os.path.join(dst_dir, gif_filename)

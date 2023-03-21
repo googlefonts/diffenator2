@@ -96,7 +96,9 @@ def ninja_diff(
             pt_size,
         )
         return
-    styles = styles_in_fonts(fonts_before)
+    styles_before = styles_in_fonts(fonts_before)
+    styles_after = [style for _, style, _ in styles_in_fonts(fonts_after)]
+    styles = [s for s in styles_before if s[1] in styles_after]
     partitioned = partition(styles, MAX_STYLES)
     if not os.path.exists(out):
         os.mkdir(out)

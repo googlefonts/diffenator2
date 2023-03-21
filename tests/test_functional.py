@@ -44,8 +44,8 @@ def test_run_diffbrowsers_proof_imgs(fp):
                     html.append(f)
                 else:
                     imgs.append(f)
-        # There should at least be an image for each html page
-        assert len(imgs) >= len(html)
+        # There should at least be an image for each html page apart from the proofing page
+        assert len(imgs) >= len(html)-1
 
 
 

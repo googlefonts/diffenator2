@@ -52,7 +52,7 @@ class Glyph(Renderable):
 @dataclass
 class GlyphDiff(Renderable):
     string: str
-    changed_pixels: float
+    changed_pixels: str
     diff_map: list[int]
     name: str=None
     unicode: str=None
@@ -82,11 +82,11 @@ class CSSFontStyle(Renderable):
         if self.suffix:
             self.cssfamilyname = f"{self.suffix} {self.familyname}"
             self.class_name = (
-                f"{self.suffix} {self.familyname} {self.stylename}".replace(" ", "-")
+                f"{self.suffix} {self.stylename}".replace(" ", "-")
             )
         else:
             self.cssfamilyname = self.familyname
-            self.class_name = f"{self.familyname} {self.stylename}".replace(" ", "-")
+            self.class_name = f"{self.stylename}".replace(" ", "-")
 
 
 @dataclass
