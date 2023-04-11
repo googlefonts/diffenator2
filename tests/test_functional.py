@@ -67,3 +67,24 @@ def test_diffenator(fp_before, fp_after):
         assert new_font in os.listdir(tmp_dir)
         assert old_font in os.listdir(tmp_dir)
         assert any(f.endswith(".html") for f in os.listdir(tmp_dir))
+
+
+@pytest.mark.parametrize(
+    "fp_before, fp_after, threshold, has, missing",
+    [
+        # report will have modified "a" glyph
+        (mavenpro_vf, mavenpro_vf_mod, 0.0001, ["LATIN SMALL LETTER A"], []),
+        # report will not have modified "a" glyph
+        (mavenpro_vf, mavenpro_vf_mod, 100.0, [], ["LATIN SMALL LETTER A"]),
+    ]
+)
+def test_diffenator_threshold(fp_before, fp_after, threshold, has, missing):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        subprocess.run(["_diffenator", fp_before, fp_after, "-o", tmp_dir, "-t", str(threshold)])
+        with open(os.path.join(tmp_dir, "diffenator.html"), "r", encoding="utf8") as doc:
+            report = doc.read()
+            for string in has:
+                assert string in report
+            
+            for string in missing:
+                assert string not in report
