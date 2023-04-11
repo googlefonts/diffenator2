@@ -35,6 +35,15 @@ import re
             ),
             os.path.join(DATA_FP, "ninja_files", "diff-filter-styles.txt")
         ),
+        # change threshold
+        (
+            dict(
+                fonts_before=[TTFont(mavenpro_vf)],
+                fonts_after=[TTFont(mavenpro_vf_mod)],
+                threshold=0.01,
+            ),
+            os.path.join(DATA_FP, "ninja_files", "diff-threshold.txt")
+        ),
     ]
 )
 def test_run_ninja_diff(kwargs, expected_fp):
