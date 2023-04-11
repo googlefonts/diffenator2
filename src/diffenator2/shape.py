@@ -174,7 +174,6 @@ def test_words(
             for gid_hash in gid_hashes:
                 seen_gids[gid_hash] = True
 
-            if pc >= threshold:
                 res.add(
                     (
                         pc,
@@ -185,7 +184,7 @@ def test_words(
                             tuple(features.keys()),
                             ot_to_html_lang.get((script, lang)),
                             ot_to_dir.get(script, None),
-                            diff_map,
+                            "%.2f" % pc,
                         ),
                     )
                 )

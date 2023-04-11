@@ -24,7 +24,7 @@ class WordDiff(Renderable):
     ot_features: tuple
     lang: str
     direction: str
-    diff_map: list[int]
+    changed_pixels: str
 
     def __hash__(self):
         return hash((self.string, self.hb_a, self.hb_b, self.ot_features))
