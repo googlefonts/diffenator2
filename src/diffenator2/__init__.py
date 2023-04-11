@@ -12,6 +12,7 @@ logger.setLevel(logging.INFO)
 
 
 MAX_STYLES = 4
+THRESHOLD = 0.90  # Percent difference
 
 
 def ninja_proof(
@@ -82,6 +83,7 @@ def ninja_diff(
     user_wordlist: str = None,
     filter_styles: str = None,
     pt_size: int = 20,
+    threshold: float = THRESHOLD,
 ):
     if filter_styles:
         _ninja_diff(
@@ -94,6 +96,7 @@ def ninja_diff(
             user_wordlist,
             filter_styles,
             pt_size,
+            threshold=threshold,
         )
         return
     styles_before = styles_in_fonts(fonts_before)
@@ -117,6 +120,7 @@ def ninja_diff(
             user_wordlist,
             filter_styles,
             pt_size,
+            threshold=threshold,
         )
 
 def _ninja_diff(
@@ -129,6 +133,7 @@ def _ninja_diff(
     user_wordlist: str = None,
     filter_styles: str = None,
     pt_size: int = 20,
+    threshold: float = THRESHOLD,
 ):
     w = Writer(open(os.path.join("build.ninja"), "w", encoding="utf8"))
     # Setup rules
@@ -144,7 +149,7 @@ def _ninja_diff(
     w.newline()
 
     w.comment("Run diffenator VF")
-    diff_cmd = f"_diffenator $font_before $font_after -o $out"
+    diff_cmd = f"_diffenator $font_before $font_after -t $threshold -o $out"
     if user_wordlist:
         diff_cmd += " --user-wordlist $user_wordlist"
     diff_inst_cmd = diff_cmd + " --coords $coords"
@@ -176,6 +181,7 @@ def _ninja_diff(
                 font_before=font_before,
                 font_after=font_after,
                 out=style,
+                threshold=threshold,
             )
             if user_wordlist:
                 diff_variables["user_wordlist"] = user_wordlist

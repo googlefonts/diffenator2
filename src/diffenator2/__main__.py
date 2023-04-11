@@ -2,8 +2,7 @@
 from __future__ import annotations
 from argparse import ArgumentParser, Namespace
 from fontTools.ttLib import TTFont
-from diffenator2 import ninja_diff, ninja_proof
-import ninja
+from diffenator2 import ninja_diff, ninja_proof, THRESHOLD
 
 
 def main(**kwargs):
@@ -38,6 +37,7 @@ def main(**kwargs):
         diff_parser.add_argument("--fonts-after", "-fa", nargs="+", required=True)
         diff_parser.add_argument("--user-wordlist", default=None)
         diff_parser.add_argument("--no-diffenator", default=False, action="store_true")
+        diff_parser.add_argument("--threshold", "-t", type=float, default=THRESHOLD)
         args = parser.parse_args()
 
     if args.command == "proof":
@@ -57,6 +57,7 @@ def main(**kwargs):
             user_wordlist=args.user_wordlist,
             filter_styles=args.filter_styles,
             pt_size=args.pt_size,
+            threshold=args.threshold,
         )
     else:
         raise NotImplementedError(f"{args.command} not supported")

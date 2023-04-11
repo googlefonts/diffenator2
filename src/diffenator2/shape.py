@@ -5,13 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 import uharfbuzz as hb
 import os
+from diffenator2 import THRESHOLD
 from diffenator2.renderer import PixelDiffer
 from diffenator2.template_elements import WordDiff, Glyph, GlyphDiff
 from pkg_resources import resource_filename
 import tqdm
-
-
-THRESHOLD = 0.90  # Percent difference
 
 
 # Hashing strategies for elements of a Harfbuzz buffer
@@ -64,14 +62,14 @@ class GlyphItems:
     modified: list
 
 
-def test_fonts(font_a, font_b):
-    glyphs = test_font_glyphs(font_a, font_b)
+def test_fonts(font_a, font_b, threshold=THRESHOLD):
+    glyphs = test_font_glyphs(font_a, font_b, threshold=threshold)
     skip_glyphs = glyphs.missing + glyphs.new
-    words = test_font_words(font_a, font_b, skip_glyphs)
+    words = test_font_words(font_a, font_b, skip_glyphs, threshold=threshold)
     return {"glyphs": glyphs, "words": words}
 
 
-def test_font_glyphs(font_a, font_b):
+def test_font_glyphs(font_a, font_b, threshold=THRESHOLD):
     cmap_a = set(chr(c) for c in font_a.ttFont.getBestCmap())
     cmap_b = set(chr(c) for c in font_b.ttFont.getBestCmap())
     missing_glyphs = set(Glyph(c) for c in cmap_a - cmap_b)
@@ -82,7 +80,7 @@ def test_font_glyphs(font_a, font_b):
     differ = PixelDiffer(font_a, font_b)
     for g in same_glyphs:
         pc, diff_map = differ.diff(g)
-        if pc > THRESHOLD:
+        if pc > threshold:
             glyph = GlyphDiff(g, "%.2f" % pc, diff_map)
             modified_glyphs.append(glyph)
     modified_glyphs.sort(key=lambda k: k.changed_pixels, reverse=True)
@@ -94,7 +92,7 @@ def test_font_glyphs(font_a, font_b):
     )
 
 
-def test_font_words(font_a, font_b, skip_glyphs=set()):
+def test_font_words(font_a, font_b, skip_glyphs=set(), threshold=THRESHOLD):
     from youseedee import ucd_data
     from collections import defaultdict
 
@@ -115,7 +113,7 @@ def test_font_words(font_a, font_b, skip_glyphs=set()):
         if not os.path.exists(wordlist):
             print(f"No wordlist for {script}")
             continue
-        res[script] = test_words(wordlist, font_a, font_b, skip_glyphs)
+        res[script] = test_words(wordlist, font_a, font_b, skip_glyphs, threshold=threshold)
     return res
 
 
@@ -176,7 +174,7 @@ def test_words(
             for gid_hash in gid_hashes:
                 seen_gids[gid_hash] = True
 
-            if pc >= THRESHOLD:
+            if pc >= threshold:
                 res.add(
                     (
                         pc,
