@@ -207,6 +207,7 @@ def styles_in_fonts(fonts):
             styles += styles_in_variable_font(font)
         else:
             styles.append(style_in_static_font(font))
+    assert styles, "no styles found in any fonts. Check fvar has instances."
     return styles
 
 

@@ -88,3 +88,11 @@ def test_diffenator_threshold(fp_before, fp_after, threshold, has, missing):
             
             for string in missing:
                 assert string not in report
+
+
+def test_assertion_no_styles_found():
+    from diffenator2 import styles_in_fonts
+    font = TTFont(mavenpro_vf)
+    font["fvar"].instances = []
+    with pytest.raises(Exception):
+        styles_in_fonts([font])
