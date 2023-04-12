@@ -13,6 +13,7 @@ logger.setLevel(logging.INFO)
 
 MAX_STYLES = 4
 THRESHOLD = 0.90  # Percent difference
+NINJA_BUILD_FILE = "build.ninja"
 
 
 def ninja_proof(
@@ -44,7 +45,7 @@ def _ninja_proof(
     filter_styles: bool = None,
     pt_size: int = 20,
 ):
-    w = Writer(open(os.path.join("build.ninja"), "w", encoding="utf8"))
+    w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
     w.comment("Rules")
     w.newline()
     out_s = os.path.join("out", "diffbrowsers")
@@ -135,7 +136,7 @@ def _ninja_diff(
     pt_size: int = 20,
     threshold: float = THRESHOLD,
 ):
-    w = Writer(open(os.path.join("build.ninja"), "w", encoding="utf8"))
+    w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
     # Setup rules
     w.comment("Rules")
     w.newline()
@@ -207,6 +208,7 @@ def styles_in_fonts(fonts):
             styles += styles_in_variable_font(font)
         else:
             styles.append(style_in_static_font(font))
+    assert styles, "no styles found in any fonts. Check fvar has instances."
     return styles
 
 
