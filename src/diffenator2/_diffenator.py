@@ -10,14 +10,15 @@ import os
 import argparse
 from diffenator2.shape import test_words, test_fonts
 from diffenator2.font import DFont
-from diffenator2 import jfont
+from diffenator2 import jfont, THRESHOLD
 from diffenator2.html import diffenator_report
 
 
 class DiffFonts:
-    def __init__(self, old_font: DFont, new_font: DFont):
+    def __init__(self, old_font: DFont, new_font: DFont, threshold=0.01):
         self.old_font = old_font
         self.new_font = new_font
+        self.threshold = threshold
 
     def diff_all(self):
         skip = frozenset(["diff_strings", "diff_all"])
@@ -29,10 +30,10 @@ class DiffFonts:
         self.tables = jfont.Diff(self.old_font.jFont, self.new_font.jFont)
 
     def diff_strings(self, fp):
-        self.strings = test_words(fp, self.old_font, self.new_font, threshold=0.5)
+        self.strings = test_words(fp, self.old_font, self.new_font, threshold=self.threshold)
 
     def diff_words(self):
-        self.glyph_diff = test_fonts(self.old_font, self.new_font)
+        self.glyph_diff = test_fonts(self.old_font, self.new_font, threshold=self.threshold)
 
     def to_html(self, templates, out):
         diffenator_report(self, templates, dst=out)
@@ -52,6 +53,7 @@ def main():
         "--user-wordlist", help="File of strings to visually compare", default=None
     )
     parser.add_argument("--coords", "-c", default={})
+    parser.add_argument("--threshold", "-t", default=THRESHOLD, type=float)
     parser.add_argument("--out", "-o", default="out", help="Output html path")
     args = parser.parse_args()
 
@@ -61,7 +63,7 @@ def main():
     new_font = DFont(os.path.abspath(args.new_font))
     match_fonts(old_font, new_font, variations=coords, scale_upm=True)
 
-    diff = DiffFonts(old_font, new_font)
+    diff = DiffFonts(old_font, new_font, threshold=args.threshold)
     diff.diff_all()
     if args.user_wordlist:
         diff.diff_strings(args.user_wordlist)
