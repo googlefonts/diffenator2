@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from argparse import ArgumentParser, Namespace
+import os
 from fontTools.ttLib import TTFont
-from diffenator2 import ninja_diff, ninja_proof, THRESHOLD
+from diffenator2 import ninja_diff, ninja_proof, THRESHOLD, NINJA_BUILD_FILE
 
 
 def main(**kwargs):
@@ -40,6 +41,9 @@ def main(**kwargs):
         diff_parser.add_argument("--threshold", "-t", type=float, default=THRESHOLD)
         args = parser.parse_args()
 
+    if os.path.exists(NINJA_BUILD_FILE):
+        os.remove(NINJA_BUILD_FILE)
+        os.remove(".ninja_log")
     if args.command == "proof":
         fonts = [TTFont(f) for f in args.fonts]
         ninja_proof(
