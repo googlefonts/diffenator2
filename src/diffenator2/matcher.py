@@ -88,6 +88,8 @@ matcher.masters()
 diff_rendering(matcher) or proof_rendering(matcher)
 
 """
+from diffenator2.font import get_styles
+from fontTools.ttLib.scaleUpem import scale_upem
 
 class FontMatcher:
 
@@ -98,15 +100,8 @@ class FontMatcher:
         self.new_styles = []
     
     def instances(self):
-        def get_styles(fonts):
-            results = {}
-            for font in fonts:
-                for style in font.instances():
-                    results[style.name] = style
-            return results
-
-        old_styles = get_styles(self.old_fonts)
-        new_styles = get_styles(self.new_fonts)
+        old_styles = {s.name: s for s in get_styles(self.old_fonts)}
+        new_styles = {s.name: s for s in get_styles(self.new_fonts)}
 
         matching = set(old_styles.keys()) & set(new_styles.keys())
         self.old_styles = [old_styles[s] for s in matching]
@@ -119,4 +114,22 @@ class FontMatcher:
         pass
     
     def coordinates(self, coords=None):
-        pass
+        # TODO add validation
+        from diffenator2.font import Style
+        from diffenator2.utils import dict_coords_to_string
+        for font in self.old_fonts:
+            style_name = dict_coords_to_string(coords).replace(",", "_").replace("=", "-").replace(".", "-")
+            self.old_styles.append(Style(font, style_name, coords))
+        
+        for font in self.new_fonts:
+            style_name = dict_coords_to_string(coords).replace(",", "_").replace("=", "-").replace(".", "-")
+            self.new_styles.append(Style(font, style_name, coords))
+    
+    def upms(self):
+        assert self.old_styles + self.new_styles, "match styles first!"
+        seen = set()
+        for old_style, new_style in zip(self.old_styles, self.new_styles):
+            if old_style in seen:
+                continue
+            scale_upem(old_style.font.ttFont, new_style.font.ttFont["head"].unitsPerEm)
+            seen.add(old_style)
