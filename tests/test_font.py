@@ -20,4 +20,53 @@ def test_match_coordinates(fp_before, fp_after, expected):
     assert font_after.variations == expected
 
 
-# TODO test upm scaling
+@pytest.mark.parametrize(
+    "fp, expected",
+    [
+        (
+            mavenpro_vf,
+            [
+                {
+                    "name": "Regular",
+                    "coords": {"wght": 400.0}
+                },
+                {
+                    "name": "Medium",
+                    "coords": {"wght": 500.0}
+                },
+                {
+                    "name": "SemiBold",
+                    "coords": {"wght": 600.0}
+                },
+                {
+                    "name": "Bold",
+                    "coords": {"wght": 700.0}
+                },
+                {
+                    "name": "ExtraBold",
+                    "coords": {"wght": 800.0}
+                },
+                {
+                    "name": "Black",
+                    "coords": {"wght": 900.0}
+                },
+            ]
+        ),
+        (
+            mavenpro_extra_bold,
+            [
+                {
+                    "name": "ExtraBold",
+                    "coords": {"wght": 800.0}
+                },
+            ]
+        ),
+    ]
+)
+def test_instances(fp, expected):
+    font = DFont(fp)
+    font_instances = font.instances()
+    for got, want in zip(font_instances, expected):
+        assert got.font == font
+        assert got.name == want["name"]
+        assert got.coords == want["coords"]

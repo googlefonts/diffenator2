@@ -13,6 +13,13 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+class Style:
+    def __init__(self, font, name, coords):
+        self.font = font
+        self.name = name
+        self.coords = coords
+
+
 class DFont:
     def __init__(self, path: str, font_size: int = 1000):
         self.path = path
@@ -60,6 +67,31 @@ class DFont:
                 self.set_variations(inst.coordinates)
                 return
         raise ValueError(f"{self} does not have an instance named {name_to_find}")
+
+    @lru_cache()
+    def instances(self):
+        results = []
+        ttfont = self.ttFont
+        name = ttfont["name"]
+        if self.is_variable():
+            instances = self.ttFont["fvar"].instances
+            for inst in instances:
+                inst_name = name.getName(inst.subfamilyNameID, 3, 1, 0x409)
+                results.append(Style(self, inst_name.toUnicode(), inst.coordinates))
+        else:
+            results.append(
+                Style(
+                    self,
+                    name.getBestSubFamilyName(),
+                    {
+                        "wght": ttfont["OS/2"].usWeightClass,
+                    }                
+                )
+            )
+        return results
+    
+    def masters(self):
+        pass
 
     def __repr__(self):
         return f"<DFont: {self.path}>"
