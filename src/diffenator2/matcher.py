@@ -41,33 +41,7 @@ wght-400 # vf
 
 >>> 
 
-"""
 
-class FontMatcher:
-
-    def __init__(self, old_fonts, new_fonts):
-        self.old_fonts = old_fonts
-        self.new_fonts = new_fonts
-        self.styles = None
-    
-    def instances(self):
-        pass
-
-    def cross_product(self):
-        pass
-
-    def masters(self):
-        pass
-    
-    def coordinates(self, coords=None):
-        assert all(
-            f.is_variable() for f in self.old_fonts+self.new_fonts
-        ), "all fonts must be variable fonts"
-    
-
-
-
-"""
 
 matcher = FontMatcher(old_fonts, new_fonts)
 old, new = matcher.coordinates({wght: 400})
@@ -82,11 +56,7 @@ new = new[0]
 
 old.
 
-"""
 
-
-
-"""
 ## Diffenator
 
 old_font = ...
@@ -105,14 +75,48 @@ for old_style, new_style in matcher.styles:
     diff.all()
     diff.to_html("out.html")
 
-"""
-
-
-"""
+    
 ## Diffbrowsers
 
 old_fonts = ...
 new_fonts = ...
 
+matcher = FontMatcher(old_fonts, new_fonts)
+matcher.masters()
+
+
+diff_rendering(matcher) or proof_rendering(matcher)
 
 """
+
+class FontMatcher:
+
+    def __init__(self, old_fonts, new_fonts):
+        self.old_fonts = old_fonts
+        self.new_fonts = new_fonts
+        self.old_styles = []
+        self.new_styles = []
+    
+    def instances(self):
+        def get_styles(fonts):
+            results = {}
+            for font in fonts:
+                for style in font.instances():
+                    results[style.name] = style
+            return results
+
+        old_styles = get_styles(self.old_fonts)
+        new_styles = get_styles(self.new_fonts)
+
+        matching = set(old_styles.keys()) & set(new_styles.keys())
+        self.old_styles = [old_styles[s] for s in matching]
+        self.new_styles = [new_styles[s] for s in matching]
+
+    def cross_product(self):
+        pass
+
+    def masters(self):
+        pass
+    
+    def coordinates(self, coords=None):
+        pass
