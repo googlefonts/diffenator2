@@ -25,7 +25,8 @@ gftools gen-html diff -fb ./fonts_before/font1.ttf -fa ./fonts_after/font1.ttf
 from __future__ import annotations
 from pkg_resources import resource_filename
 from diffenator2.html import proof_rendering, diff_rendering
-from fontTools.ttLib import TTFont
+from diffenator2.font import DFont, get_styles
+from diffenator2.matcher import FontMatcher
 from glob import glob
 import os
 import argparse
@@ -82,17 +83,23 @@ def main():
     args = parser.parse_args()
 
     if args.command == "proof":
-        fonts = [TTFont(os.path.abspath(fp)) for fp in args.fonts]
+        fonts = [DFont(os.path.abspath(fp)) for fp in args.fonts]
+        styles = get_styles(fonts)
         proof_rendering(
-            fonts, args.templates, args.out, filter_styles=args.filter_styles, pt_size=args.pt_size
+            styles,
+            args.templates,
+            args.out,
+            filter_styles=args.filter_styles,
+            pt_size=args.pt_size
         )
 
     elif args.command == "diff":
-        fonts_before = [TTFont(os.path.abspath(fp)) for fp in args.fonts_before]
-        fonts_after = [TTFont(os.path.abspath(fp)) for fp in args.fonts_after]
+        fonts_before = [DFont(os.path.abspath(fp), suffix="old") for fp in args.fonts_before]
+        fonts_after = [DFont(os.path.abspath(fp), suffix="new") for fp in args.fonts_after]
+        matcher = FontMatcher(fonts_before, fonts_after)
+        matcher.instances()
         diff_rendering(
-            fonts_before,
-            fonts_after,
+            matcher,
             args.templates,
             args.out,
             filter_styles=args.filter_styles,
@@ -102,7 +109,6 @@ def main():
     if args.imgs:
         imgs_out = os.path.join(args.out, "imgs")
         from diffenator2.screenshot import screenshot_dir
-
         screenshot_dir(args.out, imgs_out)
 
 
