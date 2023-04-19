@@ -8,6 +8,7 @@ import logging
 from blackrenderer.font import BlackRendererFont
 import freetype as ft
 from functools import lru_cache
+from diffenator2.template_elements import CSSFontFace, CSSFontStyle
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -18,18 +19,37 @@ class Style:
         self.font = font
         self.name = name
         self.coords = coords
+        # TODO derive family and style names
+        self.css_font_style = CSSFontStyle(
+            self.font.family_name,
+            self.name,
+            self.coords,
+            self.font.suffix,
+        )
+
+
+def get_styles(fonts):
+    results = []
+    for font in fonts:
+        for style in font.instances():
+            results.append(style)
+    return results
 
 
 class DFont:
-    def __init__(self, path: str, font_size: int = 1000):
+    def __init__(self, path: str, font_size: int = 1000, suffix=""):
         self.path = path
+        self.suffix = suffix
         self.ttFont: TTFont = TTFont(self.path, recalcTimestamp=False)
+        self.family_name = self.ttFont["name"].getBestFamilyName()
         self.blackFont: BlackRendererFont = BlackRendererFont(path)
         self.ftFont: ft.Face = ft.Face(self.path)
         with open(path, "rb") as fontfile:
             fontdata = fontfile.read()
         self.hbFont: hb.Font = hb.Font(hb.Face(fontdata))
         self.jFont = jfont.TTJ(self.ttFont)
+
+        self.css_font_face = CSSFontFace(self.ttFont, self.suffix)
 
         self.font_size: int = font_size
         self.set_font_size(self.font_size)
@@ -88,7 +108,7 @@ class DFont:
                     }                
                 )
             )
-        return results
+        return sorted(results, key=lambda k: k.coords["wght"])
     
     def masters(self):
         pass
