@@ -82,12 +82,13 @@ def diffenator_font_style(dfont, suffix=""):
     )
 
 
-def proof_rendering(ttFonts, templates, dst="out", filter_styles=None, pt_size=20):
-    font_faces = [CSSFontFace(f) for f in ttFonts]
-    font_styles = get_font_styles(ttFonts, filters=filter_styles)
-    sample_text = " ".join(font_sample_text(ttFonts[0]))
-    test_strings = GFTestData.test_strings_in_font(ttFonts[0])
-    glyphs = [chr(c) for c in ttFonts[0].getBestCmap()]
+def proof_rendering(styles, templates, dst="out", filter_styles=None, pt_size=20):
+    ttFont = styles[0].font.ttFont
+    font_faces = set(style.font.css_font_face for style in styles)
+    font_styles = [style.css_font_style for style in styles]
+    sample_text = " ".join(font_sample_text(ttFont))
+    test_strings = GFTestData.test_strings_in_font(ttFont)
+    glyphs = [chr(c) for c in ttFont.getBestCmap()]
     _package(
         templates,
         dst,
@@ -100,18 +101,17 @@ def proof_rendering(ttFonts, templates, dst="out", filter_styles=None, pt_size=2
     )
 
 
-def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles=None, pt_size=20):
-    font_faces_old = [CSSFontFace(f, "old") for f in ttFonts_old]
-    font_styles_old = get_font_styles(ttFonts_old, "old", filters=filter_styles)
+def diff_rendering(matcher, templates, dst="out", filter_styles=None, pt_size=20):
+    ttFont = matcher.old_styles[0].font.ttFont
+    font_faces_old = set(style.font.css_font_face for style in matcher.old_styles)
+    font_styles_old = [style.css_font_style for style in matcher.old_styles]
+    
+    font_faces_new = set(style.font.css_font_face for style in matcher.new_styles)
+    font_styles_new = [style.css_font_style for style in matcher.new_styles]
 
-    font_faces_new = [CSSFontFace(f, "new") for f in ttFonts_new]
-    font_styles_new = get_font_styles(ttFonts_new, "new", filters=filter_styles)
-
-    font_styles_old, font_styles_new = _match_styles(font_styles_old, font_styles_new)
-
-    sample_text = " ".join(font_sample_text(ttFonts_old[0]))
-    test_strings = GFTestData.test_strings_in_font(ttFonts_old[0])
-    glyphs = [chr(c) for c in ttFonts_old[0].getBestCmap()]
+    sample_text = " ".join(font_sample_text(ttFont))
+    test_strings = GFTestData.test_strings_in_font(ttFont)
+    glyphs = [chr(c) for c in ttFont.getBestCmap()]
     _package(
         templates,
         dst,
@@ -128,11 +128,11 @@ def diff_rendering(ttFonts_old, ttFonts_new, templates, dst="out", filter_styles
 
 
 def diffenator_report(diff, template, dst="out"):
-    font_faces_old = [diffenator_font_face(diff.old_font.ttFont, "old")]
-    font_faces_new = [diffenator_font_face(diff.new_font.ttFont, "new")]
+    font_faces_old = [diff.old_font.css_font_face]
+    font_faces_new = [diff.new_font.css_font_face]
 
-    font_styles_old = [diffenator_font_style(diff.old_font, "old")]
-    font_styles_new = [diffenator_font_style(diff.new_font, "new")]
+    font_styles_old = [diff.old_style.css_font_style]
+    font_styles_new = [diff.new_style.css_font_style]
     _package(
         [template],
         dst,
@@ -168,14 +168,3 @@ def _package(templates, dst, **kwargs):
             for font in kwargs[k]:
                 out_fp = os.path.join(dst, font.filename)
                 shutil.copy(font.ttfont.reader.file.name, out_fp)
-
-
-def _match_styles(styles_old: list[CSSFontStyle], styles_new: list[CSSFontStyle]):
-    old = {s.stylename: s for s in styles_old}
-    new = {s.stylename: s for s in styles_new}
-    shared = set(old) & set(new)
-    if not shared:
-        raise ValueError("No matching fonts found")
-    return [s for s in styles_old if s.stylename in shared], [
-        s for s in styles_new if s.stylename in shared
-    ]
