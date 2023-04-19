@@ -43,6 +43,7 @@ def main(**kwargs):
 
     if os.path.exists(NINJA_BUILD_FILE):
         os.remove(NINJA_BUILD_FILE)
+    if os.path.exists(".ninja_log"):
         os.remove(".ninja_log")
     if args.command == "proof":
         fonts = [TTFont(f) for f in args.fonts]
