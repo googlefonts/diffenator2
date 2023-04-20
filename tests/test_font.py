@@ -1,8 +1,10 @@
 import pytest
 from . import *
+from itertools import combinations
 from diffenator2.font import match_fonts
 from diffenator2.font import DFont
 from diffenator2.html import diffenator_font_style
+
 
 
 @pytest.mark.parametrize(
@@ -68,5 +70,36 @@ def test_instances(fp, expected):
     font_instances = font.instances()
     for got, want in zip(font_instances, expected):
         assert got.font == font
+        assert got.name == want["name"]
+        assert got.coords == want["coords"]
+
+
+@pytest.mark.parametrize(
+    """fp, expected""",
+    [
+        (
+            mavenpro_vf,
+            [
+                {
+                    "name": "wght-400_0",
+                    "coords": {"wght": 400.0},
+                },
+                {
+                    "name": "wght-650_0",
+                    "coords": {"wght": 650.0},
+                },
+                {
+                    "name": "wght-900_0",
+                    "coords": {"wght": 900.0},
+                },
+            ]
+        )
+        # TODO add multi axis example
+    ]
+)
+def test_cross_product(fp, expected):
+    font = DFont(fp)
+    styles = font.cross_product()
+    for got, want in zip(styles, expected):
         assert got.name == want["name"]
         assert got.coords == want["coords"]

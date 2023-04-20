@@ -8,7 +8,9 @@ import logging
 from blackrenderer.font import BlackRendererFont
 import freetype as ft
 from functools import lru_cache
+from itertools import product
 from diffenator2.template_elements import CSSFontFace, CSSFontStyle
+from diffenator2.utils import dict_coords_to_string
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -19,16 +21,18 @@ class Style:
         self.font = font
         self.name = name
         self.coords = coords
-        # TODO derive family and style names
         self.css_font_style = CSSFontStyle(
             self.font.family_name,
             self.name,
             self.coords,
             self.font.suffix,
         )
+    
+    def set_font_variations(self):
+        self.font.set_variations(self.coords)
 
 
-def get_styles(fonts):
+def get_instance_styles(fonts):
     results = []
     for font in fonts:
         for style in font.instances():
@@ -112,6 +116,26 @@ class DFont:
     
     def masters(self):
         pass
+    
+    def cross_product(self):
+        assert self.is_variable(), "Needs to be a variable font"
+        results = []
+        axis_values = [
+            (
+                a.minValue,
+                (a.minValue+a.maxValue)/2,
+                a.maxValue
+            ) for a in self.ttFont["fvar"].axes
+        ]
+        axis_tags = [a.axisTag for a in self.ttFont["fvar"].axes]
+
+        cross = list(product(*axis_values))
+        combinations = [dict(zip(axis_tags, c)) for c in cross]
+
+        for coords in combinations:
+            name = dict_coords_to_string(coords).replace(".", "_").replace(",", "_").replace("=", "-")
+            results.append(Style(self, name, coords))
+        return results
 
     def __repr__(self):
         return f"<DFont: {self.path}>"
