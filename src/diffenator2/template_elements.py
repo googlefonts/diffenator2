@@ -127,3 +127,5 @@ class CSSFontFace(Renderable):
                 max_angle = int(axes["slnt"].maxValue)
                 self.font_style = f"oblique {min_angle}deg {max_angle}deg"
 
+    def __hash__(self):
+        return hash((self.cssfamilyname, self.classname))
