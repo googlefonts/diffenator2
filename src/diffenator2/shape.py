@@ -174,6 +174,8 @@ def test_words(
             for gid_hash in gid_hashes:
                 seen_gids[gid_hash] = True
 
+                if pc < threshold:
+                    continue
                 res.add(
                     (
                         pc,
