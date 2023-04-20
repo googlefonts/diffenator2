@@ -25,7 +25,7 @@ gftools gen-html diff -fb ./fonts_before/font1.ttf -fa ./fonts_after/font1.ttf
 from __future__ import annotations
 from pkg_resources import resource_filename
 from diffenator2.html import proof_rendering, diff_rendering
-from diffenator2.font import DFont, get_styles
+from diffenator2.font import DFont, get_font_styles
 from diffenator2.matcher import FontMatcher
 from glob import glob
 import os
@@ -40,6 +40,11 @@ def main():
 
     # Optional args which can be used in all subparsers
     universal_options_parser = argparse.ArgumentParser(add_help=False)
+    universal_options_parser.add_argument(
+        "--styles", "-s", choices=("instances", "cross_product", "masters"),
+        default="instances",
+        help="Show font instances, cross product or master styles"
+    )
     universal_options_parser.add_argument(
         "--pt-size", "-pt", help="Change pt size of document text", default=14
     )
@@ -84,7 +89,7 @@ def main():
 
     if args.command == "proof":
         fonts = [DFont(os.path.abspath(fp)) for fp in args.fonts]
-        styles = get_styles(fonts)
+        styles = get_font_styles(fonts, args.styles)
         proof_rendering(
             styles,
             args.templates,
@@ -97,7 +102,7 @@ def main():
         fonts_before = [DFont(os.path.abspath(fp), suffix="old") for fp in args.fonts_before]
         fonts_after = [DFont(os.path.abspath(fp), suffix="new") for fp in args.fonts_after]
         matcher = FontMatcher(fonts_before, fonts_after)
-        matcher.instances()
+        getattr(matcher, args.styles)()
         diff_rendering(
             matcher,
             args.templates,

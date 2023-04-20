@@ -73,7 +73,11 @@ def main():
 
     old_style = matcher.old_styles[0]
     new_style = matcher.new_styles[0]
-    # TODO set variations
+
+    if old_font.is_variable():
+        old_style.set_font_variations()
+    if new_font.is_variable():
+        new_style.set_font_variations()
 
     diff = DiffFonts(old_style, new_style, threshold=args.threshold)
     diff.diff_all()
