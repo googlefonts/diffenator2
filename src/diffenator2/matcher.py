@@ -88,8 +88,9 @@ matcher.masters()
 diff_rendering(matcher) or proof_rendering(matcher)
 
 """
-from diffenator2.font import get_styles
+from diffenator2.font import get_font_styles
 from fontTools.ttLib.scaleUpem import scale_upem
+
 
 class FontMatcher:
 
@@ -99,16 +100,19 @@ class FontMatcher:
         self.old_styles = []
         self.new_styles = []
     
-    def instances(self):
-        old_styles = {s.name: s for s in get_styles(self.old_fonts)}
-        new_styles = {s.name: s for s in get_styles(self.new_fonts)}
+    def _match_styles(self, type_):
+        old_styles = {s.name: s for s in get_font_styles(self.old_fonts, type_)}
+        new_styles = {s.name: s for s in get_font_styles(self.new_fonts, type_)}
 
         matching = set(old_styles.keys()) & set(new_styles.keys())
         self.old_styles = [old_styles[s] for s in matching]
         self.new_styles = [new_styles[s] for s in matching]
 
+    def instances(self):
+        self._match_styles("instances")
+
     def cross_product(self):
-        pass
+        self._match_styles("cross_product")
 
     def masters(self):
         pass

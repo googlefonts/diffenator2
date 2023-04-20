@@ -32,10 +32,10 @@ class Style:
         self.font.set_variations(self.coords)
 
 
-def get_instance_styles(fonts):
+def get_font_styles(fonts, method):
     results = []
     for font in fonts:
-        for style in font.instances():
+        for style in getattr(font, method)():
             results.append(style)
     return results
 
