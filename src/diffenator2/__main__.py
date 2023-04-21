@@ -4,6 +4,7 @@ from argparse import ArgumentParser, Namespace
 import os
 from fontTools.ttLib import TTFont
 from diffenator2 import ninja_diff, ninja_proof, THRESHOLD, NINJA_BUILD_FILE
+from diffenator2.font import DFont
 
 
 def main(**kwargs):
@@ -23,6 +24,11 @@ def main(**kwargs):
         )
         universal_options_parser.add_argument("--filter-styles", default=None)
         universal_options_parser.add_argument("--pt-size", "-pt", default=20)
+        universal_options_parser.add_argument(
+            "--styles", "-s", choices=("instances", "cross_product", "masters"),
+            default="instances",
+            help="Show font instances, cross product or master styles"
+        )
         proof_parser = subparsers.add_parser(
             "proof",
             parents=[universal_options_parser],
@@ -48,16 +54,17 @@ def main(**kwargs):
     if args.command == "proof":
         fonts = [TTFont(f) for f in args.fonts]
         ninja_proof(
-            fonts, out=args.out, imgs=args.imgs, filter_styles=args.filter_styles, pt_size=args.pt_size
+            fonts, out=args.out, imgs=args.imgs, styles=args.styles, filter_styles=args.filter_styles, pt_size=args.pt_size
         )
     elif args.command == "diff":
-        fonts_before = [TTFont(f) for f in args.fonts_before]
-        fonts_after = [TTFont(f) for f in args.fonts_after]
+        fonts_before = [DFont(f) for f in args.fonts_before]
+        fonts_after = [DFont(f) for f in args.fonts_after]
         ninja_diff(
             fonts_before,
             fonts_after,
             out=args.out,
             imgs=args.imgs,
+            styles=args.styles,
             diffenator=False if args.no_diffenator else True,
             user_wordlist=args.user_wordlist,
             filter_styles=args.filter_styles,
