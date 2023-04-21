@@ -100,21 +100,21 @@ class FontMatcher:
         self.old_styles = []
         self.new_styles = []
     
-    def _match_styles(self, type_):
-        old_styles = {s.name: s for s in get_font_styles(self.old_fonts, type_)}
-        new_styles = {s.name: s for s in get_font_styles(self.new_fonts, type_)}
+    def _match_styles(self, type_, filter_styles=None):
+        old_styles = {s.name: s for s in get_font_styles(self.old_fonts, type_, filter_styles)}
+        new_styles = {s.name: s for s in get_font_styles(self.new_fonts, type_, filter_styles)}
 
         matching = set(old_styles.keys()) & set(new_styles.keys())
         self.old_styles = [old_styles[s] for s in matching]
         self.new_styles = [new_styles[s] for s in matching]
 
-    def instances(self):
-        self._match_styles("instances")
+    def instances(self, filter_styles=None):
+        self._match_styles("instances", filter_styles)
 
-    def cross_product(self):
-        self._match_styles("cross_product")
+    def cross_product(self, filter_styles=None):
+        self._match_styles("cross_product", filter_styles)
 
-    def masters(self):
+    def masters(self, filter_styles):
         pass
     
     def coordinates(self, coords=None):

@@ -52,7 +52,7 @@ def main(**kwargs):
     if os.path.exists(".ninja_log"):
         os.remove(".ninja_log")
     if args.command == "proof":
-        fonts = [TTFont(f) for f in args.fonts]
+        fonts = [DFont(f) for f in args.fonts]
         ninja_proof(
             fonts, out=args.out, imgs=args.imgs, styles=args.styles, filter_styles=args.filter_styles, pt_size=args.pt_size
         )

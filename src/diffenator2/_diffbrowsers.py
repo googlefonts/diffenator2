@@ -89,7 +89,7 @@ def main():
 
     if args.command == "proof":
         fonts = [DFont(os.path.abspath(fp)) for fp in args.fonts]
-        styles = get_font_styles(fonts, args.styles)
+        styles = get_font_styles(fonts, args.styles, args.filter_styles)
         proof_rendering(
             styles,
             args.templates,
@@ -102,7 +102,7 @@ def main():
         fonts_before = [DFont(os.path.abspath(fp), suffix="old") for fp in args.fonts_before]
         fonts_after = [DFont(os.path.abspath(fp), suffix="new") for fp in args.fonts_after]
         matcher = FontMatcher(fonts_before, fonts_after)
-        getattr(matcher, args.styles)()
+        getattr(matcher, args.styles)(args.filter_styles)
         diff_rendering(
             matcher,
             args.templates,

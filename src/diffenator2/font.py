@@ -11,6 +11,7 @@ from functools import lru_cache
 from itertools import product
 from diffenator2.template_elements import CSSFontFace, CSSFontStyle
 from diffenator2.utils import dict_coords_to_string
+import re
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -32,10 +33,12 @@ class Style:
         self.font.set_variations(self.coords)
 
 
-def get_font_styles(fonts, method):
+def get_font_styles(fonts, method, filter_styles=None):
     results = []
     for font in fonts:
         for style in getattr(font, method)():
+            if filter_styles and not re.match(filter_styles, style.name):
+                    continue
             results.append(style)
     return results
 
