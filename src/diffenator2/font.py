@@ -82,6 +82,20 @@ class DFont:
         self.ftFont.set_var_design_coords(ft_coords)
         self.variations = coords
         self.hbFont.set_variations(coords)
+    
+    def closest_style(self, coords):
+        fvar_axes = {a.axisTag: (a.minValue, a.maxValue) for a in self.ttFont["fvar"].axes}
+        found_coords = {}
+        for axis, value in coords.items():
+            if axis not in fvar_axes:
+                continue
+            if value >= fvar_axes[axis][0] and value <= fvar_axes[axis][1]:
+                found_coords[axis] = value
+            else:
+                return None
+        # TODO need to refactor this. Perhaps if no name is provided, the class will work it out
+        name = dict_coords_to_string(found_coords).replace(".", "_").replace(",", "_").replace("=", "-")
+        return Style(self, name, coords)
 
     def set_variations_from_static_font(self, font: any):
         assert "fvar" not in font.ttFont, "Must be a static font"

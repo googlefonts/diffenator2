@@ -97,6 +97,8 @@ def ninja_diff(
         os.mkdir(out)
 
     if filter_styles:
+        import pdb
+        pdb.set_trace()
         _ninja_diff(
             fonts_before,
             fonts_after,

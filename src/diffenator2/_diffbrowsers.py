@@ -102,7 +102,7 @@ def main():
         fonts_before = [DFont(os.path.abspath(fp), suffix="old") for fp in args.fonts_before]
         fonts_after = [DFont(os.path.abspath(fp), suffix="new") for fp in args.fonts_after]
         matcher = FontMatcher(fonts_before, fonts_after)
-        getattr(matcher, args.styles)(args.filter_styles)
+        getattr(matcher, args.styles)()
         diff_rendering(
             matcher,
             args.templates,
