@@ -95,7 +95,7 @@ class DFont:
                 return None
         # TODO need to refactor this. Perhaps if no name is provided, the class will work it out
         name = dict_coords_to_string(found_coords).replace(".", "_").replace(",", "_").replace("=", "-")
-        return Style(self, name, coords)
+        return Style(self, name, found_coords)
 
     def set_variations_from_static_font(self, font: any):
         assert "fvar" not in font.ttFont, "Must be a static font"

@@ -79,6 +79,7 @@ class CSSFontStyle(Renderable):
 
     def __post_init__(self):
         self.full_name = f"{self.familyname} {self.stylename}"
+        self.font_variation_settings = ", ".join(f'"{k}" {v}' for k, v in self.coords.items())
         if self.suffix:
             self.cssfamilyname = f"{self.suffix} {self.familyname}"
             self.class_name = (
