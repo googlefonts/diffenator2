@@ -132,7 +132,13 @@ class DFont:
         return sorted(results, key=lambda k: k.coords["wght"])
     
     def masters(self):
-        pass
+        from diffenator2.masters import find_masters
+        results = []
+        master_coords = find_masters(self.ttFont)
+        for coords in master_coords:
+            name = dict_coords_to_string(coords).replace(".", "_").replace(",", "_").replace("=", "-")
+            results.append(Style(self, name, coords))
+        return results
     
     def cross_product(self):
         assert self.is_variable(), "Needs to be a variable font"

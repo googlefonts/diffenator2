@@ -103,3 +103,29 @@ def test_cross_product(fp, expected):
     for got, want in zip(styles, expected):
         assert got.name == want["name"]
         assert got.coords == want["coords"]
+
+
+@pytest.mark.parametrize(
+        """fp, expected""",
+        [
+            (
+                mavenpro_original,
+                [
+                    {
+                        "name": "wght-400_0",
+                        "coords": {"wght": 400.0},
+                    },
+                    {
+                        "name": "wght-900_0",
+                        "coords": {"wght": 900.0},
+                    }
+                ]
+            ),
+        ]
+)
+def test_masters(fp, expected):
+    font = DFont(fp)
+    masters = font.masters()
+    for got, want in zip(masters, expected):
+        assert got.name == want["name"]
+        assert got.coords == want["coords"]
