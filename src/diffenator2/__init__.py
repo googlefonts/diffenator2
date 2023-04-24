@@ -112,7 +112,6 @@ def ninja_diff(
             threshold=threshold,
         )
         return
-    from diffenator2.matcher import FontMatcher
 
     matcher = FontMatcher(fonts_before, fonts_after)
     getattr(matcher, styles)()

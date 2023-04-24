@@ -10,6 +10,7 @@ import freetype as ft
 from functools import lru_cache
 from itertools import product
 from diffenator2.template_elements import CSSFontFace, CSSFontStyle
+from diffenator2.masters import find_masters
 from diffenator2.utils import dict_coords_to_string
 import re
 
@@ -18,16 +19,23 @@ logger.setLevel(logging.INFO)
 
 
 class Style:
-    def __init__(self, font, name, coords):
+    def __init__(self, font, coords, name=None):
         self.font = font
-        self.name = name
         self.coords = coords
+        if name:
+            self.name = name
+        else:
+            self.name = self._make_name()
         self.css_font_style = CSSFontStyle(
             self.font.family_name,
             self.name,
             self.coords,
             self.font.suffix,
         )
+
+    def _make_name(self):
+        name = dict_coords_to_string(self.coords)
+        return name.replace(".", "_").replace(",", "_").replace("=", "-")
 
     def set_font_variations(self):
         self.font.set_variations(self.coords)
@@ -94,8 +102,7 @@ class DFont:
             else:
                 return None
         # TODO need to refactor this. Perhaps if no name is provided, the class will work it out
-        name = dict_coords_to_string(found_coords).replace(".", "_").replace(",", "_").replace("=", "-")
-        return Style(self, name, found_coords)
+        return Style(self, found_coords)
 
     def set_variations_from_static_font(self, font: any):
         assert "fvar" not in font.ttFont, "Must be a static font"
@@ -118,26 +125,22 @@ class DFont:
             instances = self.ttFont["fvar"].instances
             for inst in instances:
                 inst_name = name.getName(inst.subfamilyNameID, 3, 1, 0x409)
-                results.append(Style(self, inst_name.toUnicode(), inst.coordinates))
+                results.append(Style(self, inst.coordinates, inst_name.toUnicode()))
         else:
             results.append(
                 Style(
                     self,
+                    {"wght": ttfont["OS/2"].usWeightClass},
                     name.getBestSubFamilyName(),
-                    {
-                        "wght": ttfont["OS/2"].usWeightClass,
-                    }                
                 )
             )
         return sorted(results, key=lambda k: k.coords["wght"])
     
     def masters(self):
-        from diffenator2.masters import find_masters
         results = []
         master_coords = find_masters(self.ttFont)
         for coords in master_coords:
-            name = dict_coords_to_string(coords).replace(".", "_").replace(",", "_").replace("=", "-")
-            results.append(Style(self, name, coords))
+            results.append(Style(self, coords))
         return results
     
     def cross_product(self):
@@ -156,34 +159,8 @@ class DFont:
         combinations = [dict(zip(axis_tags, c)) for c in cross]
 
         for coords in combinations:
-            name = dict_coords_to_string(coords).replace(".", "_").replace(",", "_").replace("=", "-")
-            results.append(Style(self, name, coords))
+            results.append(Style(self, coords))
         return results
 
     def __repr__(self):
         return f"<DFont: {self.path}>"
-
-
-def match_fonts(
-    old_font: DFont, new_font: DFont, variations: dict = None, scale_upm: bool = True
-):
-    logger.info(
-        f"Matching {os.path.basename(old_font.path)} to {os.path.basename(new_font.path)}"
-    )
-    if scale_upm and new_font.ttFont["head"].unitsPerEm != old_font.ttFont["head"].unitsPerEm:
-        scale_upem(old_font.ttFont, new_font.ttFont["head"].unitsPerEm)
-
-    if variations and old_font.is_variable() and new_font.is_variable():
-        old_font.set_variations(variations)
-        new_font.set_variations(variations)
-        return
-    elif variations and any([not old_font.is_variable(), new_font.is_variable()]):
-        logger.warn(
-            f"Both fonts must be variable fonts in order to use the variations argument. "
-            "Matching by stylename instead."
-        )
-    # Match VFs against statics
-    if not old_font.is_variable() and new_font.is_variable():
-        new_font.set_variations_from_static_font(old_font)
-    elif old_font.is_variable() and not new_font.is_variable():
-        old_font.set_variations_from_static_font(new_font)
