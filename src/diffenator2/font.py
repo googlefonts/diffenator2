@@ -28,7 +28,7 @@ class Style:
             self.coords,
             self.font.suffix,
         )
-    
+
     def set_font_variations(self):
         self.font.set_variations(self.coords)
 

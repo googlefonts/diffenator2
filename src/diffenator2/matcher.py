@@ -1,95 +1,9 @@
 """
 Match font styles or match vf coordinates
-
-
-VF coordinate matcher:
-
->>> matcher = FontMatcher(font_a, font_b)
->>> matcher.masters()
-
-[
-    (wght=400,),
-    (wght=900,),
-]
-
->>> matcher.cross_product()
-
-[
-    (wght=400,), # these should be style objects
-    (wght=700,),
-    (wght=900,),
-]
-
->>> matcher.instances() # should be default
-
->>> style.name 
-
-Regular # static
-wght-400 # vf
-
->>> style.axes
-
-{
-    wght: 400,
-    wdth: 75,
-}
-
-
->>> style.position
-
-(old, new)
-
->>> 
-
-
-
-matcher = FontMatcher(old_fonts, new_fonts)
-old, new = matcher.coordinates({wght: 400})
-
-(
-    (old_instance("wght-400", {wght:400})),
-    (new_instance("wght-400", {wght: 400}),
-)
-
-old = old[0]
-new = new[0]
-
-old.
-
-
-## Diffenator
-
-old_font = ...
-new_font = ...
-coords = {wght=400}
-
-
-matcher = FontMatcher([old_font], [new_font])
-matcher.cross_product()
-
-for old_style, new_style in matcher.styles:
-    old_style.set_font_variations()
-    new_style.set_font_variations()
-
-    diff = DiffFonts(old_style.font, new_style.font)
-    diff.all()
-    diff.to_html("out.html")
-
-    
-## Diffbrowsers
-
-old_fonts = ...
-new_fonts = ...
-
-matcher = FontMatcher(old_fonts, new_fonts)
-matcher.masters()
-
-
-diff_rendering(matcher) or proof_rendering(matcher)
-
 """
 from diffenator2.font import get_font_styles, Style
 from fontTools.ttLib.scaleUpem import scale_upem
+import re
 
 
 class FontMatcher:
@@ -115,19 +29,32 @@ class FontMatcher:
         old_styles = []
         new_styles = []
         styles = get_font_styles(self.new_fonts, "cross_product", filter_styles)
+        self._closest_match(styles, filter_styles)
+
+    def masters(self, filter_styles=None):
+        styles = get_font_styles(self.new_fonts, "masters")
+        self._closest_match(styles, filter_styles)
+
+    def _closest_match(self, styles, filter_styles=None):
         # TODO work out best matching fonts. Current implementation only works on a single font
         old_font = self.old_fonts[0]
+        old_styles = []
+        new_styles = []
+        seen = set()
         for style in styles:
             old_style = old_font.closest_style(style.coords)
-            if old_style:
+            if old_style and old_style.name not in seen:
+                seen.add(old_style.name)
                 old_styles.append(old_style)
                 new_styles.append(Style(style.font, old_style.name, old_style.coords))
+
+        if filter_styles:
+            old_styles = [s for s in old_styles if re.match(filter_styles, s.name)]
+            new_styles = [s for s in new_styles if re.match(filter_styles, s.name)]
+
         self.old_styles = old_styles
         self.new_styles = new_styles
 
-    def masters(self, filter_styles):
-        pass
-    
     def coordinates(self, coords=None):
         # TODO add validation
         from diffenator2.font import Style

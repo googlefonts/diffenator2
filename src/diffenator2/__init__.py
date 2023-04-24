@@ -5,8 +5,9 @@ from ninja.ninja_syntax import Writer
 from diffenator2.utils import dict_coords_to_string
 from diffenator2.font import DFont, get_font_styles
 from fontTools.ttLib import TTFont
-import ninja
 from diffenator2.utils import partition
+from diffenator2.matcher import FontMatcher
+import ninja
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -97,8 +98,6 @@ def ninja_diff(
         os.mkdir(out)
 
     if filter_styles:
-        import pdb
-        pdb.set_trace()
         _ninja_diff(
             fonts_before,
             fonts_after,
@@ -188,14 +187,10 @@ def _ninja_diff(
             db_variables["filters"] = filter_styles
         w.build(diffbrowsers_out, "diffbrowsers", variables=db_variables)
     if diffenator:
-        from diffenator2.matcher import FontMatcher
         matcher = FontMatcher(fonts_before, fonts_after)
         getattr(matcher, styles)(filter_styles)
         for old_style, new_style in zip(matcher.old_styles, matcher.new_styles):
             coords = new_style.coords
-
-#            if filter_styles and style not in filter_styles:
-#                continue
             style = new_style.name.replace(" ", "-")
             diff_variables = dict(
                 font_before=old_style.font.ttFont.reader.file.name,
