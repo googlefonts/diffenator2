@@ -49,8 +49,8 @@ class FontMatcher:
         new_styles = {s.name: s for s in get_font_styles(self.new_fonts, type_, filter_styles)}
 
         matching = set(old_styles.keys()) & set(new_styles.keys())
-        self.old_styles = [old_styles[s] for s in matching]
-        self.new_styles = [new_styles[s] for s in matching]
+        self.old_styles = sorted([old_styles[s] for s in matching], key=lambda k: k.name)
+        self.new_styles = sorted([new_styles[s] for s in matching], key=lambda k: k.name)
 
     def instances(self, filter_styles=None):
         self._match_styles("instances", filter_styles)

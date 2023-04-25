@@ -2,8 +2,8 @@
 
 # Build Hinting docs
 rule diffbrowsers
-  command = _diffbrowsers diff -fb \$fonts_before -fa \$fonts_after -o \$out \$
-      -pt \$pt_size
+  command = _diffbrowsers diff -fb \$fonts_before -fa \$fonts_after -s \$
+      \$styles -o \$out -pt \$pt_size
 
 # Run diffenator VF
 rule diffenator
@@ -18,6 +18,7 @@ build out/diffbrowsers: diffbrowsers
       .*/tests/data/MavenPro\[wght\].subset.ttf
   fonts_after = \$
       .*/tests/data/MavenPro\[wght\].subset.mod.ttf
+  styles = instances
   out = out/diffbrowsers
   pt_size = 20
 build out/Black: diffenator-inst
