@@ -6,15 +6,6 @@ from fontTools.ttLib.scaleUpem import scale_upem
 import re
 
 
-AXIS_ORDER = [
-    "ROND",
-    "opsz",
-    "wdth",
-    "wght",
-    "ital",
-    "slnt"
-]
-
 class FontMatcher:
 
     def __init__(self, old_fonts, new_fonts):
@@ -23,6 +14,36 @@ class FontMatcher:
         self.old_styles = []
         self.new_styles = []
     
+    def _match_fonts(self):
+        old_fonts = []
+        new_fonts = []
+        for new_font in self.new_fonts:
+            new_names = self._get_names(new_font)
+            best_font = None
+            match_count = -float("inf")
+            for old_font in self.old_fonts:
+                if old_font == new_font:
+                    continue
+                old_names = self._get_names(old_font)
+                matched_names = old_names & new_names
+                if len(matched_names) > match_count:
+                    match_count = len(matched_names)
+                    best_font = old_font
+            old_fonts.append(best_font)
+            new_fonts.append(new_font)
+        self.old_fonts = old_fonts
+        self.new_fonts = new_fonts
+
+    def _get_names(self, font):
+        results = set()
+        name = font.ttFont["name"]
+        fvar = font.ttFont["fvar"]
+        # TODO add STAT
+        results.add(name.getBestSubFamilyName())
+        for inst in fvar.instances:
+            results.add(name.getName(inst.subfamilyNameID, 3, 1, 0x409).toUnicode())
+        return results
+
     def _match_styles(self, type_, filter_styles=None):
         old_styles = {s.name: s for s in get_font_styles(self.old_fonts, type_, filter_styles)}
         new_styles = {s.name: s for s in get_font_styles(self.new_fonts, type_, filter_styles)}
@@ -35,10 +56,12 @@ class FontMatcher:
         self._match_styles("instances", filter_styles)
 
     def cross_product(self, filter_styles=None):
+        self._match_fonts()
         styles = get_font_styles(self.new_fonts, "cross_product", filter_styles)
         self._closest_match(styles, filter_styles)
 
     def masters(self, filter_styles=None):
+        self._match_fonts()
         styles = get_font_styles(self.new_fonts, "masters")
         self._closest_match(styles, filter_styles)
 
