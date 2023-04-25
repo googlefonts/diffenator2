@@ -1,10 +1,9 @@
 import pytest
 from . import *
 from itertools import combinations
-from diffenator2.font import match_fonts
 from diffenator2.font import DFont
 from diffenator2.html import diffenator_font_style
-
+from diffenator2.matcher import FontMatcher
 
 
 @pytest.mark.parametrize(
@@ -18,7 +17,9 @@ from diffenator2.html import diffenator_font_style
 def test_match_coordinates(fp_before, fp_after, expected):
     font_before = DFont(fp_before)
     font_after = DFont(fp_after)
-    match_fonts(font_before, font_after)
+    matcher = FontMatcher([font_before], [font_after])
+    matcher.instances()
+    matcher.new_styles[0].set_font_variations()
     assert font_after.variations == expected
 
 
