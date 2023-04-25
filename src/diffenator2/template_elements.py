@@ -105,6 +105,7 @@ class CSSFontFace(Renderable):
         else:
             self.filename = ttf_filename
         self.cssfamilyname = font_family_name(self.ttfont, self.suffix)
+        self.familyname = self.cssfamilyname
         self.stylename = self.ttfont["name"].getBestSubFamilyName()
         self.classname = self.cssfamilyname.replace(" ", "-")
         self.font_style = "normal" if "Italic" not in self.stylename else "italic"
