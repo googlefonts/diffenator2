@@ -16,11 +16,9 @@ from diffenator2.html import diffenator_report
 
 
 class DiffFonts:
-    def __init__(self, old_style: Style, new_style: Style, threshold=0.01):
-        self.old_style = old_style
-        self.new_style = new_style
-        self.old_font = self.old_style.font
-        self.new_font = self.new_style.font
+    def __init__(self, old_font: DFont, new_font: DFont, threshold=0.01):
+        self.old_font = old_font
+        self.new_font = new_font
         self.threshold = threshold
 
     def diff_all(self):
@@ -60,26 +58,15 @@ def main():
     parser.add_argument("--out", "-o", default="out", help="Output html path")
     args = parser.parse_args()
 
-    coords = string_coords_to_dict(args.coords)
+    coords = string_coords_to_dict(args.coords) if args.coords else None
 
     old_font = DFont(os.path.abspath(args.old_font), suffix="old")
     new_font = DFont(os.path.abspath(args.new_font), suffix="new")
     matcher = FontMatcher([old_font], [new_font])
-    if args.coords:
-        matcher.coordinates(coords)
-    else:
-        matcher.instances() # matching a static
+    matcher.diffenator(coords)
     matcher.upms()
 
-    old_style = matcher.old_styles[0]
-    new_style = matcher.new_styles[0]
-
-    if old_font.is_variable():
-        old_style.set_font_variations()
-    if new_font.is_variable():
-        new_style.set_font_variations()
-
-    diff = DiffFonts(old_style, new_style, threshold=args.threshold)
+    diff = DiffFonts(old_font, new_font, threshold=args.threshold)
     diff.diff_all()
     if args.user_wordlist:
         diff.diff_strings(args.user_wordlist)

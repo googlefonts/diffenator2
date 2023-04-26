@@ -43,17 +43,30 @@ class FontMatcher:
         for inst in fvar.instances:
             results.add(name.getName(inst.subfamilyNameID, 3, 1, 0x409).toUnicode())
         return results
+    
+    def diffenator(self, coords=None):
+        assert len(self.old_fonts) == 1 and len(self.new_fonts) == 1, "Multiple fonts found. Diffenator can only do a 1 on 1 comparison"
+        old_font = self.old_fonts[0]
+        new_font = self.new_fonts[0]
+        if old_font.is_variable() and new_font.is_variable() and not coords:
+            raise ValueError("VF against VF requires coordinates")
+        elif old_font.is_variable() and new_font.is_variable():
+            self.old_styles.append(Style(old_font, coords, "old"))
+            self.new_styles.append(Style(old_font, coords, "new"))
+            old_font.set_variations(coords)
+            new_font.set_variations(coords)
+        elif old_font.is_variable() and not new_font.is_variable():
+            old_font.set_variations_from_static_font(new_font)
+        elif new_font.is_variable() and not old_font.is_variable():
+            new_font.set_variations_from_static_font(old_font)
 
-    def _match_styles(self, type_, filter_styles=None):
-        old_styles = {s.name: s for s in get_font_styles(self.old_fonts, type_, filter_styles)}
-        new_styles = {s.name: s for s in get_font_styles(self.new_fonts, type_, filter_styles)}
+    def instances(self, filter_styles=None):
+        old_styles = {s.name: s for s in get_font_styles(self.old_fonts, "instances", filter_styles)}
+        new_styles = {s.name: s for s in get_font_styles(self.new_fonts, "instances", filter_styles)}
 
         matching = set(old_styles.keys()) & set(new_styles.keys())
         self.old_styles = sorted([old_styles[s] for s in matching], key=lambda k: k.name)
         self.new_styles = sorted([new_styles[s] for s in matching], key=lambda k: k.name)
-
-    def instances(self, filter_styles=None):
-        self._match_styles("instances", filter_styles)
 
     def cross_product(self, filter_styles=None):
         self._match_fonts()
@@ -95,6 +108,9 @@ class FontMatcher:
             self.new_styles.append(Style(font, coords))
     
     def upms(self):
+        if len(self.old_fonts) == 1 and len(self.new_fonts) == 1:
+            scale_upem(self.old_fonts[0].ttFont, self.new_fonts[0].ttFont["head"].unitsPerEm)
+            return
         assert self.old_styles + self.new_styles, "match styles first!"
         seen = set()
         for old_style, new_style in zip(self.old_styles, self.new_styles):
