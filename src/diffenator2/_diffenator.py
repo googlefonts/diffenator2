@@ -16,9 +16,12 @@ from diffenator2.html import diffenator_report
 
 
 class DiffFonts:
-    def __init__(self, old_font: DFont, new_font: DFont, threshold=0.01):
-        self.old_font = old_font
-        self.new_font = new_font
+    def __init__(self, matcher, threshold=0.01):
+        self.old_font = matcher.old_fonts[0]
+        self.new_font = matcher.new_fonts[0]
+
+        self.old_style = matcher.old_styles[0]
+        self.new_style = matcher.new_styles[0]
         self.threshold = threshold
 
     def diff_all(self):
@@ -66,7 +69,7 @@ def main():
     matcher.diffenator(coords)
     matcher.upms()
 
-    diff = DiffFonts(old_font, new_font, threshold=args.threshold)
+    diff = DiffFonts(matcher, threshold=args.threshold)
     diff.diff_all()
     if args.user_wordlist:
         diff.diff_strings(args.user_wordlist)

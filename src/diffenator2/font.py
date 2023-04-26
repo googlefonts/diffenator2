@@ -44,16 +44,6 @@ class Style:
 def get_font_styles(fonts, method, filter_styles=None):
     results = []
     for font in fonts:
-        if not font.is_variable():
-            results.append(
-                Style(
-                    font,
-                    {"wght": font.ttFont["OS/2"].usWeightClass},
-                    name=font.ttFont["name"].getBestSubFamilyName(),
-                )
-            )
-            continue
-
         for style in getattr(font, method)():
             if filter_styles and not re.match(filter_styles, style.name):
                     continue
@@ -147,6 +137,7 @@ class DFont:
         return sorted(results, key=lambda k: k.coords["wght"])
     
     def masters(self):
+        assert self.is_variable(), "Needs to be a variable font"
         results = []
         master_coords = find_masters(self.ttFont)
         for coords in master_coords:

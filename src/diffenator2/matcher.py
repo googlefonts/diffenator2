@@ -48,16 +48,18 @@ class FontMatcher:
         assert len(self.old_fonts) == 1 and len(self.new_fonts) == 1, "Multiple fonts found. Diffenator can only do a 1 on 1 comparison"
         old_font = self.old_fonts[0]
         new_font = self.new_fonts[0]
-        if old_font.is_variable() and new_font.is_variable() and not coords:
-            raise ValueError("VF against VF requires coordinates")
-        elif old_font.is_variable() and new_font.is_variable():
-            self.old_styles.append(Style(old_font, coords, "old"))
-            self.new_styles.append(Style(old_font, coords, "new"))
+        if old_font.is_variable() and new_font.is_variable():
+            if not coords:
+                coords = {a.axisTag: a.defaultValue for a in new_font.ttFont["fvar"].axes}
+            self.old_styles.append(Style(old_font, coords, ""))
+            self.new_styles.append(Style(new_font, coords, ""))
             old_font.set_variations(coords)
             new_font.set_variations(coords)
         elif old_font.is_variable() and not new_font.is_variable():
+            self.instances()
             old_font.set_variations_from_static_font(new_font)
         elif new_font.is_variable() and not old_font.is_variable():
+            self.instances()
             new_font.set_variations_from_static_font(old_font)
 
     def instances(self, filter_styles=None):
