@@ -196,3 +196,32 @@ def test_match_masters(old_fps, new_fps, old_expected, new_expected):
     for got, want in zip(matcher.new_styles, new_expected):
         assert got.name == want["name"]
         assert got.coords == want["coords"]
+
+
+@pytest.mark.parametrize(
+    """old_fp,new_fp,coords,old_expected,new_expected""",
+    [
+        (
+            mavenpro_vf,
+            mavenpro_extra_bold,
+            {},
+            {"name": "ExtraBold", "coords": {"wght": 800}},
+            {"name": "ExtraBold", "coords": {"wght": 800}}
+        ),
+        (
+            mavenpro_vf,
+            mavenpro_extra_bold,
+            {},
+            {"name": "ExtraBold", "coords": {"wght": 800}},
+            {"name": "ExtraBold", "coords": {"wght": 800}}
+        )
+    ]
+)
+def test_match_diffenator(old_fp, new_fp, coords, old_expected, new_expected):
+    old_font = DFont(old_fp)
+    new_font = DFont(new_fp)
+    matcher = FontMatcher([old_font], [new_font])
+    matcher.diffenator(coords)
+
+    assert matcher.old_styles[0].name == old_expected["name"]
+    assert matcher.old_styles[0].coords == old_expected["coords"]

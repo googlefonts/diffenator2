@@ -129,10 +129,14 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, pt_size=20
 
 def diffenator_report(diff, template, dst="out"):
     font_faces_old = [diff.old_font.css_font_face]
+    font_faces_old[0].cssfamilyname = "old font"
     font_faces_new = [diff.new_font.css_font_face]
+    font_faces_new[0].cssfamilyname = "new font"
 
     font_styles_old = [diff.old_style.css_font_style]
+    font_styles_old[0].cssfamilyname = "old font"
     font_styles_new = [diff.new_style.css_font_style]
+    font_styles_new[0].cssfamilyname = "new font"
     _package(
         [template],
         dst,

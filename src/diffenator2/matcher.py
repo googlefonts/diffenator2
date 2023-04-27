@@ -61,6 +61,9 @@ class FontMatcher:
         elif new_font.is_variable() and not old_font.is_variable():
             self.instances()
             new_font.set_variations_from_static_font(old_font)
+        elif not old_font.is_variable() and not new_font.is_variable():
+            self.old_styles.append(Style(old_font, {"wght": 400}, ""))
+            self.new_styles.append(Style(new_font, {"wght": 400}, ""))
 
     def instances(self, filter_styles=None):
         old_styles = {s.name: s for s in get_font_styles(self.old_fonts, "instances", filter_styles)}
