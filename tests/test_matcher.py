@@ -102,3 +102,97 @@ def test_match_instances(old_fps, new_fps, old_expected, new_expected):
         old_style = old_styles.get(got["name"], None)
         assert old_style
         assert old_style.coords == got["coords"]
+
+
+@pytest.mark.parametrize(
+    """old_fps,new_fps,old_expected,new_expected""",
+    [
+        (
+            [mavenpro_original],
+            [mavenpro_original],
+            [
+                {"coords": {"wght": 400.0}, "name": "wght-400_0"},
+                {"coords": {"wght": 900.0}, "name": "wght-900_0"},
+            ],
+            [
+                {"coords": {"wght": 400.0}, "name": "wght-400_0"},
+                {"coords": {"wght": 900.0}, "name": "wght-900_0"},
+            ],
+        ),
+        # Test two fonts which have different designspaces
+        # We should only expect the wght axis
+        (
+            [commissioner_vf],
+            [mavenpro_original],
+            [
+                {"coords": {"wght": 400.0}, "name": "wght-400_0"},
+                {"coords": {"wght": 900.0}, "name": "wght-900_0"},
+            ],
+            [
+                {"coords": {"wght": 400.0}, "name": "wght-400_0"},
+                {"coords": {"wght": 900.0}, "name": "wght-900_0"},
+            ],
+        ),
+    ]
+)
+def test_match_masters(old_fps, new_fps, old_expected, new_expected):
+    old_fonts = [DFont(f) for f in old_fps]
+    new_fonts = [DFont(f) for f in new_fps]
+    matcher = FontMatcher(old_fonts, new_fonts)
+    matcher.masters()
+    
+    assert len(matcher.old_styles) == len(matcher.new_styles)
+    for got, want in zip(matcher.old_styles, old_expected):
+        assert got.name == want["name"]
+        assert got.coords == want["coords"]
+
+
+@pytest.mark.parametrize(
+    """old_fps,new_fps,old_expected,new_expected""",
+    [
+        (
+            [mavenpro_original],
+            [mavenpro_original],
+            [
+                {"coords": {"wght": 400.0}, "name": "wght-400_0"},
+                {"coords": {"wght": 650.0}, "name": "wght-650_0"},
+                {"coords": {"wght": 900.0}, "name": "wght-900_0"},
+            ],
+            [
+                {"coords": {"wght": 400.0}, "name": "wght-400_0"},
+                {"coords": {"wght": 650.0}, "name": "wght-650_0"},
+                {"coords": {"wght": 900.0}, "name": "wght-900_0"},
+            ],
+        ),
+        # Test two fonts which have different designspaces
+        # We should only expect the wght axis
+        (
+            [commissioner_vf],
+            [mavenpro_original],
+            [
+                {"coords": {"wght": 400.0}, "name": "wght-400_0"},
+                {"coords": {"wght": 650.0}, "name": "wght-650_0"},
+                {"coords": {"wght": 900.0}, "name": "wght-900_0"},
+            ],
+            [
+                {"coords": {"wght": 400.0}, "name": "wght-400_0"},
+                {"coords": {"wght": 650.0}, "name": "wght-650_0"},
+                {"coords": {"wght": 900.0}, "name": "wght-900_0"},
+            ],
+        ),
+    ]
+)
+def test_match_masters(old_fps, new_fps, old_expected, new_expected):
+    old_fonts = [DFont(f) for f in old_fps]
+    new_fonts = [DFont(f) for f in new_fps]
+    matcher = FontMatcher(old_fonts, new_fonts)
+    matcher.cross_product()
+    
+    assert len(matcher.old_styles) == len(matcher.new_styles)
+    for got, want in zip(matcher.old_styles, old_expected):
+        assert got.name == want["name"]
+        assert got.coords == want["coords"]
+    
+    for got, want in zip(matcher.new_styles, new_expected):
+        assert got.name == want["name"]
+        assert got.coords == want["coords"]
