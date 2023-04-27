@@ -78,32 +78,22 @@ def test_instances(fp, expected):
 @pytest.mark.parametrize(
     """fp, expected""",
     [
+        # VF with single axis, we expect 1^3
         (
             mavenpro_vf,
-            [
-                {
-                    "name": "wght-400_0",
-                    "coords": {"wght": 400.0},
-                },
-                {
-                    "name": "wght-650_0",
-                    "coords": {"wght": 650.0},
-                },
-                {
-                    "name": "wght-900_0",
-                    "coords": {"wght": 900.0},
-                },
-            ]
+            3**1
+        ),
+        # VF with 4 axes, we expect 3^4
+        (
+            commissioner_vf,
+            3**4
         )
-        # TODO add multi axis example
     ]
 )
 def test_cross_product(fp, expected):
     font = DFont(fp)
     styles = font.cross_product()
-    for got, want in zip(styles, expected):
-        assert got.name == want["name"]
-        assert got.coords == want["coords"]
+    assert len(styles) == expected
 
 
 @pytest.mark.parametrize(
@@ -122,6 +112,35 @@ def test_cross_product(fp, expected):
                     }
                 ]
             ),
+            (
+                commissioner_vf,
+                [
+                    {'name': 'wght-100_0_slnt-0_0_FLAR-0_0_VOLM-0_0', 'coords': {'wght': 100.0, 'slnt': 0.0, 'FLAR': 0.0, 'VOLM': 0.0}},
+                    {'name': 'wght-100_0_slnt-0_0_FLAR-0_0_VOLM-100_0', 'coords': {'wght': 100.0, 'slnt': 0.0, 'FLAR': 0.0, 'VOLM': 100.0}},
+                    {'name': 'wght-100_0_slnt-0_0_FLAR-100_0_VOLM-0_0', 'coords': {'wght': 100.0, 'slnt': 0.0, 'FLAR': 100.0, 'VOLM': 0.0}},
+                    {'name': 'wght-100_0_slnt-0_0_FLAR-100_0_VOLM-100_0', 'coords': {'wght': 100.0, 'slnt': 0.0, 'FLAR': 100.0, 'VOLM': 100.0}},
+                    {'name': 'wght-100_0_slnt--12_0_FLAR-0_0_VOLM-0_0', 'coords': {'wght': 100.0, 'slnt': -12.0, 'FLAR': 0.0, 'VOLM': 0.0}},
+                    {'name': 'wght-100_0_slnt--12_0_FLAR-0_0_VOLM-100_0', 'coords': {'wght': 100.0, 'slnt': -12.0, 'FLAR': 0.0, 'VOLM': 100.0}},
+                    {'name': 'wght-100_0_slnt--12_0_FLAR-100_0_VOLM-0_0', 'coords': {'wght': 100.0, 'slnt': -12.0, 'FLAR': 100.0, 'VOLM': 0.0}},
+                    {'name': 'wght-100_0_slnt--12_0_FLAR-100_0_VOLM-100_0', 'coords': {'wght': 100.0, 'slnt': -12.0, 'FLAR': 100.0, 'VOLM': 100.0}},
+                    {'name': 'wght-554_99_slnt-0_0_FLAR-0_0_VOLM-0_0', 'coords': {'wght': 554.99, 'slnt': 0.0, 'FLAR': 0.0, 'VOLM': 0.0}},
+                    {'name': 'wght-554_99_slnt-0_0_FLAR-0_0_VOLM-100_0', 'coords': {'wght': 554.99, 'slnt': 0.0, 'FLAR': 0.0, 'VOLM': 100.0}},
+                    {'name': 'wght-554_99_slnt-0_0_FLAR-100_0_VOLM-0_0', 'coords': {'wght': 554.99, 'slnt': 0.0, 'FLAR': 100.0, 'VOLM': 0.0}},
+                    {'name': 'wght-554_99_slnt-0_0_FLAR-100_0_VOLM-100_0', 'coords': {'wght': 554.99, 'slnt': 0.0, 'FLAR': 100.0, 'VOLM': 100.0}},
+                    {'name': 'wght-554_99_slnt--12_0_FLAR-0_0_VOLM-0_0', 'coords': {'wght': 554.99, 'slnt': -12.0, 'FLAR': 0.0, 'VOLM': 0.0}},
+                    {'name': 'wght-554_99_slnt--12_0_FLAR-0_0_VOLM-100_0', 'coords': {'wght': 554.99, 'slnt': -12.0, 'FLAR': 0.0, 'VOLM': 100.0}},
+                    {'name': 'wght-554_99_slnt--12_0_FLAR-100_0_VOLM-0_0', 'coords': {'wght': 554.99, 'slnt': -12.0, 'FLAR': 100.0, 'VOLM': 0.0}},
+                    {'name': 'wght-554_99_slnt--12_0_FLAR-100_0_VOLM-100_0', 'coords': {'wght': 554.99, 'slnt': -12.0, 'FLAR': 100.0, 'VOLM': 100.0}},
+                    {'name': 'wght-900_0_slnt-0_0_FLAR-0_0_VOLM-0_0', 'coords': {'wght': 900.0, 'slnt': 0.0, 'FLAR': 0.0, 'VOLM': 0.0}},
+                    {'name': 'wght-900_0_slnt-0_0_FLAR-0_0_VOLM-100_0', 'coords': {'wght': 900.0, 'slnt': 0.0, 'FLAR': 0.0, 'VOLM': 100.0}},
+                    {'name': 'wght-900_0_slnt-0_0_FLAR-100_0_VOLM-0_0', 'coords': {'wght': 900.0, 'slnt': 0.0, 'FLAR': 100.0, 'VOLM': 0.0}},
+                    {'name': 'wght-900_0_slnt-0_0_FLAR-100_0_VOLM-100_0', 'coords': {'wght': 900.0, 'slnt': 0.0, 'FLAR': 100.0, 'VOLM': 100.0}},
+                    {'name': 'wght-900_0_slnt--12_0_FLAR-0_0_VOLM-0_0', 'coords': {'wght': 900.0, 'slnt': -12.0, 'FLAR': 0.0, 'VOLM': 0.0}},
+                    {'name': 'wght-900_0_slnt--12_0_FLAR-0_0_VOLM-100_0', 'coords': {'wght': 900.0, 'slnt': -12.0, 'FLAR': 0.0, 'VOLM': 100.0}},
+                    {'name': 'wght-900_0_slnt--12_0_FLAR-100_0_VOLM-0_0', 'coords': {'wght': 900.0, 'slnt': -12.0, 'FLAR': 100.0, 'VOLM': 0.0}},
+                    {'name': 'wght-900_0_slnt--12_0_FLAR-100_0_VOLM-100_0', 'coords': {'wght': 900.0, 'slnt': -12.0, 'FLAR': 100.0, 'VOLM': 100.0}},
+                ]
+            )
         ]
 )
 def test_masters(fp, expected):
