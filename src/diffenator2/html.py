@@ -60,7 +60,7 @@ def static_font_style(ttfont, suffix=""):
     )
 
 
-def proof_rendering(styles, templates, dst="out", filter_styles=None, pt_size=20):
+def proof_rendering(styles, templates, dst="out", filter_styles=None, pt_size=20, assets_dir="out"):
     ttFont = styles[0].font.ttFont
     font_faces = set(style.font.css_font_face for style in styles)
     font_styles = [style.css_font_style for style in styles]
@@ -76,10 +76,11 @@ def proof_rendering(styles, templates, dst="out", filter_styles=None, pt_size=20
         glyphs=glyphs,
         test_strings=test_strings,
         pt_size=pt_size,
+        assets_dir=assets_dir,
     )
 
 
-def diff_rendering(matcher, templates, dst="out", filter_styles=None, pt_size=20):
+def diff_rendering(matcher, templates, dst="out", filter_styles=None, pt_size=20, assets_dir="out"):
     ttFont = matcher.old_styles[0].font.ttFont
     font_faces_old = set(style.font.css_font_face for style in matcher.old_styles)
     font_styles_old = [style.css_font_style for style in matcher.old_styles]
@@ -102,10 +103,11 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, pt_size=20
         glyphs=glyphs,
         test_strings=test_strings,
         pt_size=pt_size,
+        assets_dir=assets_dir,
     )
 
 
-def diffenator_report(diff, template, dst="out"):
+def diffenator_report(diff, template, dst="out", assets_dir="out"):
     font_faces_old = [diff.old_font.css_font_face]
     font_faces_old[0].cssfamilyname = "old font"
     font_faces_new = [diff.new_font.css_font_face]
@@ -125,6 +127,7 @@ def diffenator_report(diff, template, dst="out"):
         font_styles_new=font_styles_new,
         include_ui=True,
         pt_size=32,
+        assets_dir=assets_dir,
     )
 
 

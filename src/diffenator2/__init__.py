@@ -141,6 +141,7 @@ def ninja_diff(
             filter_styles,
             pt_size,
             threshold=threshold,
+            assets_dir=out,
         )
 
 def _ninja_diff(
@@ -155,13 +156,14 @@ def _ninja_diff(
     filter_styles: str = None,
     pt_size: int = 20,
     threshold: float = THRESHOLD,
+    assets_dir: str = "out",
 ):
     w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
     # Setup rules
     w.comment("Rules")
     w.newline()
     w.comment("Build Hinting docs")
-    db_cmd = f"_diffbrowsers diff -fb $fonts_before -fa $fonts_after -s $styles -o $out -pt $pt_size"
+    db_cmd = f"_diffbrowsers diff --assets-dir $assets_dir -fb $fonts_before -fa $fonts_after -s $styles -o $out -pt $pt_size"
     if imgs:
         db_cmd += " --imgs"
     if filter_styles:
@@ -170,7 +172,7 @@ def _ninja_diff(
     w.newline()
 
     w.comment("Run diffenator VF")
-    diff_cmd = f"_diffenator $font_before $font_after -t $threshold -o $out"
+    diff_cmd = f"_diffenator --assets-dir $assets_dir $font_before $font_after -t $threshold -o $out"
     if user_wordlist:
         diff_cmd += " --user-wordlist $user_wordlist"
     diff_inst_cmd = diff_cmd + " --coords $coords"
@@ -187,6 +189,7 @@ def _ninja_diff(
             fonts_after=[os.path.abspath(f.ttFont.reader.file.name) for f in fonts_after],
             styles=styles,
             out=diffbrowsers_out,
+            assets_dir=assets_dir,
             pt_size=pt_size
         )
         if filter_styles:
@@ -202,6 +205,7 @@ def _ninja_diff(
                 font_before=old_style.font.ttFont.reader.file.name,
                 font_after=new_style.font.ttFont.reader.file.name,
                 out=style,
+                assets_dir=assets_dir,
                 threshold=threshold,
             )
             if user_wordlist:

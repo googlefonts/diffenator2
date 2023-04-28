@@ -52,6 +52,10 @@ def main():
         "--out", "-o", help="Output dir", default="out"
     )
     universal_options_parser.add_argument(
+        "--assets-dir", help="Where to place font assets", default=None
+    )
+
+    universal_options_parser.add_argument(
         "--templates",
         help="HTML templates. By default, diffenator/templates/diffbrowsers_*.html is used.",
         default=glob(
@@ -87,6 +91,9 @@ def main():
 
     args = parser.parse_args()
 
+    if not args.assets_dir:
+        args.assets_dir = args.out
+
     if args.command == "proof":
         fonts = [DFont(os.path.abspath(fp)) for fp in args.fonts]
         styles = get_font_styles(fonts, args.styles, args.filter_styles)
@@ -95,7 +102,8 @@ def main():
             args.templates,
             args.out,
             filter_styles=args.filter_styles,
-            pt_size=args.pt_size
+            pt_size=args.pt_size,
+            assets_dir=args.assets_dir,
         )
 
     elif args.command == "diff":
@@ -109,6 +117,7 @@ def main():
             args.out,
             filter_styles=args.filter_styles,
             pt_size=args.pt_size,
+            assets_dir=args.assets_dir,
         )
 
     if args.imgs:
