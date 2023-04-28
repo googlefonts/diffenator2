@@ -61,6 +61,8 @@ class FontMatcher:
         elif new_font.is_variable() and not old_font.is_variable():
             self.instances()
             new_font.set_variations_from_static_font(old_font)
+        # We want to match two static fonts which may have different styles,
+        # hence why we override the wght value.
         elif not old_font.is_variable() and not new_font.is_variable():
             self.old_styles.append(Style(old_font, {"wght": 400}, ""))
             self.new_styles.append(Style(new_font, {"wght": 400}, ""))

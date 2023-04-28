@@ -115,6 +115,13 @@ def ninja_diff(
 
     matcher = FontMatcher(fonts_before, fonts_after)
     getattr(matcher, styles)()
+    if not matcher.old_styles and not matcher.new_styles:
+        raise ValueError(
+            f"Matcher was not able to detect any matching styles for {styles} "
+            "method.\nPlease ensure that variable fonts have fvar instances, "
+            "both fonts have designspaces which overlap or ensure that both "
+            "sets of static fonts have some matching styles."
+        )
     
     partitioned = partition(matcher.old_styles, MAX_STYLES)
     for p in partitioned:
