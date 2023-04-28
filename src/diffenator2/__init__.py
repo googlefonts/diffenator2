@@ -25,12 +25,16 @@ def ninja_proof(
     styles="instances",
     filter_styles: str = None,
     pt_size: int = 20,
+    assets_dir: str = "out",
 ):
     if not os.path.exists(out):
         os.mkdir(out)
 
+    if not os.path.exists(assets_dir):
+        os.mkdir(assets_dir)
+
     if filter_styles:
-        _ninja_proof(fonts, out, imgs, styles, filter_styles, pt_size)
+        _ninja_proof(fonts, out, imgs, styles, filter_styles, pt_size, assets_dir)
         return
 
     font_styles = get_font_styles(fonts, styles)
@@ -40,7 +44,7 @@ def ninja_proof(
         o = os.path.join(out, filter_styles.replace("|", "-"))
         if not os.path.exists(o):
             os.mkdir(o)
-        _ninja_proof(fonts, o, imgs, styles, filter_styles, pt_size)
+        _ninja_proof(fonts, o, imgs, styles, filter_styles, pt_size, assets_dir)
 
 
 def _ninja_proof(
@@ -50,13 +54,14 @@ def _ninja_proof(
     styles: str = "instances",
     filter_styles: bool = None,
     pt_size: int = 20,
+    assets_dir: str = "out",
 ):
     w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
     w.comment("Rules")
     w.newline()
     out_s = os.path.join("out", "diffbrowsers")
 
-    cmd = f"_diffbrowsers proof $fonts -s $styles -o $out -pt $pt_size"
+    cmd = f"_diffbrowsers proof --assets-dir $assets_dir $fonts -s $styles -o $out -pt $pt_size"
     if imgs:
         cmd += " --imgs"
     if filter_styles:
@@ -70,7 +75,8 @@ def _ninja_proof(
         fonts=[os.path.abspath(f.ttFont.reader.file.name) for f in fonts],
         styles=styles,
         out=out_s,
-        pt_size=pt_size
+        pt_size=pt_size,
+        assets_dir=assets_dir,
     )
     if imgs:
         variables["imgs"] = imgs
@@ -93,6 +99,7 @@ def ninja_diff(
     filter_styles: str = None,
     pt_size: int = 20,
     threshold: float = THRESHOLD,
+    assets_dir: str = "out",
 ):
     if not os.path.exists(out):
         os.mkdir(out)
@@ -110,6 +117,7 @@ def ninja_diff(
             filter_styles,
             pt_size,
             threshold=threshold,
+            assets_dir=assets_dir,
         )
         return
 
