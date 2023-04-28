@@ -13,6 +13,8 @@ This tool replaces the original [fontdiffenator](https://github.com/googlefonts/
 - Diff fonts with different upms
 - Diff fonts with different glyph names
 - Diff static fonts against variable font fvar instances
+- Diff variable font masters
+- Diff variable font axes by using a cross product
 - Output browser images using Selenium Webdriver
 - Integrate into existing github action workflows by using the github action, https://github.com/f-actions/diffenator2
 - Use [ninja](https://ninja-build.org/) to diff multiple fonts at the same time. Diffing all styles Noto Sans takes (XXXX)
@@ -81,3 +83,13 @@ Only diff regular and bold styles
 --filter-styles accept wildcards so let's diff all Bold styles
 
 `diffenator2 diff -fb font1.ttf -fa font2.ttf --filter-styles "Bold*"`
+
+
+Compare variable font masters
+
+`diffenator2 diff -fb font1.ttf -fa font2.ttf -s masters`
+
+
+Compare variable fonts axes using a cross product
+
+`diffenator2 diff -fb font1.ttf -fa font2.ttf -s cross_product`

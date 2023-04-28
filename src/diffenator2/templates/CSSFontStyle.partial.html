@@ -3,4 +3,5 @@
     {% if "wght" in coords %}font-weight: {{coords['wght']}};{% endif %}
     {% if "wdth" in coords %}font-stretch: {{coords['wdth']}}%;{% endif %}
     {% if "Italic" in stylename %}font-style: italic;{% else %}font-style: normal;{% endif %}
+    font-variation-settings: {{ font_variation_settings }};
 }

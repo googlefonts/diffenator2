@@ -1,6 +1,6 @@
 from . import *
 import pytest
-from fontTools.ttLib import TTFont
+from diffenator2.font import DFont
 import re
 
 
@@ -11,16 +11,16 @@ import re
         # standard, just two fonts families
         (
             dict(
-                fonts_before=[TTFont(mavenpro_vf)],
-                fonts_after=[TTFont(mavenpro_vf_mod)],
+                fonts_before=[DFont(mavenpro_vf)],
+                fonts_after=[DFont(mavenpro_vf_mod)],
             ),
             os.path.join(DATA_FP, "ninja_files", "diff-standard.txt")
         ),
         # include imgs
         (
             dict(
-                fonts_before=[TTFont(mavenpro_vf)],
-                fonts_after=[TTFont(mavenpro_vf_mod)],
+                fonts_before=[DFont(mavenpro_vf)],
+                fonts_after=[DFont(mavenpro_vf_mod)],
                 imgs=True,
             ),
             os.path.join(DATA_FP, "ninja_files", "diff-imgs.txt")
@@ -28,8 +28,8 @@ import re
         # include filter-styles
         (
             dict(
-                fonts_before=[TTFont(mavenpro_vf)],
-                fonts_after=[TTFont(mavenpro_vf_mod)],
+                fonts_before=[DFont(mavenpro_vf)],
+                fonts_after=[DFont(mavenpro_vf_mod)],
                 imgs=True,
                 filter_styles="Medium|ExtraBold"
             ),
@@ -38,8 +38,8 @@ import re
         # change threshold
         (
             dict(
-                fonts_before=[TTFont(mavenpro_vf)],
-                fonts_after=[TTFont(mavenpro_vf_mod)],
+                fonts_before=[DFont(mavenpro_vf)],
+                fonts_after=[DFont(mavenpro_vf_mod)],
                 threshold=0.01,
             ),
             os.path.join(DATA_FP, "ninja_files", "diff-threshold.txt")
@@ -63,14 +63,14 @@ def test_run_ninja_diff(kwargs, expected_fp):
         # standard
         (
             dict(
-                fonts=[TTFont(mavenpro_vf)],
+                fonts=[DFont(mavenpro_vf)],
             ),
             os.path.join(DATA_FP, "ninja_files", "proof-standard.txt")
         ),
         # imgs
         (
             dict(
-                fonts=[TTFont(mavenpro_vf)],
+                fonts=[DFont(mavenpro_vf)],
                 imgs=True,
             ),
             os.path.join(DATA_FP, "ninja_files", "proof-imgs.txt")
@@ -78,7 +78,7 @@ def test_run_ninja_diff(kwargs, expected_fp):
         # include filter_styles
         (
             dict(
-                fonts=[TTFont(mavenpro_vf)],
+                fonts=[DFont(mavenpro_vf)],
                 imgs=True,
                 filter_styles="Medium|Bold"
             ),

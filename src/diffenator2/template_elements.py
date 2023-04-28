@@ -79,6 +79,7 @@ class CSSFontStyle(Renderable):
 
     def __post_init__(self):
         self.full_name = f"{self.familyname} {self.stylename}"
+        self.font_variation_settings = ", ".join(f'"{k}" {v}' for k, v in self.coords.items())
         if self.suffix:
             self.cssfamilyname = f"{self.suffix} {self.familyname}"
             self.class_name = (
@@ -104,6 +105,7 @@ class CSSFontFace(Renderable):
         else:
             self.filename = ttf_filename
         self.cssfamilyname = font_family_name(self.ttfont, self.suffix)
+        self.familyname = self.cssfamilyname
         self.stylename = self.ttfont["name"].getBestSubFamilyName()
         self.classname = self.cssfamilyname.replace(" ", "-")
         self.font_style = "normal" if "Italic" not in self.stylename else "italic"
@@ -127,3 +129,5 @@ class CSSFontFace(Renderable):
                 max_angle = int(axes["slnt"].maxValue)
                 self.font_style = f"oblique {min_angle}deg {max_angle}deg"
 
+    def __hash__(self):
+        return hash((self.cssfamilyname, self.classname))
