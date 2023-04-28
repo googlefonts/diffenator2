@@ -2,43 +2,43 @@
 
 # Build Hinting docs
 rule diffbrowsers
-  command = _diffbrowsers diff --assets-dir \$assets_dir -fb \$fonts_before \$
-      -fa \$fonts_after -s \$styles -o \$out -pt \$pt_size --imgs \$
-      --filter-styles "\$filters"
+  command = _diffbrowsers diff --assets-dir $assets_dir -fb $fonts_before $
+      -fa $fonts_after -s $styles -o $out -pt $pt_size --imgs $
+      --filter-styles "$filters"
 
 # Run diffenator VF
 rule diffenator
-  command = _diffenator --assets-dir \$assets_dir \$font_before \$font_after \$
-      -t \$threshold -o \$out
+  command = _diffenator --assets-dir $assets_dir $font_before $font_after $
+      -t $threshold -o $out
 rule diffenator-inst
-  command = _diffenator --assets-dir \$assets_dir \$font_before \$font_after \$
-      -t \$threshold -o \$out --coords \$coords
+  command = _diffenator --assets-dir $assets_dir $font_before $font_after $
+      -t $threshold -o $out --coords $coords
 
 # Build rules
 build out/diffbrowsers: diffbrowsers
-  fonts_before = \$
-      .*/tests/data/MavenPro\[wght\].subset.ttf
-  fonts_after = \$
-      .*/tests/data/MavenPro\[wght\].subset.mod.ttf
+  fonts_before = $
+      [SOMEDIRECTORY]/tests/data/MavenPro[wght].subset.ttf
+  fonts_after = $
+      [SOMEDIRECTORY]/tests/data/MavenPro[wght].subset.mod.ttf
   styles = instances
   out = out/diffbrowsers
   assets_dir = out
   pt_size = 20
   filters = Medium|ExtraBold
 build out/ExtraBold: diffenator-inst
-  font_before = \$
-      .*/tests/data/MavenPro\[wght\].subset.ttf
-  font_after = \$
-      .*/tests/data/MavenPro\[wght\].subset.mod.ttf
+  font_before = $
+      [SOMEDIRECTORY]/tests/data/MavenPro[wght].subset.ttf
+  font_after = $
+      [SOMEDIRECTORY]/tests/data/MavenPro[wght].subset.mod.ttf
   out = ExtraBold
   assets_dir = out
   threshold = 0.9
   coords = wght=800.0
 build out/Medium: diffenator-inst
-  font_before = \$
-      .*/tests/data/MavenPro\[wght\].subset.ttf
-  font_after = \$
-      .*/tests/data/MavenPro\[wght\].subset.mod.ttf
+  font_before = $
+      [SOMEDIRECTORY]/tests/data/MavenPro[wght].subset.ttf
+  font_after = $
+      [SOMEDIRECTORY]/tests/data/MavenPro[wght].subset.mod.ttf
   out = Medium
   assets_dir = out
   threshold = 0.9

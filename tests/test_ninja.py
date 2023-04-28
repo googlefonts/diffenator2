@@ -54,7 +54,8 @@ def test_run_ninja_diff(kwargs, expected_fp):
     with open(expected_fp) as expected, open("build.ninja") as current:
         exp = expected.read()
         cur = current.read()
-        assert re.search(exp, cur)
+        cur = re.sub(r"\S+/tests/data", "[SOMEDIRECTORY]/tests/data", cur)
+        assert exp == cur
 
 
 @pytest.mark.parametrize(
@@ -93,4 +94,5 @@ def test_run_ninja_proof(kwargs, expected_fp):
     with open(expected_fp) as expected, open("build.ninja") as current:
         exp = expected.read()
         cur = current.read()
-        assert re.search(exp, cur)
+        cur = re.sub(r"\S+/tests/data", "[SOMEDIRECTORY]/tests/data", cur)
+        assert exp == cur

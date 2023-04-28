@@ -1,13 +1,13 @@
 # Rules
 
 rule proofing
-  command = _diffbrowsers proof \$fonts -s \$styles -o \$out -pt \$pt_size --imgs \$
-      --filter-styles "\$filters"
+  command = _diffbrowsers proof $fonts -s $styles -o $out -pt $pt_size $
+      --imgs --filter-styles "$filters"
 
 # Build rules
 build out: proofing
   fonts = $
-      .*/tests/data/MavenPro\[wght\].subset.ttf
+      [SOMEDIRECTORY]/tests/data/MavenPro[wght].subset.ttf
   styles = instances
   out = out/diffbrowsers
   pt_size = 20
