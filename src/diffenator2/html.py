@@ -60,22 +60,6 @@ def static_font_style(ttfont, suffix=""):
     )
 
 
-def diffenator_font_style(dfont, suffix=""):
-    ttfont = dfont.ttFont
-    if dfont.is_variable() and hasattr(dfont, "variations"):
-        style_name = ttfont["name"].getBestSubFamilyName()
-        coords = dfont.variations
-    else:
-        style_name = ttfont["name"].getBestSubFamilyName()
-        coords = {"wght": ttfont["OS/2"].usWeightClass}
-    return CSSFontStyle(
-        "font",
-        "style",
-        coords,
-        suffix,
-    )
-
-
 def proof_rendering(styles, templates, dst="out", filter_styles=None, pt_size=20):
     ttFont = styles[0].font.ttFont
     font_faces = set(style.font.css_font_face for style in styles)

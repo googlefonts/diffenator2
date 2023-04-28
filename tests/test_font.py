@@ -2,7 +2,6 @@ import pytest
 from . import *
 from itertools import combinations
 from diffenator2.font import DFont
-from diffenator2.html import diffenator_font_style
 from diffenator2.matcher import FontMatcher
 
 

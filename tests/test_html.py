@@ -2,6 +2,21 @@ import pytest
 from tests import *
 from diffenator2.html import CSSFontStyle
 
+def diffenator_font_style(dfont, suffix=""):
+    ttfont = dfont.ttFont
+    if dfont.is_variable() and hasattr(dfont, "variations"):
+        style_name = ttfont["name"].getBestSubFamilyName()
+        coords = dfont.variations
+    else:
+        style_name = ttfont["name"].getBestSubFamilyName()
+        coords = {"wght": ttfont["OS/2"].usWeightClass}
+    return CSSFontStyle(
+        "font",
+        "style",
+        coords,
+        suffix,
+    )
+
 
 @pytest.mark.parametrize(
     "fp, expected",
@@ -12,7 +27,6 @@ from diffenator2.html import CSSFontStyle
     ]
 )
 def test_diffenator_font_style_static(fp, expected):
-    from diffenator2.html import diffenator_font_style
     from diffenator2.font import DFont
 
     font = DFont(fp)
@@ -28,7 +42,6 @@ def test_diffenator_font_style_static(fp, expected):
     ]
 )
 def test_diffenator_font_style_vf(fp, coords, expected):
-    from diffenator2.html import diffenator_font_style
     from diffenator2.font import DFont
 
     font = DFont(fp)
