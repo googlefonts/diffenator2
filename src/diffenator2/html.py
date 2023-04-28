@@ -60,12 +60,6 @@ def static_font_style(ttfont, suffix=""):
     )
 
 
-def diffenator_font_face(dfont, suffix=""):
-    face = CSSFontFace(dfont, suffix)
-    face.cssfamilyname = f"{suffix} font"
-    return face
-
-
 def diffenator_font_style(dfont, suffix=""):
     ttfont = dfont.ttFont
     if dfont.is_variable() and hasattr(dfont, "variations"):
