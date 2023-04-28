@@ -9,6 +9,7 @@ from diffenator2.template_elements import CSSFontStyle, CSSFontFace
 from diffenator2.utils import font_sample_text
 from glyphsets import GFTestData
 import re
+from pathlib import Path
 
 
 WIDTH_CLASS_TO_CSS = {
@@ -135,6 +136,18 @@ def _package(templates, dst, **kwargs):
     if not os.path.exists(dst):
         os.makedirs(dst)
 
+    if not os.path.exists(kwargs["assets_dir"]):
+        os.makedirs(kwargs["assets_dir"])
+
+    # copy fonts
+    # make this more general purpose for ttfont objects
+    for k in ("font_faces", "font_faces_old", "font_faces_new"):
+        if k in kwargs:
+            for font in kwargs[k]:
+                out_fp = os.path.join(kwargs["assets_dir"], font.filename)
+                shutil.copy(font.ttfont.reader.file.name, out_fp)
+                font.filename = os.path.relpath(Path(out_fp).resolve(), Path(dst).resolve())
+
     # write docs
     for template_fp in templates:
         env = Environment(
@@ -145,11 +158,3 @@ def _package(templates, dst, **kwargs):
         dst_doc = os.path.join(dst, os.path.basename(template_fp))
         with open(dst_doc, "w", encoding="utf8") as out_file:
             out_file.write(doc)
-
-    # copy fonts
-    # make this more general purpose for ttfont objects
-    for k in ("font_faces", "font_faces_old", "font_faces_new"):
-        if k in kwargs:
-            for font in kwargs[k]:
-                out_fp = os.path.join(dst, font.filename)
-                shutil.copy(font.ttfont.reader.file.name, out_fp)
