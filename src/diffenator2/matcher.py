@@ -1,14 +1,14 @@
 """
 Match font styles or match vf coordinates
 """
-from diffenator2.font import get_font_styles, Style
+from diffenator2.font import get_font_styles, Style, DFont
 from fontTools.ttLib.scaleUpem import scale_upem
 import re
 
 
 class FontMatcher:
 
-    def __init__(self, old_fonts, new_fonts):
+    def __init__(self, old_fonts: list[DFont], new_fonts: list[DFont]):
         self.old_fonts = old_fonts
         self.new_fonts = new_fonts
         self.old_styles = []
@@ -34,7 +34,7 @@ class FontMatcher:
         self.old_fonts = old_fonts
         self.new_fonts = new_fonts
 
-    def _get_names(self, font):
+    def _get_names(self, font: DFont):
         results = set()
         name = font.ttFont["name"]
         fvar = font.ttFont["fvar"]

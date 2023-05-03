@@ -2,7 +2,6 @@
 from __future__ import annotations
 from argparse import ArgumentParser, Namespace
 import os
-from fontTools.ttLib import TTFont
 from diffenator2 import ninja_diff, ninja_proof, THRESHOLD, NINJA_BUILD_FILE
 from diffenator2.font import DFont
 

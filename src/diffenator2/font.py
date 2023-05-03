@@ -104,7 +104,7 @@ class DFont:
         # TODO need to refactor this. Perhaps if no name is provided, the class will work it out
         return Style(self, found_coords)
 
-    def set_variations_from_static_font(self, font: any):
+    def set_variations_from_static_font(self, font: DFont):
         assert "fvar" not in font.ttFont, "Must be a static font"
         name_table = font.ttFont["name"]
         name_to_find = name_table.getBestSubFamilyName()

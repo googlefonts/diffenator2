@@ -44,7 +44,7 @@ def google_fonts_has_family(name: str) -> bool:
     return True if r.status_code == 200 else False
 
 
-def download_file(url: str, dst_path: str = None, headers: dict[str, str] = {}):
+def download_file(url: str, dst_path: str = "", headers: dict[str, str] = {}):
     """Download a file from a url. If no dst_path is specified, store the file
     as a BytesIO object"""
     if not dst_path:

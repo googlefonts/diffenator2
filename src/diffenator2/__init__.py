@@ -4,7 +4,6 @@ import os
 from ninja.ninja_syntax import Writer
 from diffenator2.utils import dict_coords_to_string
 from diffenator2.font import DFont, get_font_styles
-from fontTools.ttLib import TTFont
 from diffenator2.utils import partition
 from diffenator2.matcher import FontMatcher
 import ninja
@@ -23,7 +22,7 @@ def ninja_proof(
     out: str = "out",
     imgs: bool = False,
     styles="instances",
-    filter_styles: str = None,
+    filter_styles: str = "",
     pt_size: int = 20,
 ):
     if not os.path.exists(out):
@@ -44,11 +43,11 @@ def ninja_proof(
 
 
 def _ninja_proof(
-    fonts: list[TTFont],
+    fonts: list[DFont],
     out: str = "out",
     imgs: bool = False,
     styles: str = "instances",
-    filter_styles: bool = None,
+    filter_styles: str = "",
     pt_size: int = 20,
 ):
     w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
@@ -82,15 +81,15 @@ def _ninja_proof(
 
 
 def ninja_diff(
-    fonts_before: list[TTFont],
-    fonts_after: list[TTFont],
+    fonts_before: list[DFont],
+    fonts_after: list[DFont],
     diffbrowsers: bool = True,
     diffenator: bool = True,
     out: str = "out",
     imgs: bool = False,
     styles: str = "instances",
-    user_wordlist: str = None,
-    filter_styles: str = None,
+    user_wordlist: str = "",
+    filter_styles: str = "",
     pt_size: int = 20,
     threshold: float = THRESHOLD,
 ):
@@ -144,15 +143,15 @@ def ninja_diff(
         )
 
 def _ninja_diff(
-    fonts_before: list[TTFont],
-    fonts_after: list[TTFont],
+    fonts_before: list[DFont],
+    fonts_after: list[DFont],
     diffbrowsers: bool = True,
     diffenator: bool = True,
     out: str = "out",
     imgs: bool = False,
     styles="instances",
-    user_wordlist: str = None,
-    filter_styles: str = None,
+    user_wordlist: str = "",
+    filter_styles: str = "",
     pt_size: int = 20,
     threshold: float = THRESHOLD,
 ):
@@ -198,11 +197,11 @@ def _ninja_diff(
         for old_style, new_style in zip(matcher.old_styles, matcher.new_styles):
             coords = new_style.coords
             style = new_style.name.replace(" ", "-")
-            diff_variables = dict(
+            diff_variables: dict[str,str] = dict(
                 font_before=old_style.font.ttFont.reader.file.name,
                 font_after=new_style.font.ttFont.reader.file.name,
                 out=style,
-                threshold=threshold,
+                threshold=str(threshold),
             )
             if user_wordlist:
                 diff_variables["user_wordlist"] = user_wordlist
