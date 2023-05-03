@@ -3,12 +3,13 @@ Match font styles or match vf coordinates
 """
 from diffenator2.font import get_font_styles, Style, DFont
 from fontTools.ttLib.scaleUpem import scale_upem
+from typing import List
 import re
 
 
 class FontMatcher:
 
-    def __init__(self, old_fonts: list[DFont], new_fonts: list[DFont]):
+    def __init__(self, old_fonts: List[DFont], new_fonts: List[DFont]):
         self.old_fonts = old_fonts
         self.new_fonts = new_fonts
         self.old_styles = []
