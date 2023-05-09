@@ -15,26 +15,26 @@ rule diffenator-inst
 # Build rules
 build out/diffbrowsers: diffbrowsers
   fonts_before = \$
-      .*/tests/data/MavenPro\[wght\].subset.ttf
+      ".*/tests/data/MavenPro\[wght\].subset.ttf"
   fonts_after = \$
-      .*/tests/data/MavenPro\[wght\].subset.mod.ttf
+      ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   styles = instances
   out = out/diffbrowsers
   pt_size = 20
   filters = Medium|ExtraBold
 build out/ExtraBold: diffenator-inst
   font_before = \$
-      .*/tests/data/MavenPro\[wght\].subset.ttf
+      ".*/tests/data/MavenPro\[wght\].subset.ttf"
   font_after = \$
-      .*/tests/data/MavenPro\[wght\].subset.mod.ttf
+      ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   out = ExtraBold
   threshold = 0.9
   coords = wght=800.0
 build out/Medium: diffenator-inst
   font_before = \$
-      .*/tests/data/MavenPro\[wght\].subset.ttf
+      ".*/tests/data/MavenPro\[wght\].subset.ttf"
   font_after = \$
-      .*/tests/data/MavenPro\[wght\].subset.mod.ttf
+      ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   out = Medium
   threshold = 0.9
   coords = wght=500.0

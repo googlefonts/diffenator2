@@ -7,7 +7,7 @@ rule proofing
 # Build rules
 build out: proofing
   fonts = $
-      .*/tests/data/MavenPro\[wght\].subset.ttf
+      ".*/tests/data/MavenPro\[wght\].subset.ttf"
   styles = instances
   out = out/diffbrowsers
   pt_size = 20

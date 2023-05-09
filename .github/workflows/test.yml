@@ -32,3 +32,5 @@ jobs:
       - name: Run Tests
         run: |
           pytest tests/
+        env:
+          GH_TOKEN: ${{ github.token }}

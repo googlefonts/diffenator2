@@ -66,7 +66,7 @@ def _ninja_proof(
     # Setup build
     w.comment("Build rules")
     variables = dict(
-        fonts=[os.path.abspath(f.ttFont.reader.file.name) for f in fonts],
+        fonts=[f'"{os.path.abspath(f.ttFont.reader.file.name)}"' for f in fonts],
         styles=styles,
         out=out_s,
         pt_size=pt_size
@@ -182,8 +182,8 @@ def _ninja_diff(
     if diffbrowsers:
         diffbrowsers_out = os.path.join(out, "diffbrowsers")
         db_variables = dict(
-            fonts_before=[os.path.abspath(f.ttFont.reader.file.name) for f in fonts_before],
-            fonts_after=[os.path.abspath(f.ttFont.reader.file.name) for f in fonts_after],
+            fonts_before=[f'"{os.path.abspath(f.ttFont.reader.file.name)}"' for f in fonts_before],
+            fonts_after=[f'"{os.path.abspath(f.ttFont.reader.file.name)}"' for f in fonts_after],
             styles=styles,
             out=diffbrowsers_out,
             pt_size=pt_size
@@ -198,8 +198,8 @@ def _ninja_diff(
             coords = new_style.coords
             style = new_style.name.replace(" ", "-")
             diff_variables: dict[str,str] = dict(
-                font_before=old_style.font.ttFont.reader.file.name,
-                font_after=new_style.font.ttFont.reader.file.name,
+                font_before=f'"{old_style.font.ttFont.reader.file.name}"',
+                font_after=f'"{new_style.font.ttFont.reader.file.name}"',
                 out=style,
                 threshold=str(threshold),
             )
