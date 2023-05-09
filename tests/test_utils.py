@@ -29,5 +29,10 @@ def test_download_google_fonts_family_not_existing():
 def test_download_latest_github_release():
     from diffenator2.utils import download_latest_github_release
     with tempfile.TemporaryDirectory() as tmp:
-        files = download_latest_github_release("googlefonts", "Gulzar", tmp)
+        files = download_latest_github_release(
+            "googlefonts",
+            "Gulzar",
+            tmp,
+            github_token=os.environ.get("GH_TOKEN")
+        )
         assert len(files) != 0
