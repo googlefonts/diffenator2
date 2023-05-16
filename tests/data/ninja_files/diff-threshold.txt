@@ -3,14 +3,15 @@
 # Build Hinting docs
 rule diffbrowsers
   command = _diffbrowsers diff -fb \$fonts_before -fa \$fonts_after -s \$
-      \$styles -o \$out -pt \$pt_size
+      \$styles -o \$out -pt \$pt_size -g "\$glyphs"
 
 # Run diffenator VF
 rule diffenator
-  command = _diffenator \$font_before \$font_after -t \$threshold -o \$out
+  command = _diffenator \$font_before \$font_after -t \$threshold -o \$out -g \$
+      "\$glyphs"
 rule diffenator-inst
-  command = _diffenator \$font_before \$font_after -t \$threshold -o \$out \$
-      --coords \$coords
+  command = _diffenator \$font_before \$font_after -t \$threshold -o \$out -g \$
+      "\$glyphs" --coords \$coords
 
 # Build rules
 build out/diffbrowsers: diffbrowsers
@@ -21,6 +22,7 @@ build out/diffbrowsers: diffbrowsers
   styles = instances
   out = out/diffbrowsers
   pt_size = 20
+  glyphs = .*
 build out/Black: diffenator-inst
   font_before = \$
       ".*/tests/data/MavenPro\[wght\].subset.ttf"
@@ -28,6 +30,7 @@ build out/Black: diffenator-inst
       ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   out = Black
   threshold = 0.01
+  glyphs = .*
   coords = wght=900.0
 build out/Bold: diffenator-inst
   font_before = \$
@@ -36,6 +39,7 @@ build out/Bold: diffenator-inst
       ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   out = Bold
   threshold = 0.01
+  glyphs = .*
   coords = wght=700.0
 build out/ExtraBold: diffenator-inst
   font_before = \$
@@ -44,6 +48,7 @@ build out/ExtraBold: diffenator-inst
       ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   out = ExtraBold
   threshold = 0.01
+  glyphs = .*
   coords = wght=800.0
 build out/Medium: diffenator-inst
   font_before = \$
@@ -52,6 +57,7 @@ build out/Medium: diffenator-inst
       ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   out = Medium
   threshold = 0.01
+  glyphs = .*
   coords = wght=500.0
 build out/Regular: diffenator-inst
   font_before = \$
@@ -60,6 +66,7 @@ build out/Regular: diffenator-inst
       ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   out = Regular
   threshold = 0.01
+  glyphs = .*
   coords = wght=400.0
 build out/SemiBold: diffenator-inst
   font_before = \$
@@ -68,4 +75,5 @@ build out/SemiBold: diffenator-inst
       ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   out = SemiBold
   threshold = 0.01
+  glyphs = .*
   coords = wght=600.0

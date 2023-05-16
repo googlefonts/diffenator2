@@ -1,7 +1,8 @@
 # Rules
 
 rule proofing
-  command = _diffbrowsers proof \$fonts -s \$styles -o \$out -pt \$pt_size --imgs
+  command = _diffbrowsers proof \$fonts -s \$styles -o \$out -pt \$pt_size -g \$
+      "\$glyphs" --imgs
 
 # Build rules
 build out: proofing
@@ -10,4 +11,5 @@ build out: proofing
   styles = instances
   out = out/diffbrowsers
   pt_size = 20
+  glyphs = .*
   imgs = True
