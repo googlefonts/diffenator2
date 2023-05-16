@@ -88,3 +88,28 @@ def test_diffenator_threshold(fp_before, fp_after, threshold, has, missing):
             
             for string in missing:
                 assert string not in report
+
+
+@pytest.mark.parametrize(
+    "fp, cmd, pattern, has, missing",
+    [
+        (mavenpro_vf, "proof", ".*", ['style="font-size: 14pt">an tan</div>'], []),
+        (mavenpro_vf, "proof", "[an]{1,2}", ['style="font-size: 14pt">an</div>'], []),
+        (mavenpro_vf, "diff", ".*", ['style="font-size: 14pt">an tan</div>'], []),
+        (mavenpro_vf, "diff", "[an]{1,2}", ['style="font-size: 14pt">an</div>'], []),
+    ]
+)
+def test_diffbrowsers_filter_glyphs(fp, cmd, pattern, has, missing):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        if cmd == "proof":
+            subprocess.run(["_diffbrowsers", cmd, fp, "-g", pattern, "-o", tmp_dir])
+        elif cmd == "diff":
+            subprocess.run(["_diffbrowsers", cmd, "-fb", fp, "-fa", fp, "-g", pattern, "-o", tmp_dir])
+
+        with open(os.path.join(tmp_dir, "diffbrowsers_text.html"), "r", encoding="utf8") as doc:
+            report = doc.read()
+            for string in has:
+                assert string in report
+            
+            for string in missing:
+                assert string not in report
