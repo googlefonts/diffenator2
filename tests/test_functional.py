@@ -113,3 +113,22 @@ def test_diffbrowsers_filter_glyphs(fp, cmd, pattern, has, missing):
             
             for string in missing:
                 assert string not in report
+
+
+@pytest.mark.parametrize(
+    "fp_before, fp_after, pattern, has, missing",
+    [
+        (mavenpro_vf, mavenpro_vf_mod, ".*", ["LATIN SMALL LETTER A"], []),
+        (mavenpro_vf, mavenpro_vf_mod, "n|t", [], ["LATIN SMALL LETTER A"]),
+    ]
+)
+def test_diffenator_filter_glyphs(fp_before, fp_after, pattern, has, missing):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        subprocess.run(["_diffenator", fp_before, fp_after, "-o", tmp_dir, "-g", pattern])
+        with open(os.path.join(tmp_dir, "diffenator.html"), "r", encoding="utf8") as doc:
+            report = doc.read()
+            for string in has:
+                assert string in report
+
+            for string in missing:
+                assert string not in report
