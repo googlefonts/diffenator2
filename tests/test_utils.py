@@ -2,6 +2,7 @@ import tempfile
 import pytest
 import os
 from io import BytesIO
+from . import *
 
 
 def test_download_google_fonts_family_to_file():
@@ -36,3 +37,25 @@ def test_download_latest_github_release():
             github_token=os.environ.get("GH_TOKEN")
         )
         assert len(files) != 0
+
+
+def test_glyphs_in_string():
+    from diffenator2.utils import glyphs_in_string
+
+    assert glyphs_in_string("hello", set(["h", "e", "l", "o"]))
+    assert not glyphs_in_string("hello", set(["e", "l", "o"]))
+
+
+@pytest.mark.parametrize(
+    """fp,pattern,expected""",
+    [
+        (mavenpro_vf, ".*", {'n', ' ', 't', 'a'}),
+        (mavenpro_vf, "t|a", {"t", "a"}),
+        (mavenpro_vf, "\W", {" "})
+    ]
+)
+def test_re_filter_glyphs(fp, pattern, expected):
+    from diffenator2.utils import re_filter_glyphs
+    from diffenator2.font import DFont
+    font = DFont(fp)
+    assert re_filter_glyphs(font, pattern) == expected
