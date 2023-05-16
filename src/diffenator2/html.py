@@ -6,7 +6,7 @@ from fontTools.ttLib import TTFont
 import os
 import shutil
 from diffenator2.template_elements import CSSFontStyle, CSSFontFace
-from diffenator2.utils import font_sample_text
+from diffenator2.utils import font_sample_text, glyphs_in_string
 from glyphsets import GFTestData
 import re
 
@@ -82,11 +82,17 @@ def diffenator_font_style(dfont, suffix=""):
     )
 
 
-def proof_rendering(styles, templates, dst="out", filter_styles=None, pt_size=20):
+def filtered_font_sample_text(ttFont, glyphs):
+    sample_text = font_sample_text(ttFont)
+    sample_text = [w for w in sample_text if glyphs_in_string(w, glyphs)]
+    return " ".join(sample_text)
+
+
+def proof_rendering(styles, templates, dst="out", filter_styles=None, glyphs=set(), pt_size=20):
     ttFont = styles[0].font.ttFont
     font_faces = set(style.font.css_font_face for style in styles)
     font_styles = [style.css_font_style for style in styles]
-    sample_text = " ".join(font_sample_text(ttFont))
+    sample_text = filtered_font_sample_text(ttFont, glyphs)
     test_strings = GFTestData.test_strings_in_font(ttFont)
     glyphs = [chr(c) for c in ttFont.getBestCmap()]
     _package(
@@ -101,7 +107,7 @@ def proof_rendering(styles, templates, dst="out", filter_styles=None, pt_size=20
     )
 
 
-def diff_rendering(matcher, templates, dst="out", filter_styles=None, pt_size=20):
+def diff_rendering(matcher, templates, dst="out", filter_styles=None, glyphs=set(), pt_size=20):
     ttFont = matcher.old_styles[0].font.ttFont
     font_faces_old = set(style.font.css_font_face for style in matcher.old_styles)
     font_styles_old = [style.css_font_style for style in matcher.old_styles]
@@ -109,7 +115,7 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, pt_size=20
     font_faces_new = set(style.font.css_font_face for style in matcher.new_styles)
     font_styles_new = [style.css_font_style for style in matcher.new_styles]
 
-    sample_text = " ".join(font_sample_text(ttFont))
+    sample_text=filtered_font_sample_text(ttFont, glyphs)
     test_strings = GFTestData.test_strings_in_font(ttFont)
     glyphs = [chr(c) for c in ttFont.getBestCmap()]
     _package(

@@ -27,6 +27,7 @@ from pkg_resources import resource_filename
 from diffenator2.html import proof_rendering, diff_rendering
 from diffenator2.font import DFont, get_font_styles
 from diffenator2.matcher import FontMatcher
+from diffenator2.utils import re_filter_glyphs
 from glob import glob
 import os
 import argparse
@@ -64,6 +65,7 @@ def main():
         "--imgs", action="store_true", help="Generate images using headless browsers"
     )
     universal_options_parser.add_argument("--filter-styles", default=None)
+    universal_options_parser.add_argument("--glyphs", "-g", default=".*")
 
     proof_parser = subparsers.add_parser(
         "proof",
@@ -90,11 +92,14 @@ def main():
     if args.command == "proof":
         fonts = [DFont(os.path.abspath(fp)) for fp in args.fonts]
         styles = get_font_styles(fonts, args.styles, args.filter_styles)
+
+        glyphs = re_filter_glyphs(fonts[0], args.glyphs)
         proof_rendering(
             styles,
             args.templates,
             args.out,
             filter_styles=args.filter_styles,
+            glyphs=glyphs,
             pt_size=args.pt_size
         )
 
@@ -103,11 +108,13 @@ def main():
         fonts_after = [DFont(os.path.abspath(fp), suffix="new") for fp in args.fonts_after]
         matcher = FontMatcher(fonts_before, fonts_after)
         getattr(matcher, args.styles)(args.filter_styles)
+        glyphs = re_filter_glyphs(fonts_before[0], args.glyphs)
         diff_rendering(
             matcher,
             args.templates,
             args.out,
             filter_styles=args.filter_styles,
+            glyphs=glyphs,
             pt_size=args.pt_size,
         )
 
