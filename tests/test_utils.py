@@ -40,10 +40,10 @@ def test_download_latest_github_release():
 
 
 def test_glyphs_in_string():
-    from diffenator2.utils import glyphs_in_string
+    from diffenator2.utils import characters_in_string
 
-    assert glyphs_in_string("hello", set(["h", "e", "l", "o"]))
-    assert not glyphs_in_string("hello", set(["e", "l", "o"]))
+    assert characters_in_string("hello", set(["h", "e", "l", "o"]))
+    assert not characters_in_string("hello", set(["e", "l", "o"]))
 
 
 @pytest.mark.parametrize(
@@ -55,7 +55,7 @@ def test_glyphs_in_string():
     ]
 )
 def test_re_filter_glyphs(fp, pattern, expected):
-    from diffenator2.utils import re_filter_glyphs
+    from diffenator2.utils import re_filter_characters
     from diffenator2.font import DFont
     font = DFont(fp)
-    assert re_filter_glyphs(font, pattern) == expected
+    assert re_filter_characters(font, pattern) == expected

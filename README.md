@@ -97,4 +97,4 @@ Compare variable fonts axes using a cross product
 
 Compare only ascii characters
 
-`diffenator2 diff -fb font2.ttf -fa font2.ttf -g "!-~"`
+`diffenator2 diff -fb font2.ttf -fa font2.ttf -ch "[!-~]"`

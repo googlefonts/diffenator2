@@ -180,10 +180,10 @@ def partition(items, size):
     return [items[i : i + size] for i in range(0, len(items), size)]
 
 
-def re_filter_glyphs(font, pattern):
-    glyphs_in_font = set(chr(g) for g in font.ttFont.getBestCmap())
-    return set(g for g in glyphs_in_font if re.search(pattern, g))
+def re_filter_characters(font, pattern):
+    characters_in_font = set(chr(g) for g in font.ttFont.getBestCmap())
+    return set(g for g in characters_in_font if re.search(pattern, g))
 
 
-def glyphs_in_string(string, glyphs):
-    return all(g in glyphs for g in string)
+def characters_in_string(string, characters):
+    return all(g in characters for g in string)

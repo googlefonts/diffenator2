@@ -99,12 +99,12 @@ def test_diffenator_threshold(fp_before, fp_after, threshold, has, missing):
         (mavenpro_vf, "diff", "[an]{1,2}", ['style="font-size: 14pt">an</div>'], []),
     ]
 )
-def test_diffbrowsers_filter_glyphs(fp, cmd, pattern, has, missing):
+def test_diffbrowsers_filter_characters(fp, cmd, pattern, has, missing):
     with tempfile.TemporaryDirectory() as tmp_dir:
         if cmd == "proof":
-            subprocess.run(["_diffbrowsers", cmd, fp, "-g", pattern, "-o", tmp_dir])
+            subprocess.run(["_diffbrowsers", cmd, fp, "-c", pattern, "-o", tmp_dir])
         elif cmd == "diff":
-            subprocess.run(["_diffbrowsers", cmd, "-fb", fp, "-fa", fp, "-g", pattern, "-o", tmp_dir])
+            subprocess.run(["_diffbrowsers", cmd, "-fb", fp, "-fa", fp, "-c", pattern, "-o", tmp_dir])
 
         with open(os.path.join(tmp_dir, "diffbrowsers_text.html"), "r", encoding="utf8") as doc:
             report = doc.read()
@@ -122,9 +122,9 @@ def test_diffbrowsers_filter_glyphs(fp, cmd, pattern, has, missing):
         (mavenpro_vf, mavenpro_vf_mod, "n|t", [], ["LATIN SMALL LETTER A"]),
     ]
 )
-def test_diffenator_filter_glyphs(fp_before, fp_after, pattern, has, missing):
+def test_diffenator_filter_characters(fp_before, fp_after, pattern, has, missing):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        subprocess.run(["_diffenator", fp_before, fp_after, "-o", tmp_dir, "-g", pattern])
+        subprocess.run(["_diffenator", fp_before, fp_after, "-o", tmp_dir, "-ch", pattern])
         with open(os.path.join(tmp_dir, "diffenator.html"), "r", encoding="utf8") as doc:
             report = doc.read()
             for string in has:

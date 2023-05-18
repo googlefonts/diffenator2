@@ -3,16 +3,16 @@
 # Build Hinting docs
 rule diffbrowsers
   command = _diffbrowsers diff -fb \$fonts_before -fa \$fonts_after -s \$
-      \$styles -o \$out -pt \$pt_size -g "\$glyphs" --imgs --filter-styles \$
+      \$styles -o \$out -pt \$pt_size -ch "\$characters" --imgs --filter-styles \$
       "\$filters"
 
 # Run diffenator VF
 rule diffenator
-  command = _diffenator \$font_before \$font_after -t \$threshold -o \$out -g \$
-      "\$glyphs"
+  command = _diffenator \$font_before \$font_after -t \$threshold -o \$out -ch \$
+      "\$characters"
 rule diffenator-inst
-  command = _diffenator \$font_before \$font_after -t \$threshold -o \$out -g \$
-      "\$glyphs" --coords \$coords
+  command = _diffenator \$font_before \$font_after -t \$threshold -o \$out -ch \$
+      "\$characters" --coords \$coords
 
 # Build rules
 build out/diffbrowsers: diffbrowsers
@@ -23,7 +23,7 @@ build out/diffbrowsers: diffbrowsers
   styles = instances
   out = out/diffbrowsers
   pt_size = 20
-  glyphs = .*
+  characters = .*
   filters = Medium|ExtraBold
 build out/ExtraBold: diffenator-inst
   font_before = \$
@@ -32,7 +32,7 @@ build out/ExtraBold: diffenator-inst
       ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   out = ExtraBold
   threshold = 0.9
-  glyphs = .*
+  characters = .*
   coords = wght=800.0
 build out/Medium: diffenator-inst
   font_before = \$
@@ -41,5 +41,5 @@ build out/Medium: diffenator-inst
       ".*/tests/data/MavenPro\[wght\].subset.mod.ttf"
   out = Medium
   threshold = 0.9
-  glyphs = .*
+  characters = .*
   coords = wght=500.0

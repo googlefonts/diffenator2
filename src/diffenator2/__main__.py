@@ -22,7 +22,7 @@ def main(**kwargs):
             "--imgs", help="Generate images", action="store_true", default=False
         )
         universal_options_parser.add_argument("--filter-styles", default=None)
-        universal_options_parser.add_argument("--glyphs", "-g", default=".*")
+        universal_options_parser.add_argument("--characters", "-ch", default=".*")
         universal_options_parser.add_argument("--pt-size", "-pt", default=20)
         universal_options_parser.add_argument(
             "--styles", "-s", choices=("instances", "cross_product", "masters"),
@@ -59,7 +59,7 @@ def main(**kwargs):
             imgs=args.imgs,
             styles=args.styles,
             filter_styles=args.filter_styles,
-            glyphs=args.glyphs,
+            characters=args.characters,
             pt_size=args.pt_size,
         )
     elif args.command == "diff":
@@ -71,7 +71,7 @@ def main(**kwargs):
             out=args.out,
             imgs=args.imgs,
             styles=args.styles,
-            glyphs=args.glyphs,
+            characters=args.characters,
             diffenator=False if args.no_diffenator else True,
             user_wordlist=args.user_wordlist,
             filter_styles=args.filter_styles,

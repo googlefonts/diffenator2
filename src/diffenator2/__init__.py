@@ -23,14 +23,14 @@ def ninja_proof(
     imgs: bool = False,
     styles="instances",
     filter_styles: str = "",
-    glyphs: str = ".*",
+    characters: str = ".*",
     pt_size: int = 20,
 ):
     if not os.path.exists(out):
         os.mkdir(out)
 
     if filter_styles:
-        _ninja_proof(fonts, out, imgs, styles, filter_styles, glyphs, pt_size)
+        _ninja_proof(fonts, out, imgs, styles, filter_styles, characters, pt_size)
         return
 
     font_styles = get_font_styles(fonts, styles)
@@ -40,7 +40,7 @@ def ninja_proof(
         o = os.path.join(out, filter_styles.replace("|", "-"))
         if not os.path.exists(o):
             os.mkdir(o)
-        _ninja_proof(fonts, o, imgs, styles, filter_styles, glyphs, pt_size)
+        _ninja_proof(fonts, o, imgs, styles, filter_styles, characters, pt_size)
 
 
 def _ninja_proof(
@@ -49,7 +49,7 @@ def _ninja_proof(
     imgs: bool = False,
     styles: str = "instances",
     filter_styles: str = "",
-    glyphs=".*",
+    characters=".*",
     pt_size: int = 20,
 ):
     w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
@@ -57,7 +57,7 @@ def _ninja_proof(
     w.newline()
     out_s = os.path.join("out", "diffbrowsers")
 
-    cmd = f'_diffbrowsers proof $fonts -s $styles -o $out -pt $pt_size -g "$glyphs"'
+    cmd = f'_diffbrowsers proof $fonts -s $styles -o $out -pt $pt_size -ch "$characters"'
     if imgs:
         cmd += " --imgs"
     if filter_styles:
@@ -72,7 +72,7 @@ def _ninja_proof(
         styles=styles,
         out=out_s,
         pt_size=pt_size,
-        glyphs=glyphs,
+        characters=characters,
     )
     if imgs:
         variables["imgs"] = imgs
@@ -91,7 +91,7 @@ def ninja_diff(
     out: str = "out",
     imgs: bool = False,
     styles: str = "instances",
-    glyphs: str = ".*",
+    characters: str = ".*",
     user_wordlist: str = "",
     filter_styles: str = "",
     pt_size: int = 20,
@@ -109,7 +109,7 @@ def ninja_diff(
             out,
             imgs,
             styles,
-            glyphs,
+            characters,
             user_wordlist,
             filter_styles,
             pt_size,
@@ -141,7 +141,7 @@ def ninja_diff(
             o,
             imgs,
             styles,
-            glyphs,
+            characters,
             user_wordlist,
             filter_styles,
             pt_size,
@@ -156,7 +156,7 @@ def _ninja_diff(
     out: str = "out",
     imgs: bool = False,
     styles="instances",
-    glyphs=".*",
+    characters=".*",
     user_wordlist: str = "",
     filter_styles: str = "",
     pt_size: int = 20,
@@ -167,7 +167,7 @@ def _ninja_diff(
     w.comment("Rules")
     w.newline()
     w.comment("Build Hinting docs")
-    db_cmd = f'_diffbrowsers diff -fb $fonts_before -fa $fonts_after -s $styles -o $out -pt $pt_size -g "$glyphs"'
+    db_cmd = f'_diffbrowsers diff -fb $fonts_before -fa $fonts_after -s $styles -o $out -pt $pt_size -ch "$characters"'
     if imgs:
         db_cmd += " --imgs"
     if filter_styles:
@@ -176,7 +176,7 @@ def _ninja_diff(
     w.newline()
 
     w.comment("Run diffenator VF")
-    diff_cmd = f'_diffenator $font_before $font_after -t $threshold -o $out -g "$glyphs"'
+    diff_cmd = f'_diffenator $font_before $font_after -t $threshold -o $out -ch "$characters"'
     if user_wordlist:
         diff_cmd += " --user-wordlist $user_wordlist"
     diff_inst_cmd = diff_cmd + " --coords $coords"
@@ -194,7 +194,7 @@ def _ninja_diff(
             styles=styles,
             out=diffbrowsers_out,
             pt_size=pt_size,
-            glyphs=glyphs,
+            characters=characters,
         )
         if filter_styles:
             db_variables["filters"] = filter_styles
@@ -210,7 +210,7 @@ def _ninja_diff(
                 font_after=f'"{new_style.font.ttFont.reader.file.name}"',
                 out=style,
                 threshold=str(threshold),
-                glyphs=glyphs,
+                characters=characters,
             )
             if user_wordlist:
                 diff_variables["user_wordlist"] = user_wordlist
