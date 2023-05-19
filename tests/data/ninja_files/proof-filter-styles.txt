@@ -1,8 +1,8 @@
 # Rules
 
 rule proofing
-  command = _diffbrowsers proof \$fonts -s \$styles -o \$out -pt \$pt_size --imgs \$
-      --filter-styles "\$filters"
+  command = _diffbrowsers proof \$fonts -s \$styles -o \$out -pt \$pt_size -ch \$
+      "\$characters" --imgs --filter-styles "\$filters"
 
 # Build rules
 build out: proofing
@@ -11,5 +11,6 @@ build out: proofing
   styles = instances
   out = out/diffbrowsers
   pt_size = 20
+  characters = .*
   imgs = True
   filters = Medium|Bold

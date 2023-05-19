@@ -93,3 +93,8 @@ Compare variable font masters
 Compare variable fonts axes using a cross product
 
 `diffenator2 diff -fb font1.ttf -fa font2.ttf -s cross_product`
+
+
+Compare only ascii characters
+
+`diffenator2 diff -fb font2.ttf -fa font2.ttf -ch "[!-~]"`

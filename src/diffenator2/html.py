@@ -6,7 +6,7 @@ from fontTools.ttLib import TTFont
 import os
 import shutil
 from diffenator2.template_elements import CSSFontStyle, CSSFontFace
-from diffenator2.utils import font_sample_text
+from diffenator2.utils import font_sample_text, characters_in_string
 from glyphsets import GFTestData
 import re
 
@@ -82,26 +82,32 @@ def diffenator_font_style(dfont, suffix=""):
     )
 
 
-def proof_rendering(styles, templates, dst="out", filter_styles=None, pt_size=20):
+def filtered_font_sample_text(ttFont, characters):
+    sample_text = font_sample_text(ttFont)
+    sample_text = [w for w in sample_text if characters_in_string(w, characters)]
+    return " ".join(sample_text)
+
+
+def proof_rendering(styles, templates, dst="out", filter_styles=None, characters=set(), pt_size=20):
     ttFont = styles[0].font.ttFont
     font_faces = set(style.font.css_font_face for style in styles)
     font_styles = [style.css_font_style for style in styles]
-    sample_text = " ".join(font_sample_text(ttFont))
+    sample_text = filtered_font_sample_text(ttFont, characters)
     test_strings = GFTestData.test_strings_in_font(ttFont)
-    glyphs = [chr(c) for c in ttFont.getBestCmap()]
+    characters = characters or [chr(c) for c in ttFont.getBestCmap()]
     _package(
         templates,
         dst,
         font_faces=font_faces,
         font_styles=font_styles,
         sample_text=sample_text,
-        glyphs=glyphs,
+        characters=characters,
         test_strings=test_strings,
         pt_size=pt_size,
     )
 
 
-def diff_rendering(matcher, templates, dst="out", filter_styles=None, pt_size=20):
+def diff_rendering(matcher, templates, dst="out", filter_styles=None, characters=set(), pt_size=20):
     ttFont = matcher.old_styles[0].font.ttFont
     font_faces_old = set(style.font.css_font_face for style in matcher.old_styles)
     font_styles_old = [style.css_font_style for style in matcher.old_styles]
@@ -109,9 +115,9 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, pt_size=20
     font_faces_new = set(style.font.css_font_face for style in matcher.new_styles)
     font_styles_new = [style.css_font_style for style in matcher.new_styles]
 
-    sample_text = " ".join(font_sample_text(ttFont))
+    sample_text=filtered_font_sample_text(ttFont, characters)
     test_strings = GFTestData.test_strings_in_font(ttFont)
-    glyphs = [chr(c) for c in ttFont.getBestCmap()]
+    characters = characters or [chr(c) for c in ttFont.getBestCmap()]
     _package(
         templates,
         dst,
@@ -121,7 +127,7 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, pt_size=20
         font_styles_new=font_styles_new,
         include_ui=True,
         sample_text=sample_text,
-        glyphs=glyphs,
+        characters=characters,
         test_strings=test_strings,
         pt_size=pt_size,
     )
