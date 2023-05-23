@@ -62,12 +62,16 @@ class DFont:
         with open(path, "rb") as fontfile:
             fontdata = fontfile.read()
         self.hbFont: hb.Font = hb.Font(hb.Face(fontdata))
-        self.jFont = jfont.TTJ(self.ttFont)
 
         self.css_font_face = CSSFontFace(self.ttFont, self.suffix)
 
         self.font_size: int = font_size
         self.set_font_size(self.font_size)
+
+    @property
+    @lru_cache()
+    def jFont(self):
+        return jfont.TTJ(self.ttFont)
 
     @lru_cache()
     def is_color(self):
