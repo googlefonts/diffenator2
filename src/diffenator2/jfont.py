@@ -18,7 +18,7 @@ class_defs = {
 
 def serialise_name_table(obj):
     return {
-        (r.nameID, r.platformID, r.platEncID, r.langID): r.toUnicode()
+        f"{r.nameID}/{r.platformID}/{r.platEncID}/{r.langID}": r.toUnicode()
         for r in obj.names
     }
 
@@ -173,7 +173,7 @@ class Diff:
         if obj is None:
             return None
         if isinstance(obj, tuple):
-            return obj
+            return list(obj)
         if obj == False:
             return False
         res = copy(obj)
