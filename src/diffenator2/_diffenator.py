@@ -8,10 +8,10 @@ from diffenator2.font import DFont
 from diffenator2.matcher import FontMatcher
 from pkg_resources import resource_filename
 import os
-import argparse
 from diffenator2.shape import test_words, test_fonts
 from diffenator2 import jfont, THRESHOLD
 from diffenator2.html import diffenator_report
+import fire
 
 
 class DiffFonts:
@@ -52,42 +52,33 @@ class DiffFonts:
         diffenator_report(self, templates, dst=out)
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("old_font")
-    parser.add_argument("new_font")
-    parser.add_argument(
-        "--template",
-        default=resource_filename(
-            "diffenator2", os.path.join("templates", "diffenator.html")
-        ),
-    )
-    parser.add_argument(
-        "--user-wordlist", help="File of strings to visually compare", default=None
-    )
-    parser.add_argument("--coords", "-c", default={})
-    parser.add_argument("--threshold", "-t", default=THRESHOLD, type=float)
-    parser.add_argument("--characters", "-ch", default=".*")
-    parser.add_argument("--out", "-o", default="out", help="Output html path")
-    args = parser.parse_args()
+def main(**kwargs):
+    if "coords" in kwargs:
+        coords = string_coords_to_dict(kwargs["coords"])
+    else:
+        coords = None
 
-    coords = string_coords_to_dict(args.coords) if args.coords else None
-
-    old_font = DFont(os.path.abspath(args.old_font), suffix="old")
-    new_font = DFont(os.path.abspath(args.new_font), suffix="new")
+    old_font = DFont(os.path.abspath(kwargs["old_font"]), suffix="old")
+    new_font = DFont(os.path.abspath(kwargs["new_font"]), suffix="new")
     matcher = FontMatcher([old_font], [new_font])
     matcher.diffenator(coords)
     matcher.upms()
 
-    diff = DiffFonts(matcher, threshold=args.threshold)
+    diff = DiffFonts(matcher, threshold=kwargs.get("threshold", 0.01))
     diff.diff_all()
-    if args.user_wordlist:
-        diff.diff_strings(args.user_wordlist)
+    if "user_wordlist" in kwargs:
+        diff.diff_strings(kwargs["user_wordlist"])
     
-    characters = re_filter_characters(new_font, args.characters)
+    characters = re_filter_characters(new_font, kwargs.get("characters", ".*"))
     diff.filter_characters(characters)
-    diff.to_html(args.template, args.out)
+    diff.to_html(
+        kwargs.get("template", resource_filename("diffenator2",
+            os.path.join("templates", "diffenator.html")
+            ),
+        ),
+        kwargs.get("out", "out")
+    )
 
 
 if __name__ == "__main__":
-    main()
+    fire.Fire(main)
