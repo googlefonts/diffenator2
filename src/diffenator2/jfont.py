@@ -5,6 +5,7 @@ from fontTools.ttLib.tables._n_a_m_e import table__n_a_m_e
 from fontTools.ttLib.tables._f_v_a_r import table__f_v_a_r
 from fontTools.ttLib.tables.S_T_A_T_ import table_S_T_A_T_
 from fontTools.ttLib.tables._c_m_a_p import table__c_m_a_p
+import json
 
 
 class_defs = {
@@ -17,7 +18,7 @@ class_defs = {
 
 def serialise_name_table(obj):
     return {
-        (r.nameID, r.platformID, r.platEncID, r.langID): r.toUnicode()
+        f"{r.nameID}/{r.platformID}/{r.platEncID}/{r.langID}": r.toUnicode()
         for r in obj.names
     }
 
@@ -172,7 +173,7 @@ class Diff:
         if obj is None:
             return None
         if isinstance(obj, tuple):
-            return obj
+            return list(obj)
         if obj == False:
             return False
         res = copy(obj)
@@ -185,28 +186,7 @@ class Diff:
         return res
 
     def render(self):
-        return self._render(self.diff)
-
-    def _render(self, obj, space=""):
-        s = ""
-        if not obj:
-            return ""
-        if isinstance(obj, tuple):
-            return f'\n{space}<span class="attrib-before">{obj[0]}</span> <span class="attrib-after">{obj[1]}</span>'
-
-        for k, v in obj.items():
-            if isinstance(k, int):
-                k = f"[{k}]"
-            if space:
-                hide = 'style="display:none"'
-            else:
-                hide = ""
-            s += (
-                f'\n{space}<div class="node" {hide}>\n{space}{k}'
-                + self._render(v, space + "  ")
-                + f"\n{space}</div>"
-            )
-        return s
+        return f'<script>var fontdiff = {json.dumps(self.diff)};</script><div id="difftable"></div>'
 
     def summary(self):
         raise NotImplementedError()
