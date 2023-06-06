@@ -25,6 +25,7 @@ blackrenderer = {extras = ["skia"], version = "^0.6.0"}
 unicodedata2 = "^15.0.0"
 tqdm = "^4.64.1"
 youseedee = "^0.3.0"
+python-bidi = "*"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
