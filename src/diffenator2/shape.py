@@ -10,6 +10,7 @@ from diffenator2.renderer import PixelDiffer
 from diffenator2.template_elements import WordDiff, Glyph, GlyphDiff
 from pkg_resources import resource_filename
 import tqdm
+from diffenator2.segmenting import textSegments
 
 
 # Hashing strategies for elements of a Harfbuzz buffer
@@ -132,63 +133,68 @@ def test_words(
 
     differ = PixelDiffer(font_a, font_b)
     with open(word_file, encoding="utf8") as doc:
-        words = doc.read().split("\n")
-        print(f"testing {len(words)} words")
-        word_total = len(words)
-        for i, line in tqdm.tqdm(enumerate(words), total=word_total):
+        sentences = doc.read().split("\n")
+        print(f"testing {len(sentences)} words")
+        word_total = len(sentences)
+        for i, line in tqdm.tqdm(enumerate(sentences), total=word_total):
             items = line.split(",")
             try:
-                word, script, lang, features = items[0], items[1], items[2], items[3:]
-            # for wordlists which just contain words
+                sentence, script, lang, features = items[0], items[1], items[2], items[3:]
+            # for wordlists which just contain sentences
             except IndexError:
-                word, script, lang, features = items[0], None, None, []
+                sentence, script, lang, features = items[0], "dflt", None, []
             features = {k: True for k in features}
-            if any(c.string in word for c in skip_glyphs):
-                continue
 
             differ.set_script(script)
             differ.set_lang(lang)
             differ.set_features(features)
 
-            if not word:
-                continue
+            # split sentences into individual script segments. This mimmics the
+            # same behaviour as dtp apps, web browsers etc
+            for segment, script, _, _, in textSegments(sentence)[0]:
 
-            buf_b = differ.renderer_b.shape(word)
-            word_b = Word.from_buffer(word, buf_b)
-
-            gid_hashes = [hash_func(i, j) for i, j in zip(buf_b.glyph_infos, buf_b.glyph_positions)]
-            # I'm not entirely convinced this is a valid test; but it seems to
-            # work and speeds things up a lot...
-            if all(gid_hash in seen_gids for gid_hash in gid_hashes):
-                continue
-
-            buf_a = differ.renderer_a.shape(word)
-            word_a = Word.from_buffer(word, buf_a)
-
-            # skip any words which cannot be shaped correctly
-            if any([g.codepoint == 0 for g in buf_a.glyph_infos+buf_b.glyph_infos]):
-                continue
-
-            pc, diff_map = differ.diff(word)
-
-            for gid_hash in gid_hashes:
-                seen_gids[gid_hash] = True
-
-                if pc < threshold:
+                if any(c.string in segment for c in skip_glyphs):
                     continue
-                res.add(
-                    (
-                        pc,
-                        WordDiff(
-                            word,
-                            word_a.hb,
-                            word_b.hb,
-                            tuple(features.keys()),
-                            ot_to_html_lang.get((script, lang)),
-                            ot_to_dir.get(script, None),
-                            "%.2f" % pc,
-                        ),
+
+                if not segment:
+                    continue
+
+                buf_b = differ.renderer_b.shape(segment)
+                word_b = Word.from_buffer(segment, buf_b)
+
+                gid_hashes = [hash_func(i, j) for i, j in zip(buf_b.glyph_infos, buf_b.glyph_positions)]
+                # I'm not entirely convinced this is a valid test; but it seems to
+                # work and speeds things up a lot...
+                if all(gid_hash in seen_gids for gid_hash in gid_hashes):
+                    continue
+
+                buf_a = differ.renderer_a.shape(segment)
+                word_a = Word.from_buffer(segment, buf_a)
+
+                # skip any words which cannot be shaped correctly
+                if any([g.codepoint == 0 for g in buf_a.glyph_infos+buf_b.glyph_infos]):
+                    continue
+
+                pc, diff_map = differ.diff(segment)
+
+                for gid_hash in gid_hashes:
+                    seen_gids[gid_hash] = True
+
+                    if pc < threshold:
+                        continue
+                    res.add(
+                        (
+                            pc,
+                            WordDiff(
+                                sentence,
+                                word_a.hb,
+                                word_b.hb,
+                                tuple(features.keys()),
+                                ot_to_html_lang.get((script, lang)),
+                                ot_to_dir.get(script, None),
+                                "%.2f" % pc,
+                            ),
+                        )
                     )
-                )
     return [w[1] for w in sorted(res, key=lambda k: k[0], reverse=True)]
 
