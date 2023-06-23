@@ -9,6 +9,7 @@ from diffenator2.template_elements import CSSFontStyle, CSSFontFace
 from diffenator2.utils import font_sample_text, characters_in_string
 from glyphsets import GFTestData
 import re
+from pathlib import Path
 
 
 WIDTH_CLASS_TO_CSS = {
@@ -154,6 +155,23 @@ def diffenator_report(diff, template, dst="out"):
         include_ui=True,
         pt_size=32,
     )
+
+
+def build_index_page(fp):
+    html_files = []
+    for dirpath, _, filenames in os.walk(fp):
+        for f in filenames:
+            if not f.endswith(".html"):
+                continue
+            html_files.append(os.path.join(dirpath, f))
+    html_files.sort()
+    # make paths relative and posix since web urls are forward slash
+    assert len(html_files) > 0, f"No html docs found in {fp}."
+    html_files_rel = [str(Path(os.path.relpath(f, fp)).as_posix()) for f in html_files]
+    a_hrefs = [f"<p><a href='{f}'>{f}</a></p>" for f in html_files_rel]
+    out = os.path.join(fp, "diffenator2-report.html")
+    with open(out, "w") as doc:
+        doc.write("\n".join(a_hrefs))
 
 
 def _package(templates, dst, **kwargs):

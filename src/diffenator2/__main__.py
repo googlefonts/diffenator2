@@ -4,6 +4,8 @@ from argparse import ArgumentParser, Namespace
 import os
 from diffenator2 import ninja_diff, ninja_proof, THRESHOLD, NINJA_BUILD_FILE
 from diffenator2.font import DFont
+from diffenator2.html import build_index_page
+
 
 
 def main(**kwargs):
@@ -80,6 +82,8 @@ def main(**kwargs):
         )
     else:
         raise NotImplementedError(f"{args.command} not supported")
+    # TODO (Marc F) find a better home for this when refactoring
+    build_index_page(args.out)
 
 
 if __name__ == "__main__":

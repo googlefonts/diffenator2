@@ -59,3 +59,44 @@ def test_get_font_style_filtering(fps, filters, style_count):
     ttfonts = [TTFont(fp) for fp in fps]
     styles = get_font_styles(ttfonts, filters=filters)
     assert len(styles) == style_count
+
+
+@pytest.mark.parametrize(
+    "pages,expected",
+    [
+        (
+            [
+                os.path.join("waterfall.html"),
+                os.path.join("text.html"),
+            ],
+            (
+                "<p><a href='text.html'>text.html</a></p>\n",
+                "<p><a href='waterfall.html'>waterfall.html</a></p>"
+            ),
+        ),
+        (
+            [
+                os.path.join("foo", "bar", "waterfall.html"),
+                os.path.join("cat", "baz", "fee", "text.html")
+            ],
+            (
+                "<p><a href='cat/baz/fee/text.html'>cat/baz/fee/text.html</a></p>\n",
+                "<p><a href='foo/bar/waterfall.html'>foo/bar/waterfall.html</a></p>"
+            ),
+        ),
+    ]
+)
+def test_build_index_page(pages, expected):
+    import tempfile
+    from diffenator2.html import build_index_page
+    with tempfile.TemporaryDirectory() as tmp:
+        for path in pages:
+            fp = os.path.join(tmp, path)
+            os.makedirs(os.path.dirname(fp), exist_ok=True)
+            with open(fp, "w") as doc:
+                doc.write("<p>Hello world</p>")
+        build_index_page(tmp)
+        result = os.path.join(tmp, "diffenator2-report.html")
+        with open(result, "r") as doc:
+            res = doc.read()
+            assert res == "".join(expected)
