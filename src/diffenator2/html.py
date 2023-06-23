@@ -164,6 +164,7 @@ def build_index_page(fp):
             if not f.endswith(".html"):
                 continue
             html_files.append(os.path.join(dirpath, f))
+    html_files.sort()
     # make paths relative and posix since web urls are forward slash
     assert len(html_files) > 0, f"No html docs found in {fp}."
     html_files_rel = [str(Path(os.path.relpath(f, fp)).as_posix()) for f in html_files]
