@@ -156,6 +156,20 @@ def diffenator_report(diff, template, dst="out"):
     )
 
 
+def build_index_page(fp):
+    html_files = []
+    for dirpath, _, filenames in os.walk(fp):
+        for f in filenames:
+            if not f.endswith(".html"):
+                continue
+            html_files.append(os.path.join(dirpath, f))
+    html_files_rel = [os.path.relpath(f, fp) for f in html_files]
+    a_hrefs = [f"<p><a href='{f}'>{f}</a></p>" for f in html_files_rel]
+    out = os.path.join(fp, "diffenator2-report.html")
+    with open(out, "w") as doc:
+        doc.write("\n".join(a_hrefs))
+
+
 def _package(templates, dst, **kwargs):
     if not os.path.exists(dst):
         os.makedirs(dst)
