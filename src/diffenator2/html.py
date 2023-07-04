@@ -96,6 +96,7 @@ def proof_rendering(styles, templates, dst="out", filter_styles=None, characters
     sample_text = filtered_font_sample_text(ttFont, characters)
     test_strings = GFTestData.test_strings_in_font(ttFont)
     characters = characters or [chr(c) for c in ttFont.getBestCmap()]
+    characters = list(sorted(characters))
     _package(
         templates,
         dst,
@@ -119,6 +120,7 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, characters
     sample_text=filtered_font_sample_text(ttFont, characters)
     test_strings = GFTestData.test_strings_in_font(ttFont)
     characters = characters or [chr(c) for c in ttFont.getBestCmap()]
+    characters = list(sorted(characters))
     _package(
         templates,
         dst,
