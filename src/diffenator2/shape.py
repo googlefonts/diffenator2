@@ -7,10 +7,11 @@ import uharfbuzz as hb
 import os
 from diffenator2 import THRESHOLD
 from diffenator2.renderer import PixelDiffer
-from diffenator2.template_elements import WordDiff, Glyph, GlyphDiff
+from diffenator2.template_elements import Word, WordDiff, Glyph, GlyphDiff
 from pkg_resources import resource_filename
 import tqdm
 from diffenator2.segmenting import textSegments
+from collections import defaultdict
 
 
 # Hashing strategies for elements of a Harfbuzz buffer
@@ -37,23 +38,6 @@ ot_to_html_lang = {
 ot_to_dir = {None: "ltr", "arab": "rlt", "hebr": "rtl"}
 
 
-@dataclass
-class Word:
-    string: str
-    hb: str
-
-    @classmethod
-    def from_buffer(cls, word, buffer, hash_func=gid_pos_hash):
-        infos = buffer.glyph_infos
-        pos = buffer.glyph_positions
-        hb = "".join(hash_func(i, j) for i, j in zip(infos, pos))
-        return cls(word, hb)
-
-    def __eq__(self, other):
-        return (self.string, hb) == (other.string, other.hb)
-
-    def __hash__(self):
-        return hash((self.string, self.hb))
 
 
 @dataclass
@@ -118,6 +102,20 @@ def test_font_words(font_a, font_b, skip_glyphs=set(), threshold=THRESHOLD):
     return res
 
 
+def parse_wordlist(fp):
+    from diffenator2.shape import Word as TemplateWord
+    results = []
+    with open(fp, encoding="utf8") as doc:
+        lines = doc.read().split("\n")
+        for line in lines:
+            items = line.split(",")
+            try:
+                results.append(TemplateWord(string=items[0], script=items[1], lang=items[2], ot_features={k: True for k in items[3:]}))
+            except IndexError:
+                results.append(TemplateWord(string=items[0], script="dflt", lang=None, ot_features={}))
+    return results
+
+
 def test_words(
     word_file,
     font_a,
@@ -127,74 +125,62 @@ def test_words(
     threshold=THRESHOLD,
 ):
     res = set()
-    from collections import defaultdict
 
     seen_gids = defaultdict(int)
 
     differ = PixelDiffer(font_a, font_b)
-    with open(word_file, encoding="utf8") as doc:
-        sentences = doc.read().split("\n")
-        print(f"testing {len(sentences)} words")
-        word_total = len(sentences)
-        for i, line in tqdm.tqdm(enumerate(sentences), total=word_total):
-            items = line.split(",")
-            try:
-                sentence, script, lang, features = items[0], items[1], items[2], items[3:]
-            # for wordlists which just contain sentences
-            except IndexError:
-                sentence, script, lang, features = items[0], "dflt", None, []
-            features = {k: True for k in features}
+    word_list = parse_wordlist(word_file)
+    for i, word in tqdm.tqdm(enumerate(word_list), total=len(word_list)):
+        differ.set_script(word.script)
+        differ.set_lang(word.lang)
+        differ.set_features(word.ot_features)
 
-            differ.set_script(script)
-            differ.set_lang(lang)
-            differ.set_features(features)
+        # split sentences into individual script segments. This mimmics the
+        # same behaviour as dtp apps, web browsers etc
+        for segment, script, _, _, in textSegments(word.string)[0]:
 
-            # split sentences into individual script segments. This mimmics the
-            # same behaviour as dtp apps, web browsers etc
-            for segment, script, _, _, in textSegments(sentence)[0]:
+            if any(c.string in segment for c in skip_glyphs):
+                continue
 
-                if any(c.string in segment for c in skip_glyphs):
+            if not segment:
+                continue
+
+            buf_b = differ.renderer_b.shape(segment)
+            word_b = Word.from_buffer(segment, buf_b)
+
+            gid_hashes = [hash_func(i, j) for i, j in zip(buf_b.glyph_infos, buf_b.glyph_positions)]
+            # I'm not entirely convinced this is a valid test; but it seems to
+            # work and speeds things up a lot...
+            if all(gid_hash in seen_gids for gid_hash in gid_hashes):
+                continue
+
+            buf_a = differ.renderer_a.shape(segment)
+            word_a = Word.from_buffer(segment, buf_a)
+
+            # skip any words which cannot be shaped correctly
+            if any([g.codepoint == 0 for g in buf_a.glyph_infos+buf_b.glyph_infos]):
+                continue
+
+            pc, diff_map = differ.diff(segment)
+
+            for gid_hash in gid_hashes:
+                seen_gids[gid_hash] = True
+
+                if pc < threshold:
                     continue
-
-                if not segment:
-                    continue
-
-                buf_b = differ.renderer_b.shape(segment)
-                word_b = Word.from_buffer(segment, buf_b)
-
-                gid_hashes = [hash_func(i, j) for i, j in zip(buf_b.glyph_infos, buf_b.glyph_positions)]
-                # I'm not entirely convinced this is a valid test; but it seems to
-                # work and speeds things up a lot...
-                if all(gid_hash in seen_gids for gid_hash in gid_hashes):
-                    continue
-
-                buf_a = differ.renderer_a.shape(segment)
-                word_a = Word.from_buffer(segment, buf_a)
-
-                # skip any words which cannot be shaped correctly
-                if any([g.codepoint == 0 for g in buf_a.glyph_infos+buf_b.glyph_infos]):
-                    continue
-
-                pc, diff_map = differ.diff(segment)
-
-                for gid_hash in gid_hashes:
-                    seen_gids[gid_hash] = True
-
-                    if pc < threshold:
-                        continue
-                    res.add(
-                        (
-                            pc,
-                            WordDiff(
-                                sentence,
-                                word_a.hb,
-                                word_b.hb,
-                                tuple(features.keys()),
-                                ot_to_html_lang.get((script, lang)),
-                                ot_to_dir.get(script, None),
-                                "%.2f" % pc,
-                            ),
-                        )
+                res.add(
+                    (
+                        pc,
+                        WordDiff(
+                            word.string,
+                            word_a.hb,
+                            word_b.hb,
+                            tuple(word.ot_features.keys()),
+                            ot_to_html_lang.get((script, word.lang)),
+                            ot_to_dir.get(script, None),
+                            "%.2f" % pc,
+                        ),
                     )
+                )
     return [w[1] for w in sorted(res, key=lambda k: k[0], reverse=True)]
 

@@ -9,12 +9,39 @@ import unicodedata2 as uni
 from .utils import font_family_name
 
 
+def gid_pos_hash(info, pos):
+    return f"gid={info.codepoint}, pos={pos.position}<br>"
+
+
 class Renderable:
     @pass_environment
     def render(self, jinja):
         classname = self.__class__.__name__
         template = jinja.get_template(f"{classname}.partial.html")
         return template.render(self.__dict__)
+
+
+@dataclass
+class Word(Renderable):
+    string: str
+    hb: str = ""
+    ot_features: tuple = ()
+    script: str = ""
+    lang: str = ""
+
+    @classmethod
+    def from_buffer(cls, word, buffer, hash_func=gid_pos_hash):
+        infos = buffer.glyph_infos
+        pos = buffer.glyph_positions
+        hb = "".join(hash_func(i, j) for i, j in zip(infos, pos))
+        return cls(word, hb)
+
+    def __eq__(self, other):
+        return (self.string, self.hb) == (other.string, other.hb)
+
+    def __hash__(self):
+        return hash((self.string, self.hb))
+
 
 @dataclass
 class WordDiff(Renderable):

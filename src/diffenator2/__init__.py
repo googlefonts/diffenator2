@@ -25,12 +25,13 @@ def ninja_proof(
     filter_styles: str = "",
     characters: str = ".*",
     pt_size: int = 20,
+    user_wordlist: str = "",
 ):
     if not os.path.exists(out):
         os.mkdir(out)
 
     if filter_styles:
-        _ninja_proof(fonts, out, imgs, styles, filter_styles, characters, pt_size)
+        _ninja_proof(fonts, out, imgs, styles, filter_styles, characters, pt_size, user_wordlist)
         return
 
     font_styles = get_font_styles(fonts, styles)
@@ -40,7 +41,7 @@ def ninja_proof(
         o = os.path.join(out, filter_styles.replace("|", "-"))
         if not os.path.exists(o):
             os.mkdir(o)
-        _ninja_proof(fonts, o, imgs, styles, filter_styles, characters, pt_size)
+        _ninja_proof(fonts, o, imgs, styles, filter_styles, characters, pt_size, user_wordlist)
 
 
 def _ninja_proof(
@@ -51,6 +52,7 @@ def _ninja_proof(
     filter_styles: str = "",
     characters=".*",
     pt_size: int = 20,
+    user_wordlist = "",
 ):
     w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
     w.comment("Rules")
@@ -62,6 +64,8 @@ def _ninja_proof(
         cmd += " --imgs"
     if filter_styles:
         cmd += f' --filter-styles "$filters"'
+    if user_wordlist:
+        cmd += f' --user-wordlist "$user_wordlist"'
     w.rule("proofing", cmd)
     w.newline()
 
@@ -78,6 +82,8 @@ def _ninja_proof(
         variables["imgs"] = imgs
     if filter_styles:
         variables["filters"] = filter_styles
+    if user_wordlist:
+        variables["user_wordlist"] = user_wordlist
     w.build(out, "proofing", variables=variables)
     w.close()
     ninja._program("ninja", [])
@@ -172,13 +178,15 @@ def _ninja_diff(
         db_cmd += " --imgs"
     if filter_styles:
         db_cmd += ' --filter-styles "$filters"'
+    if user_wordlist:
+        db_cmd += ' --user-wordlist "$user_wordlist"'
     w.rule("diffbrowsers", db_cmd)
     w.newline()
 
     w.comment("Run diffenator VF")
     diff_cmd = f'_diffenator $font_before $font_after -t $threshold -o $out -ch "$characters"'
     if user_wordlist:
-        diff_cmd += " --user-wordlist $user_wordlist"
+        diff_cmd += ' --user-wordlist "$user_wordlist"'
     diff_inst_cmd = diff_cmd + " --coords $coords"
     w.rule("diffenator", diff_cmd)
     w.rule("diffenator-inst", diff_inst_cmd)
@@ -198,6 +206,8 @@ def _ninja_diff(
         )
         if filter_styles:
             db_variables["filters"] = filter_styles
+        if user_wordlist:
+            db_variables["user_wordlist"] = user_wordlist
         w.build(diffbrowsers_out, "diffbrowsers", variables=db_variables)
     if diffenator:
         matcher = FontMatcher(fonts_before, fonts_after)

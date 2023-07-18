@@ -1,0 +1,99 @@
+{% extends "_base.html" %}
+{% block title %}User Strings{% endblock %}
+
+{% block content_name %}
+<b>Text</b>
+{% endblock %}
+{% block content %}
+  {% for font_class in font_styles or font_styles_old or font_styles_new %}
+    <div class="box">
+      <div class="box-title">{{ font_class.class_name }} {{ pt_size }}pt</div>
+		{% for word in user_strings %}
+			<div class="{{ font_class.class_name }}" dir="auto" style="font-size: {{ pt_size }}pt; float: left;">{{ word.render() }}</div>
+		{% endfor %}
+    </div>
+  {% endfor %}
+{% endblock %}
+
+{% block js %}
+	// break text so that no reflow happens
+async function breakText() {
+	boxContent = document.getElementsByClassName("box-text")
+	for (let box of boxContent) {
+		switchFonts()
+		await sleep(1)
+		break1 = getLineBreaks(box)
+		switchFonts()
+		await sleep(1)
+		break2 = getLineBreaks(box)
+
+		if (break1.length >= break2.length) {
+		breaks = break1
+		} else {
+		breaks = break2
+		}
+		insertBreaks(box, breaks)
+		box.style.whiteSpace = "pre"
+		console.log("set to pre")
+	}
+	}
+
+function getLineBreaks(elem) {
+	const nodes = grabTextNodes(elem);
+	for (const node of nodes) { // each node is a big block of text
+		let rangeIndex = 1;
+		let textIndex = 0;
+		let nodeText = node.textContent;
+		const textLength = nodeText.length;
+
+		linebreaks = []
+		prevTop = 0;
+		while (rangeIndex <= textLength) {
+			const range = document.createRange();
+			range.setStart(node, rangeIndex-1);
+			range.setEnd(node, rangeIndex)
+			currentTop = range.getBoundingClientRect().top
+		if (currentTop > prevTop) {
+			linebreaks.push(rangeIndex-2)
+		}
+		rangeIndex += 1;
+		prevTop = currentTop
+		}
+	}
+	return linebreaks
+}
+
+function grabTextNodes(elem) {
+	const walker = document.createTreeWalker(elem, NodeFilter.SHOW_TEXT, null);
+	const nodes = [];
+	while (walker.nextNode()) {
+		nodes.push(walker.currentNode);
+	}
+	return nodes;
+}
+
+	function sleep(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+function insertBreaks(node, breaks) {
+	console.log(node, breaks)
+	newText = ""
+	currentText = node.textContent
+	for (i=0; i<currentText.length; i++) {
+		if (breaks.includes(i)) {
+		newText += "<br>"
+		} else {
+		newText += currentText[i]
+		}
+	}
+	node.innerHTML = newText
+}
+
+	if (fontToggle !== null) {
+		breakText()
+}
+
+	
+{% endblock %}

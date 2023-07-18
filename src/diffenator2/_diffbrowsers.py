@@ -66,6 +66,9 @@ def main():
     )
     universal_options_parser.add_argument("--filter-styles", default=None)
     universal_options_parser.add_argument("--characters", "-ch", default=".*")
+    universal_options_parser.add_argument(
+        "--user-wordlist", help="File of strings to visually compare", default=None
+    )
 
     proof_parser = subparsers.add_parser(
         "proof",
@@ -100,7 +103,8 @@ def main():
             args.out,
             filter_styles=args.filter_styles,
             characters=characters,
-            pt_size=args.pt_size
+            pt_size=args.pt_size,
+            user_wordlist=args.user_wordlist,
         )
 
     elif args.command == "diff":
@@ -116,6 +120,7 @@ def main():
             filter_styles=args.filter_styles,
             characters=characters,
             pt_size=args.pt_size,
+            user_wordlist=args.user_wordlist,
         )
 
     if args.imgs:
