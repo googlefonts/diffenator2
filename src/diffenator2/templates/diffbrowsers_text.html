@@ -8,7 +8,7 @@
   {% for font_class in font_styles or font_styles_old or font_styles_new %}
     <div class="box">
       <div class="box-title">{{ font_class.class_name }} {{ pt_size }}pt</div>
-	<div class="box-text {{ font_class.class_name }}" dir="auto" style="font-size: {{ pt_size }}pt">{{ sample_text }}</div>
+	<div contenteditable=true spellcheck="false" class="box-text {{ font_class.class_name }}" dir="auto" style="font-size: {{ pt_size }}pt">{{ sample_text }}</div>
     </div>
   {% endfor %}
 {% endblock %}
