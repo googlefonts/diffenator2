@@ -138,7 +138,7 @@ class DFont:
                     name.getBestSubFamilyName(),
                 )
             )
-        return sorted(results, key=lambda k: k.coords["wght"])
+        return results
     
     def masters(self):
         assert self.is_variable(), "Needs to be a variable font"

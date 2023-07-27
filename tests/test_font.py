@@ -64,11 +64,34 @@ def test_match_coordinates(fp_before, fp_after, expected):
                 },
             ]
         ),
+        (
+            kablammo_vf,
+            [
+                {
+                    "name": "Zoink",
+                    "coords": {"MORF": 0.0},
+                },
+                {
+                    "name": "Bloop",
+                    "coords": {'MORF': 20.0},
+                },
+                {
+                    "name": "Splat",
+                    "coords": {'MORF': 40.0},
+                },
+                {
+                    "name": "Eek",
+                    "coords": {'MORF': 60.0},
+                },
+
+            ]
+        )
     ]
 )
 def test_instances(fp, expected):
     font = DFont(fp)
     font_instances = font.instances()
+    assert len(font_instances) == len(expected)
     for got, want in zip(font_instances, expected):
         assert got.font == font
         assert got.name == want["name"]
