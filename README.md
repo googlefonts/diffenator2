@@ -40,29 +40,44 @@ In order to test fonts on the correct words, we first determine what scripts are
 
 ## Usage
 
-Generate proofing docs for a family
+`diffenator2` has two subcommands, `diff` and `proof`.
 
-`diffenator2 proof font1.ttf font2.ttf font3.ttf -o out_dir`
+### `diff`
 
+```
+usage: diffenator2 diff [-h] [--out OUT] [--imgs]
+                        [--filter-styles FILTER_STYLES] [--pt-size PT_SIZE]
+                        [--styles {instances,cross_product,masters}]
+                        --fonts-before FONTS_BEFORE [FONTS_BEFORE ...]
+                        --fonts-after FONTS_AFTER [FONTS_AFTER ...]
+                        [--user-wordlist USER_WORDLIST] [--no-diffenator]
+                        [--threshold THRESHOLD]
 
-Proof and include browser images
+  --out OUT, -o OUT     Output dir
+  --imgs                Generate images
+  --filter-styles FILTER_STYLES
+  --pt-size PT_SIZE, -pt PT_SIZE
+  --styles {instances,cross_product,masters}, -s {instances,cross_product,masters}
+                        Show font instances, cross product or master styles
+  --fonts-before FONTS_BEFORE [FONTS_BEFORE ...], -fb FONTS_BEFORE [FONTS_BEFORE ...]
+  --fonts-after FONTS_AFTER [FONTS_AFTER ...], -fa FONTS_AFTER [FONTS_AFTER ...]
+  --user-wordlist USER_WORDLIST
+  --no-diffenator
+  --threshold THRESHOLD, -t THRESHOLD
+```
 
-`diffenator2 proof font1.ttf font2.ttf font3.ttf -o out_dir --imgs`
-
-
-Compare two font families 
+* The most typical usage is to compare two font families:
 
 ```
 # -fb == --fonts-before, -fa == --fonts-after
 diffenator2 diff -fb font1.ttf -fa font2.ttf -o out_dir
 ```
 
-
-Compare two font families and include a custom wordlist
+* Compare two font families and include a custom wordlist
 
 `diffenator2 diff -fb font1.ttf -fa font2.ttf --user-wordlist wordlist.txt -o out_dir`
 
-A wordlist is basically a csv file with the following columns.
+A wordlist is a csv file with the following columns:
 
 `string, script, lang, ot features...`
 
@@ -75,26 +90,47 @@ a,latn,dflt,ss01
 0123456789,,,numr,tnum
 ```
 
-Only diff regular and bold styles
+* The `--filter-styles` option can be used to select which styles should be compared
+
+For example, to only diff regular and bold styles:
 
 `diffenator2 diff -fb font1.ttf -fa font2.ttf --filter-styles "Regular|Bold"`
 
-
---filter-styles accept wildcards so let's diff all Bold styles
+`--filter-styles` also accepts wildcards. To diff all Bold styles:
 
 `diffenator2 diff -fb font1.ttf -fa font2.ttf --filter-styles "Bold*"`
 
+* `-s` is used to choose which locations of a variable font should be compared
 
-Compare variable font masters
+The default is to compare named instances. To only compare masters:
 
 `diffenator2 diff -fb font1.ttf -fa font2.ttf -s masters`
 
-
-Compare variable fonts axes using a cross product
+To compare the cross product of min/default/max for each axis:
 
 `diffenator2 diff -fb font1.ttf -fa font2.ttf -s cross_product`
 
+* `-ch` is used to select which characters to compare
 
-Compare only ascii characters
+To compare only ascii characters:
 
 `diffenator2 diff -fb font2.ttf -fa font2.ttf -ch "[!-~]"`
+
+### `proof`
+
+```
+usage: diffenator2 proof [-h] [--out OUT] [--imgs]
+                         [--filter-styles FILTER_STYLES] [--pt-size PT_SIZE]
+                         [--styles {instances,cross_product,masters}]
+                         fonts [fonts ...]
+```
+
+* Generate proofing docs for a family
+
+`diffenator2 proof font1.ttf font2.ttf font3.ttf -o out_dir`
+
+* Proof and include browser images
+
+`diffenator2 proof font1.ttf font2.ttf font3.ttf -o out_dir --imgs`
+
+* `--filter-styles` and `--styles` operate as above
