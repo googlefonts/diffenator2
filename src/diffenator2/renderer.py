@@ -213,6 +213,10 @@ class PixelDiffer:
     def diff(self, string):
         img_a = self.renderer_a.render(string)
         img_b = self.renderer_b.render(string)
+        if img_a.size == (0, 0) and img_b.size != (0, 0):
+            return 99.99, []
+        if img_b.size == (0, 0) and img_a.size != (0, 0):
+            return 99.99, []
         if img_a.size != img_b.size:
             img_a = img_a.resize(img_b.size)
         img_a = np.asarray(img_a)
