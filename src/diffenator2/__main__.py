@@ -31,6 +31,7 @@ def main(**kwargs):
             default="instances",
             help="Show font instances, cross product or master styles"
         )
+        universal_options_parser.add_argument("--user-wordlist", default=None)
         proof_parser = subparsers.add_parser(
             "proof",
             parents=[universal_options_parser],
@@ -44,7 +45,6 @@ def main(**kwargs):
         )
         diff_parser.add_argument("--fonts-before", "-fb", nargs="+", required=True)
         diff_parser.add_argument("--fonts-after", "-fa", nargs="+", required=True)
-        diff_parser.add_argument("--user-wordlist", default=None)
         diff_parser.add_argument("--no-diffenator", default=False, action="store_true")
         diff_parser.add_argument("--threshold", "-t", type=float, default=THRESHOLD)
         args = parser.parse_args()
@@ -63,6 +63,7 @@ def main(**kwargs):
             filter_styles=args.filter_styles,
             characters=args.characters,
             pt_size=args.pt_size,
+            user_wordlist=args.user_wordlist,
         )
     elif args.command == "diff":
         fonts_before = [DFont(f) for f in args.fonts_before]

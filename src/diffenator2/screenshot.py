@@ -114,7 +114,11 @@ class ScreenShotter:
 def screenshot_dir(
         dir_fp: str,
         out: str,
-        skip=["diffbrowsers_proofer.html", "diffenator.html"],
+        skip=[
+            "diffbrowsers_proofer.html",
+            "diffenator.html",
+            "diffbrowsers_user_strings.html"
+        ],
 ):
     """Screenshot a folder of html docs. Walk the damn things"""
     if not os.path.exists(out):

@@ -10,6 +10,7 @@ from diffenator2.utils import font_sample_text, characters_in_string
 from glyphsets import GFTestData
 import re
 from pathlib import Path
+from diffenator2.shape import parse_wordlist
 
 
 WIDTH_CLASS_TO_CSS = {
@@ -89,7 +90,7 @@ def filtered_font_sample_text(ttFont, characters):
     return " ".join(sample_text)
 
 
-def proof_rendering(styles, templates, dst="out", filter_styles=None, characters=set(), pt_size=20):
+def proof_rendering(styles, templates, dst="out", filter_styles=None, characters=set(), pt_size=20, user_wordlist=None):
     ttFont = styles[0].font.ttFont
     font_faces = set(style.font.css_font_face for style in styles)
     font_styles = [style.css_font_style for style in styles]
@@ -97,6 +98,7 @@ def proof_rendering(styles, templates, dst="out", filter_styles=None, characters
     test_strings = GFTestData.test_strings_in_font(ttFont)
     characters = characters or [chr(c) for c in ttFont.getBestCmap()]
     characters = list(sorted(characters))
+    user_words = None if not user_wordlist else parse_wordlist(user_wordlist)
     _package(
         templates,
         dst,
@@ -106,10 +108,13 @@ def proof_rendering(styles, templates, dst="out", filter_styles=None, characters
         characters=characters,
         test_strings=test_strings,
         pt_size=pt_size,
+        user_strings=user_words
     )
 
 
-def diff_rendering(matcher, templates, dst="out", filter_styles=None, characters=set(), pt_size=20):
+
+def diff_rendering(matcher, templates, dst="out", filter_styles=None, characters=set(), pt_size=20, user_wordlist=None):
+    dFont = matcher.old_styles[0].font
     ttFont = matcher.old_styles[0].font.ttFont
     font_faces_old = set(style.font.css_font_face for style in matcher.old_styles)
     font_styles_old = [style.css_font_style for style in matcher.old_styles]
@@ -121,6 +126,7 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, characters
     test_strings = GFTestData.test_strings_in_font(ttFont)
     characters = characters or [chr(c) for c in ttFont.getBestCmap()]
     characters = list(sorted(characters))
+    user_words = None if not user_wordlist else parse_wordlist(user_wordlist)
     _package(
         templates,
         dst,
@@ -133,6 +139,7 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, characters
         characters=characters,
         test_strings=test_strings,
         pt_size=pt_size,
+        user_strings=user_words,
     )
 
 
@@ -182,6 +189,9 @@ def _package(templates, dst, **kwargs):
 
     # write docs
     for template_fp in templates:
+        if "user_strings" in template_fp:
+            if kwargs["user_strings"] == None:
+                continue
         env = Environment(
             loader=FileSystemLoader(os.path.dirname(template_fp)),
         )
