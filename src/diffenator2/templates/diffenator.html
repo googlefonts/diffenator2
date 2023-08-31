@@ -142,7 +142,7 @@
 	}
 	$(function() {
 		$("#difftable").append(render(fontdiff, true).children())
-		$(".node").on("click", function(event){ $(this).children().toggle(); event.stopPropagation() })
+		$("#difftable .node").on("click", function(event){ $(this).children().toggle(); event.stopPropagation() })
 	});
 
 function wordBreaks() {
