@@ -117,12 +117,14 @@ class FontMatcher:
     
     def upms(self):
         if len(self.old_fonts) == 1 and len(self.new_fonts) == 1:
-            scale_upem(self.old_fonts[0].ttFont, self.new_fonts[0].ttFont["head"].unitsPerEm)
+            if self.old_fonts[0].ttFont["head"].unitsPerEm != self.new_fonts[0].ttFont["head"].unitsPerEm:
+                scale_upem(self.old_fonts[0].ttFont, self.new_fonts[0].ttFont["head"].unitsPerEm)
             return
         assert self.old_styles + self.new_styles, "match styles first!"
         seen = set()
         for old_style, new_style in zip(self.old_styles, self.new_styles):
             if old_style in seen:
                 continue
-            scale_upem(old_style.font.ttFont, new_style.font.ttFont["head"].unitsPerEm)
+            if old_style.font.ttFont["head"].unitsPerEm != new_style.font.ttFont["head"].unitsPerEm:
+                scale_upem(old_style.font.ttFont, new_style.font.ttFont["head"].unitsPerEm)
             seen.add(old_style)
