@@ -96,6 +96,14 @@ A wordlist could be
   0123456789,,,numr,tnum
   ```
 
+- A .txt file with a paragraph of a desired sample to test specific words or languages. 
+  
+  Since a comma `,` is the key character to divide the provided sample into different lines, do not include commas if you want to see it as a single paragraph, e.g
+
+  ```
+  Trăm năm trong cõi người ta Ắ chữ Ắ tàichữ mệnh khéo là ghét nhau. Trải qua một Ắ cuộc bể dâu những điều trông thấy mà đau đớn lòng. Ắ Lạ gì bỉ sắc tư phong trời xanh quen thói má hồng đánh ghen. Cảo thơm lần giở trước đèn phong Tình có lục còn truyền sử xanh. Rằng năm Gia Tĩnh triều Minh bốn phương phẳng lặng hai kinh vững vàng. Có nhà viên ngoại họ Vương gia tư nghĩ cũng thường thường bực trung.
+  ```
+
 #### Filter Styles
 
 The `--filter-styles` option can be used to select which styles should be compared
