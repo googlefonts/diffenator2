@@ -16,6 +16,7 @@ from collections import defaultdict
 
 # Hashing strategies for elements of a Harfbuzz buffer
 
+
 def gid_pos_hash(info, pos):
     return f"gid={info.codepoint}, pos={pos.position}<br>"
 
@@ -36,8 +37,6 @@ ot_to_html_lang = {
 }
 
 ot_to_dir = {None: "ltr", "arab": "rlt", "hebr": "rtl"}
-
-
 
 
 @dataclass
@@ -164,8 +163,14 @@ def test_words(
 
         # split sentences into individual script segments. This mimmics the
         # same behaviour as dtp apps, web browsers etc
-        for segment, script, _, _, in textSegments(word.string)[0]:
-
+        for (
+            segment,
+            script,
+            _,
+            _,
+        ) in textSegments(
+            word.string
+        )[0]:
             if any(c.string in segment for c in skip_glyphs):
                 continue
 
@@ -175,7 +180,10 @@ def test_words(
             buf_b = differ.renderer_b.shape(segment)
             word_b = Word.from_buffer(segment, buf_b)
 
-            gid_hashes = [hash_func(i, j) for i, j in zip(buf_b.glyph_infos, buf_b.glyph_positions)]
+            gid_hashes = [
+                hash_func(i, j)
+                for i, j in zip(buf_b.glyph_infos, buf_b.glyph_positions)
+            ]
             # I'm not entirely convinced this is a valid test; but it seems to
             # work and speeds things up a lot...
             if all(gid_hash in seen_gids for gid_hash in gid_hashes):
@@ -185,7 +193,7 @@ def test_words(
             word_a = Word.from_buffer(segment, buf_a)
 
             # skip any words which cannot be shaped correctly
-            if any([g.codepoint == 0 for g in buf_a.glyph_infos+buf_b.glyph_infos]):
+            if any([g.codepoint == 0 for g in buf_a.glyph_infos + buf_b.glyph_infos]):
                 continue
 
             pc, diff_map = differ.diff(segment)
@@ -210,4 +218,3 @@ def test_words(
                     )
                 )
     return [w[1] for w in sorted(res, key=lambda k: k[0], reverse=True)]
-

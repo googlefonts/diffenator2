@@ -35,7 +35,7 @@ class DiffFonts:
         skip = frozenset(["diff_strings", "diff_all"])
         diff_funcs = [f for f in dir(self) if f.startswith("diff_") if f not in skip]
         for f in diff_funcs:
-            getattr(self,f)()
+            getattr(self, f)()
 
     def diff_tables(self):
         if not self.do_tables:
@@ -64,12 +64,22 @@ class DiffFonts:
     def filter_characters(self, characters):
         diff_words = self.glyph_diff["words"]
         for cat in diff_words:
-            diff_words[cat] = [i for i in diff_words[cat] if characters_in_string(i.string, characters)]
-        
+            diff_words[cat] = [
+                i for i in diff_words[cat] if characters_in_string(i.string, characters)
+            ]
+
         diff_glyphs = self.glyph_diff["glyphs"]
-        diff_glyphs.new = [g for g in diff_glyphs.new if characters_in_string(g.string, characters)]
-        diff_glyphs.missing = [g for g in diff_glyphs.missing if characters_in_string(g.string, characters)]
-        diff_glyphs.modified = [g for g in diff_glyphs.modified if characters_in_string(g.string, characters)]
+        diff_glyphs.new = [
+            g for g in diff_glyphs.new if characters_in_string(g.string, characters)
+        ]
+        diff_glyphs.missing = [
+            g for g in diff_glyphs.missing if characters_in_string(g.string, characters)
+        ]
+        diff_glyphs.modified = [
+            g
+            for g in diff_glyphs.modified
+            if characters_in_string(g.string, characters)
+        ]
 
     def to_html(self, templates, out):
         diffenator_report(self, templates, dst=out)
