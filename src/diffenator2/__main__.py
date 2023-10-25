@@ -5,6 +5,7 @@ import os
 from diffenator2 import ninja_diff, ninja_proof, THRESHOLD, NINJA_BUILD_FILE
 from diffenator2.font import DFont
 from diffenator2.html import build_index_page
+from diffenator2.renderer import FONT_SIZE
 
 
 
@@ -47,6 +48,9 @@ def main(**kwargs):
         diff_parser.add_argument("--fonts-after", "-fa", nargs="+", required=True)
         diff_parser.add_argument("--no-diffenator", default=False, action="store_true")
         diff_parser.add_argument("--threshold", "-t", type=float, default=THRESHOLD)
+        diff_parser.add_argument("--precision", default=FONT_SIZE)
+        diff_parser.add_argument("--no-tables", action="store_true", help="Skip diffing font tables")
+        diff_parser.add_argument("--no-words", action="store_true", help="Skip diffing wordlists")
         args = parser.parse_args()
 
     if os.path.exists(NINJA_BUILD_FILE):
@@ -80,6 +84,9 @@ def main(**kwargs):
             filter_styles=args.filter_styles,
             pt_size=args.pt_size,
             threshold=args.threshold,
+            precision=args.precision,
+            no_words=args.no_words,
+            no_tables=args.no_tables,
         )
     else:
         raise NotImplementedError(f"{args.command} not supported")

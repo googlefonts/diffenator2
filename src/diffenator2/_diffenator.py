@@ -3,7 +3,12 @@
 diffenator2
 """
 from __future__ import annotations
-from diffenator2.utils import string_coords_to_dict, re_filter_characters, characters_in_string
+from diffenator2.renderer import FONT_SIZE
+from diffenator2.utils import (
+    string_coords_to_dict,
+    re_filter_characters,
+    characters_in_string,
+)
 from diffenator2.font import DFont
 from diffenator2.matcher import FontMatcher
 from pkg_resources import resource_filename
@@ -15,13 +20,16 @@ from diffenator2.html import diffenator_report
 
 
 class DiffFonts:
-    def __init__(self, matcher, threshold=0.01):
+    def __init__(self, matcher, threshold=0.01, font_size=28, words=True, tables=True):
         self.old_font = matcher.old_fonts[0]
         self.new_font = matcher.new_fonts[0]
 
         self.old_style = matcher.old_styles[0]
         self.new_style = matcher.new_styles[0]
         self.threshold = threshold
+        self.do_words = words
+        self.do_tables = tables
+        self.font_size = font_size
 
     def diff_all(self):
         skip = frozenset(["diff_strings", "diff_all"])
@@ -30,13 +38,28 @@ class DiffFonts:
             getattr(self,f)()
 
     def diff_tables(self):
+        if not self.do_tables:
+            self.tables = jfont.Diff({}, {})
+            return
         self.tables = jfont.Diff(self.old_font.jFont, self.new_font.jFont)
 
     def diff_strings(self, fp):
-        self.strings = test_words(fp, self.old_font, self.new_font, threshold=self.threshold)
+        self.strings = test_words(
+            fp,
+            self.old_font,
+            self.new_font,
+            threshold=self.threshold,
+            font_size=self.font_size,
+        )
 
     def diff_words(self):
-        self.glyph_diff = test_fonts(self.old_font, self.new_font, threshold=self.threshold)
+        self.glyph_diff = test_fonts(
+            self.old_font,
+            self.new_font,
+            threshold=self.threshold,
+            do_words=self.do_words,
+            font_size=self.font_size,
+        )
 
     def filter_characters(self, characters):
         diff_words = self.glyph_diff["words"]
@@ -67,7 +90,10 @@ def main():
     )
     parser.add_argument("--coords", "-c", default={})
     parser.add_argument("--threshold", "-t", default=THRESHOLD, type=float)
+    parser.add_argument("--font-size", "-pt", default=FONT_SIZE, type=int)
     parser.add_argument("--characters", "-ch", default=".*")
+    parser.add_argument("--no-words", action="store_true")
+    parser.add_argument("--no-tables", action="store_true")
     parser.add_argument("--out", "-o", default="out", help="Output html path")
     args = parser.parse_args()
 
@@ -79,11 +105,17 @@ def main():
     matcher.diffenator(coords)
     matcher.upms()
 
-    diff = DiffFonts(matcher, threshold=args.threshold)
+    diff = DiffFonts(
+        matcher,
+        words=not args.no_words,
+        tables=not args.no_tables,
+        threshold=args.threshold,
+        font_size=args.font_size
+    )
     diff.diff_all()
     if args.user_wordlist:
         diff.diff_strings(args.user_wordlist)
-    
+
     characters = re_filter_characters(new_font, args.characters)
     diff.filter_characters(characters)
     diff.to_html(args.template, args.out)

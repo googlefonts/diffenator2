@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import uharfbuzz as hb
 import os
 from diffenator2 import THRESHOLD
-from diffenator2.renderer import PixelDiffer
+from diffenator2.renderer import FONT_SIZE, PixelDiffer
 from diffenator2.template_elements import Word, WordDiff, Glyph, GlyphDiff
 from pkg_resources import resource_filename
 import tqdm
@@ -47,14 +47,19 @@ class GlyphItems:
     modified: list
 
 
-def test_fonts(font_a, font_b, threshold=THRESHOLD):
-    glyphs = test_font_glyphs(font_a, font_b, threshold=threshold)
+def test_fonts(font_a, font_b, threshold=THRESHOLD, do_words=True, font_size=FONT_SIZE):
+    glyphs = test_font_glyphs(font_a, font_b, threshold=threshold, font_size=font_size)
     skip_glyphs = glyphs.missing + glyphs.new
-    words = test_font_words(font_a, font_b, skip_glyphs, threshold=threshold)
+    if do_words:
+        words = test_font_words(
+            font_a, font_b, skip_glyphs, threshold=threshold, font_size=font_size
+        )
+    else:
+        words = {}
     return {"glyphs": glyphs, "words": words}
 
 
-def test_font_glyphs(font_a, font_b, threshold=THRESHOLD):
+def test_font_glyphs(font_a, font_b, threshold=THRESHOLD, font_size=FONT_SIZE):
     cmap_a = set(chr(c) for c in font_a.ttFont.getBestCmap())
     cmap_b = set(chr(c) for c in font_b.ttFont.getBestCmap())
     missing_glyphs = set(Glyph(c) for c in cmap_a - cmap_b)
@@ -62,8 +67,8 @@ def test_font_glyphs(font_a, font_b, threshold=THRESHOLD):
     same_glyphs = cmap_a & cmap_b
     skip_glyphs = missing_glyphs | new_glyphs
     modified_glyphs = []
-    differ = PixelDiffer(font_a, font_b)
-    for g in same_glyphs:
+    differ = PixelDiffer(font_a, font_b, font_size=font_size)
+    for g in tqdm.tqdm(same_glyphs):
         pc, diff_map = differ.diff(g)
         if pc > threshold:
             glyph = GlyphDiff(g, "%.2f" % pc, diff_map)
@@ -77,7 +82,9 @@ def test_font_glyphs(font_a, font_b, threshold=THRESHOLD):
     )
 
 
-def test_font_words(font_a, font_b, skip_glyphs=set(), threshold=THRESHOLD):
+def test_font_words(
+    font_a, font_b, skip_glyphs=set(), threshold=THRESHOLD, font_size=FONT_SIZE
+):
     from youseedee import ucd_data
     from collections import defaultdict
 
@@ -98,21 +105,40 @@ def test_font_words(font_a, font_b, skip_glyphs=set(), threshold=THRESHOLD):
         if not os.path.exists(wordlist):
             print(f"No wordlist for {script}")
             continue
-        res[script] = test_words(wordlist, font_a, font_b, skip_glyphs, threshold=threshold)
+        res[script] = test_words(
+            wordlist,
+            font_a,
+            font_b,
+            skip_glyphs,
+            threshold=threshold,
+            font_size=font_size,
+        )
     return res
 
 
 def parse_wordlist(fp):
     from diffenator2.shape import Word as TemplateWord
+
     results = []
     with open(fp, encoding="utf8") as doc:
         lines = doc.read().split("\n")
         for line in lines:
             items = line.split(",")
             try:
-                results.append(TemplateWord(string=items[0], script=items[1], lang=items[2], ot_features={k: True for k in items[3:]}))
+                results.append(
+                    TemplateWord(
+                        string=items[0],
+                        script=items[1],
+                        lang=items[2],
+                        ot_features={k: True for k in items[3:]},
+                    )
+                )
             except IndexError:
-                results.append(TemplateWord(string=items[0], script="dflt", lang=None, ot_features={}))
+                results.append(
+                    TemplateWord(
+                        string=items[0], script="dflt", lang=None, ot_features={}
+                    )
+                )
     return results
 
 
@@ -123,12 +149,13 @@ def test_words(
     skip_glyphs=set(),
     hash_func=gid_pos_hash,
     threshold=THRESHOLD,
+    font_size=FONT_SIZE,
 ):
     res = set()
 
     seen_gids = defaultdict(int)
 
-    differ = PixelDiffer(font_a, font_b)
+    differ = PixelDiffer(font_a, font_b, font_size=font_size)
     word_list = parse_wordlist(word_file)
     for i, word in tqdm.tqdm(enumerate(word_list), total=len(word_list)):
         differ.set_script(word.script)
