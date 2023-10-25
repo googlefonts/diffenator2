@@ -10,7 +10,7 @@ from blackrenderer.render import (
     intRect,
 )
 from blackrenderer.backends import getSurfaceClass
-from PIL import Image
+from PIL import Image, ImageOps, ImageChops
 from diffenator2.font import DFont
 import numpy as np
 import freetype as ft
@@ -71,8 +71,9 @@ class Renderer:
         orig_bounds = calcGlyphLineBounds(glyphLine, font)
         extents = self.font.hbFont.get_font_extents(buf.direction)
         # bounds is a tuple defined as (xMin, yMin, xMax, yMax)
+        left_edge = (min(0, orig_bounds[0], orig_bounds[2]) - self.margin) * scaleFactor
         bounds = (
-            min(orig_bounds[0], orig_bounds[2]),
+            min(0, orig_bounds[0], orig_bounds[2]),
             min(extents.descender, extents.ascender),
             max(orig_bounds[0], orig_bounds[2]),
             max(extents.descender, extents.ascender),
@@ -87,7 +88,7 @@ class Renderer:
         # causes Skia to raise a null pointer error
         if orig_bounds[0] == orig_bounds[2] or \
             orig_bounds[1] == orig_bounds[3]:
-            return Image.new("RGBA", (0,0))
+            return Image.new("RGBA", (0,0)), 0
         with surface.canvas(bounds) as canvas:
             canvas.scale(scaleFactor)
             for glyph in glyphLine:
@@ -95,7 +96,7 @@ class Renderer:
                     canvas.translate(glyph.xOffset, glyph.yOffset)
                     font.drawGlyph(glyph.name, canvas)
                 canvas.translate(glyph.xAdvance, glyph.yAdvance)
-        return Image.fromarray(surface._image.toarray())
+        return Image.fromarray(surface._image.toarray()), left_edge
 
     # This code was an attempt to render black-and-white fonts
     # quickly using Freetype and numpy. It was very fast and very
@@ -177,11 +178,12 @@ class PixelDiffer:
     script=None
     lang=None
     features=None
+    font_size: int = FONT_SIZE
 
     def __post_init__(self):
         self.renderer_a = Renderer(
             self.font_a,
-            font_size=FONT_SIZE,
+            font_size=self.font_size,
             margin=0,
             features=self.features,
             script=self.script,
@@ -190,7 +192,7 @@ class PixelDiffer:
         )
         self.renderer_b = Renderer(
             self.font_b,
-            font_size=FONT_SIZE,
+            font_size=self.font_size,
             margin=0,
             features=self.features,
             script=self.script,
@@ -211,14 +213,26 @@ class PixelDiffer:
         self.renderer_b.features = features
 
     def diff(self, string):
-        img_a = self.renderer_a.render(string)
-        img_b = self.renderer_b.render(string)
+        img_a, left_a = self.renderer_a.render(string)
+        img_b, left_b = self.renderer_b.render(string)
         if img_a.size == (0, 0) and img_b.size != (0, 0):
             return 99.99, []
         if img_b.size == (0, 0) and img_a.size != (0, 0):
             return 99.99, []
         if img_a.size != img_b.size:
-            img_a = img_a.resize(img_b.size)
+            biggest = list(map(max, zip(img_a.size, img_b.size)))
+            # Pad to largest size, anchored at the middle of the left hand side
+            img_a = ImageOps.pad(img_a, biggest, centering=(0, 0.5))
+            img_b = ImageOps.pad(img_b, biggest, centering=(0, 0.5))
+
+        # Align images at X=0 origin
+        lsb_diff = int(left_a - left_b)
+        if (left_a < 0 or left_b < 0) and lsb_diff != 0:
+            if lsb_diff > 0:
+                img_b = ImageChops.offset(img_b, -lsb_diff, 0)
+            elif lsb_diff < 0:
+                img_a = ImageChops.offset(img_a, lsb_diff, 0)
+
         img_a = np.asarray(img_a)
         img_b = np.asarray(img_b)
 
@@ -226,6 +240,9 @@ class PixelDiffer:
         if np.size(diff_map) == 0:
             return 0, []
         pc = np.sum(diff_map) / np.size(diff_map)
+        # Store in case others want them
+        self.img_a = Image.fromarray(img_a)
+        self.img_b = Image.fromarray(img_b)
         return pc, diff_map
 
 
