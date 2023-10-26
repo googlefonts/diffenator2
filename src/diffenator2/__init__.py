@@ -2,6 +2,7 @@ from __future__ import annotations
 import logging
 import os
 from ninja.ninja_syntax import Writer
+from diffenator2.renderer import FONT_SIZE
 from diffenator2.utils import dict_coords_to_string
 from diffenator2.font import DFont, get_font_styles
 from diffenator2.utils import partition
@@ -102,6 +103,9 @@ def ninja_diff(
     filter_styles: str = "",
     pt_size: int = 20,
     threshold: float = THRESHOLD,
+    precision: int = FONT_SIZE,
+    no_words: bool = False,
+    no_tables: bool = False,
 ):
     if not os.path.exists(out):
         os.mkdir(out)
@@ -120,6 +124,9 @@ def ninja_diff(
             filter_styles,
             pt_size,
             threshold=threshold,
+            precision=precision,
+            no_words=no_words,
+            no_tables=no_tables,
         )
         return
 
@@ -152,6 +159,9 @@ def ninja_diff(
             filter_styles,
             pt_size,
             threshold=threshold,
+            precision=precision,
+            no_words=no_words,
+            no_tables=no_tables,
         )
 
 def _ninja_diff(
@@ -167,6 +177,9 @@ def _ninja_diff(
     filter_styles: str = "",
     pt_size: int = 20,
     threshold: float = THRESHOLD,
+    precision: int = FONT_SIZE,
+    no_words: bool = False,
+    no_tables: bool = False,
 ):
     w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
     # Setup rules
@@ -184,9 +197,13 @@ def _ninja_diff(
     w.newline()
 
     w.comment("Run diffenator VF")
-    diff_cmd = f'_diffenator $font_before $font_after -t $threshold -o $out -ch "$characters"'
+    diff_cmd = f'_diffenator $font_before $font_after --font-size $precision -t $threshold -o $out -ch "$characters"'
     if user_wordlist:
         diff_cmd += ' --user-wordlist "$user_wordlist"'
+    if no_words:
+        diff_cmd += ' --no-words'
+    if no_tables:
+        diff_cmd += ' --no-tables'
     diff_inst_cmd = diff_cmd + " --coords $coords"
     w.rule("diffenator", diff_cmd)
     w.rule("diffenator-inst", diff_inst_cmd)
@@ -221,6 +238,7 @@ def _ninja_diff(
                 out=style,
                 threshold=str(threshold),
                 characters=characters,
+                precision=str(precision),
             )
             if user_wordlist:
                 diff_variables["user_wordlist"] = user_wordlist

@@ -4,6 +4,11 @@ from diffenator2.font import DFont
 import re
 
 
+def assert_match(expected_fp):
+    with open(expected_fp) as expected, open("build.ninja") as current:
+        for ix, (exp, cur) in enumerate(zip(expected.readlines(), current.readlines())):
+            assert re.search(exp, cur), "Expected: %sFound %s at line %i of %s" % (exp, cur, ix, expected_fp)
+
 
 @pytest.mark.parametrize(
     """kwargs,expected_fp""",
@@ -50,11 +55,7 @@ def test_run_ninja_diff(kwargs, expected_fp):
     from diffenator2 import _ninja_diff
 
     _ninja_diff(**kwargs)
-
-    with open(expected_fp) as expected, open("build.ninja") as current:
-        exp = expected.read()
-        cur = current.read()
-        assert re.search(exp, cur)
+    assert_match(expected_fp)
 
 
 @pytest.mark.parametrize(
@@ -90,7 +91,4 @@ def test_run_ninja_proof(kwargs, expected_fp):
     from diffenator2 import _ninja_proof
 
     _ninja_proof(**kwargs)
-    with open(expected_fp) as expected, open("build.ninja") as current:
-        exp = expected.read()
-        cur = current.read()
-        assert re.search(exp, cur)
+    assert_match(expected_fp)

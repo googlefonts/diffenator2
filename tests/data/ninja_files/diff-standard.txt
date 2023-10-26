@@ -7,11 +7,11 @@ rule diffbrowsers
 
 # Run diffenator VF
 rule diffenator
-  command = _diffenator \$font_before \$font_after -t \$threshold -o \$out -ch \$
-      "\$characters"
+  command = _diffenator \$font_before \$font_after --font-size \$precision -t \$
+      \$threshold -o \$out -ch "\$characters"
 rule diffenator-inst
-  command = _diffenator \$font_before \$font_after -t \$threshold -o \$out -ch \$
-      "\$characters" --coords \$coords
+  command = _diffenator \$font_before \$font_after --font-size \$precision -t \$
+      \$threshold -o \$out -ch "\$characters" --coords \$coords
 
 # Build rules
 build out/diffbrowsers: diffbrowsers
@@ -31,6 +31,7 @@ build out/Black: diffenator-inst
   out = Black
   threshold = 0.9
   characters = .*
+  precision = 28
   coords = wght=900.0
 build out/Bold: diffenator-inst
   font_before = \$
@@ -40,6 +41,7 @@ build out/Bold: diffenator-inst
   out = Bold
   threshold = 0.9
   characters = .*
+  precision = 28
   coords = wght=700.0
 build out/ExtraBold: diffenator-inst
   font_before = \$
@@ -49,6 +51,7 @@ build out/ExtraBold: diffenator-inst
   out = ExtraBold
   threshold = 0.9
   characters = .*
+  precision = 28
   coords = wght=800.0
 build out/Medium: diffenator-inst
   font_before = \$
@@ -58,6 +61,7 @@ build out/Medium: diffenator-inst
   out = Medium
   threshold = 0.9
   characters = .*
+  precision = 28
   coords = wght=500.0
 build out/Regular: diffenator-inst
   font_before = \$
@@ -67,6 +71,7 @@ build out/Regular: diffenator-inst
   out = Regular
   threshold = 0.9
   characters = .*
+  precision = 28
   coords = wght=400.0
 build out/SemiBold: diffenator-inst
   font_before = \$
@@ -76,4 +81,5 @@ build out/SemiBold: diffenator-inst
   out = SemiBold
   threshold = 0.9
   characters = .*
+  precision = 28
   coords = wght=600.0
