@@ -6,7 +6,7 @@ rule proofing
 
 # Build rules
 build out: proofing
-  fonts = $
+  fonts = \$
       ".*/tests/data/MavenPro\[wght\].subset.ttf"
   styles = instances
   out = out/diffbrowsers
