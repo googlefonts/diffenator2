@@ -27,6 +27,7 @@ def main(**kwargs):
         universal_options_parser.add_argument("--filter-styles", default=None)
         universal_options_parser.add_argument("--characters", "-ch", default=".*")
         universal_options_parser.add_argument("--pt-size", "-pt", default=20)
+        universal_options_parser.add_argument("--templates")
         universal_options_parser.add_argument(
             "--styles", "-s", choices=("instances", "cross_product", "masters"),
             default="instances",
@@ -54,7 +55,6 @@ def main(**kwargs):
         args = parser.parse_args()
 
     if args.command == "proof":
-        args.fonts = [DFont(f) for f in args.fonts]
         ninja_proof(**vars(args))
     elif args.command == "diff":
         args.fonts_before = [DFont(f) for f in args.fonts_before]

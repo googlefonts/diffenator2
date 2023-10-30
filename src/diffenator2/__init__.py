@@ -19,30 +19,25 @@ THRESHOLD = 0.90  # Percent difference
 NINJA_BUILD_FILE = "build.ninja"
 
 
+
 class NinjaBuilder:
     NINJA_LOG_FILE = ".ninja_log"
     NINJA_BUILD_FILE = "build.ninja"
 
-    def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
+    def __init__(self, cli_args):
+        self.cli_args = cli_args
         self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
 
     def add_rule(self, name, string):
         cmd = self.populate_cli_command(string)
-        self.w.comment("Rules")
         self.w.newline()
-        self.w.rule(name, cmd)
+        self.w.rule(name, string)
         self.w.newline()
 
-    def build(self, out, name, varss):
+    def build_rules(self, out, name):
         # Setup build
         self.w.comment("Build rules")
-        variables = {
-            **{k: v for k, v in self.__dict__.items() if k not in ["command", "w"]},
-            **varss,
-        }
-        self.w.build(out, name, variables=variables)
+        self.w.build(out, name, variables={"args": repr(self.cli_args)})
 
     def run(self):
         self.w.close()
@@ -50,57 +45,55 @@ class NinjaBuilder:
 
     def proof_fonts(self, fonts):
         self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
-        self.add_rule("proofing", "_diffbrowsers proof $fonts")
-        varss = {
-            "fonts": [f'"{os.path.abspath(f.ttFont.reader.file.name)}"' for f in fonts]
-        }
-        self.build("proofing", varss)
+        self.add_rule("proofing", '_diffbrowsers "$args"')
+        self.build_rules(self.cli_args["out"], "proofing")
         self.run()
 
-    def diff_fonts(self, fonts_before, fonts_after):
-        self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
-        self.add_rule(
-            "diffbrowsers", "_diffbrowsers diff -fb $fonts_before -fa $fonts_after"
-        )
-        varss = {
-            "fonts_before": [
-                f'"{os.path.abspath(f.ttFont.reader.file.name)}"' for f in fonts_before
-            ],
-            "fonts_after": [
-                f'"{os.path.abspath(f.ttFont.reader.file.name)}"' for f in fonts_after
-            ],
-        }
-        self.build(self.out, "diffbrowsers", varss)
-        
-        self.add_rule(
-            "diffenator", "_diffenator $font_before $font_after"
-        )
-        
-        matcher = FontMatcher(fonts_before, fonts_after)
-        getattr(matcher, self.styles)(self.filter_styles)
-        for old_style, new_style in zip(matcher.old_styles, matcher.new_styles):
-            coords = new_style.coords
-            style = new_style.name.replace(" ", "-")
-            diff_vars = {
-                "font_before": f'"{old_style.font.ttFont.reader.file.name}"',
-                "font_after": f'"{new_style.font.ttFont.reader.file.name}"',
-            }
-            # Fix this shit
-            self.fonts_before = None
-            self.fonts_after = None
-            o = os.path.join(self.out, style.replace(" ", "-"))
-            self.build(o, "diffenator", diff_vars)
-        self.run()
+#    def diff_fonts(self, fonts_before, fonts_after):
+#        self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
+#        self.add_rule(
+#            "diffbrowsers", "_diffbrowsers diff -fb $fonts_before -fa $fonts_after"
+#        )
+#        varss = {
+#            "fonts_before": [
+#                f'"{os.path.abspath(f.ttFont.reader.file.name)}"' for f in fonts_before
+#            ],
+#            "fonts_after": [
+#                f'"{os.path.abspath(f.ttFont.reader.file.name)}"' for f in fonts_after
+#            ],
+#        }
+#        self.build(self.out, "diffbrowsers", varss)
+#        
+#        self.add_rule(
+#            "diffenator", "_diffenator"
+#        )
+#        
+#        matcher = FontMatcher(fonts_before, fonts_after)
+#        getattr(matcher, self.styles)(self.filter_styles)
+#        for old_style, new_style in zip(matcher.old_styles, matcher.new_styles):
+#            coords = new_style.coords
+#            style = new_style.name.replace(" ", "-")
+#            diff_vars = {
+#                "font_before": f'"{old_style.font.ttFont.reader.file.name}"',
+#                "font_after": f'"{new_style.font.ttFont.reader.file.name}"',
+#            }
+#            # Fix this shit
+#            self.fonts_before = None
+#            self.fonts_after = None
+#            o = os.path.join(self.out, style.replace(" ", "-"))
+#            self.build_rules(o, "diffenator", diff_vars)
+#        self.run()
 
     def populate_cli_command(self, cmd):
-        for k, v in vars(self).items():
-            k = k.replace("_", "-")
-            if any([not v, k == "w", k == "command"]):
-                continue
-            elif isinstance(v, bool):
-                cmd += f" --{k}"
-            elif isinstance(v, (str, int, float)):
-                cmd += f' --{k} "${k}"'
+        cmd += f" {repr(self.cli_args)}"
+#        for k, v in vars(self).items():
+#            k = k.replace("_", "-")
+#            if any([not v, k == "w", k == "command"]):
+#                continue
+#            elif isinstance(v, bool):
+#                cmd += f" --{k}"
+#            elif isinstance(v, (str, int, float)):
+#                cmd += f' --{k} "${k}"'
         return cmd
 
     def __enter__(self):
@@ -118,12 +111,13 @@ def ninja_proof(**kwargs):
     if not os.path.exists(kwargs["out"]):
         os.mkdir(kwargs["out"])
 
-    with NinjaBuilder(**kwargs) as builder:
+    with NinjaBuilder(cli_args=kwargs) as builder:
         if kwargs["filter_styles"]:
             builder.proof_fonts(kwargs["fonts"])
             return
 
-        font_styles = get_font_styles(kwargs["fonts"], kwargs["styles"])
+        dfonts = [DFont(f) for f in kwargs["fonts"]]
+        font_styles = get_font_styles(dfonts, kwargs["styles"])
         partitioned = partition(font_styles, MAX_STYLES)
         for font_styles in partitioned:
             filter_styles = "|".join(s.name for s in font_styles)
@@ -163,4 +157,3 @@ def ninja_diff(**kwargs):
         builder.out = o
         builder.filter_styles = filter_styles
         builder.diff_fonts(kwargs["fonts_before"], kwargs["fonts_after"])
-
