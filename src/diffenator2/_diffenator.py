@@ -105,7 +105,7 @@ def main():
     parser.add_argument("--no-words", action="store_true")
     parser.add_argument("--no-tables", action="store_true")
     parser.add_argument("--out", "-o", default="out", help="Output html path")
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     coords = string_coords_to_dict(args.coords) if args.coords else None
 

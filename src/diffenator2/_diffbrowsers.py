@@ -90,7 +90,8 @@ def main():
     diff_parser.add_argument("--fonts-before", "-fb", nargs="+", required=True)
     diff_parser.add_argument("--fonts-after", "-fa", nargs="+", required=True)
 
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
+    
 
     if args.command == "proof":
         fonts = [DFont(os.path.abspath(fp)) for fp in args.fonts]
