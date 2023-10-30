@@ -28,25 +28,15 @@ class NinjaBuilder:
         self.cli_args = cli_args
         self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
 
-    def add_rule(self, name, string):
-        cmd = self.populate_cli_command(string)
-        self.w.newline()
-        self.w.rule(name, string)
-        self.w.newline()
-
-    def build_rules(self, out, name):
-        # Setup build
-        self.w.comment("Build rules")
-        self.w.build(out, name, variables={"args": repr(self.cli_args)})
-
     def run(self):
         self.w.close()
         ninja._program("ninja", [])
 
     def proof_fonts(self, fonts):
         self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
-        self.add_rule("proofing", '_diffbrowsers "$args"')
-        self.build_rules(self.cli_args["out"], "proofing")
+        self.w.rule("proofing", '_diffbrowsers "$args"')
+        self.w.newline()
+        self.w.build(self.cli_args["out"], "proofing", variables={"args": repr(self.cli_args)})
         self.run()
 
 #    def diff_fonts(self, fonts_before, fonts_after):
