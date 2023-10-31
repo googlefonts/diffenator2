@@ -42,27 +42,25 @@ class NinjaBuilder:
         self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
         self.w.rule("diffbrowsers", '_diffbrowsers "$args"')
         self.w.build(self.cli_args["out"], "diffbrowsers", variables={"args": repr(self.cli_args)})
+        self.w.newline()
+
+        self.w.rule("diffenator", '_diffenator "$args"')
+        matcher = FontMatcher(fonts_before, fonts_after)
+
+        getattr(matcher, self.cli_args["styles"])(self.cli_args["filter_styles"])
+        for old_style, new_style in zip(matcher.old_styles, matcher.new_styles):
+            coords = new_style.coords
+            style = new_style.name.replace(" ", "-")
+            o = os.path.join(self.cli_args["out"], style.replace(" ", "-"))
+            self.w.build(o, "diffenator", variables={"args": repr(
+                {**self.cli_args, **{
+                    "coords": dict_coords_to_string(coords),
+                    "old_font": old_style.font.ttFont.reader.file.name,
+                    "new_font": new_style.font.ttFont.reader.file.name,
+                    "out": o,
+                }}
+            )})
         self.run()
-#        
-#        self.add_rule(
-#            "diffenator", "_diffenator"
-#        )
-#        
-#        matcher = FontMatcher(fonts_before, fonts_after)
-#        getattr(matcher, self.styles)(self.filter_styles)
-#        for old_style, new_style in zip(matcher.old_styles, matcher.new_styles):
-#            coords = new_style.coords
-#            style = new_style.name.replace(" ", "-")
-#            diff_vars = {
-#                "font_before": f'"{old_style.font.ttFont.reader.file.name}"',
-#                "font_after": f'"{new_style.font.ttFont.reader.file.name}"',
-#            }
-#            # Fix this shit
-#            self.fonts_before = None
-#            self.fonts_after = None
-#            o = os.path.join(self.out, style.replace(" ", "-"))
-#            self.build_rules(o, "diffenator", diff_vars)
-#        self.run()
 
     def __enter__(self):
         return self
@@ -101,13 +99,13 @@ def ninja_diff(**kwargs):
     if not os.path.exists(kwargs["out"]):
         os.mkdir(kwargs["out"])
 
-    with NinjaBuilder(cli_args=kwargs) as builder:
-        if kwargs["filter_styles"]:
-            builder.diff_fonts(kwargs["fonts_before"], kwargs["fonts_after"])
-            return
-
     fonts_before = [DFont(f) for f in kwargs["fonts_before"]]
     fonts_after = [DFont(f) for f in kwargs["fonts_after"]]
+    with NinjaBuilder(cli_args=kwargs) as builder:
+        if kwargs["filter_styles"]:
+            builder.diff_fonts(fonts_before, fonts_after)
+            return
+
     matcher = FontMatcher(fonts_before, fonts_after)
     getattr(matcher, kwargs["styles"])()
     if not matcher.old_styles and not matcher.new_styles:
@@ -127,4 +125,4 @@ def ninja_diff(**kwargs):
             os.mkdir(o)
         builder.cli_args["out"] = o
         builder.cli_args["filter_styles"] = filter_styles
-        builder.diff_fonts(kwargs["fonts_before"], kwargs["fonts_after"])
+        builder.diff_fonts(fonts_before, fonts_after)

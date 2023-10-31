@@ -13,10 +13,12 @@ from diffenator2.font import DFont
 from diffenator2.matcher import FontMatcher
 from pkg_resources import resource_filename
 import os
-import argparse
 from diffenator2.shape import test_words, test_fonts
 from diffenator2 import jfont, THRESHOLD
 from diffenator2.html import diffenator_report
+import types
+import ast
+import sys
 
 
 class DiffFonts:
@@ -86,34 +88,10 @@ class DiffFonts:
 
 
 def main():
-#    parser = argparse.ArgumentParser()
-#    parser.add_argument("old_font")
-#    parser.add_argument("new_font")
-#    parser.add_argument(
-#        "--template",
-#        default=resource_filename(
-#            "diffenator2", os.path.join("templates", "diffenator.html")
-#        ),
-#    )
-#    parser.add_argument(
-#        "--user-wordlist", help="File of strings to visually compare", default=None
-#    )
-#    parser.add_argument("--coords", "-c", default={})
-#    parser.add_argument("--threshold", "-t", default=THRESHOLD, type=float)
-#    parser.add_argument("--font-size", "-pt", default=FONT_SIZE, type=int)
-#    parser.add_argument("--characters", "-ch", default=".*")
-#    parser.add_argument("--no-words", action="store_true")
-#    parser.add_argument("--no-tables", action="store_true")
-#    parser.add_argument("--out", "-o", default="out", help="Output html path")
-#    args, _ = parser.parse_known_args()
+    # Maybe json load/dump is better
+    args = types.SimpleNamespace(**ast.literal_eval(sys.argv[1]))
 
-    from types import SimpleNamespace
-    import fire
-    args = SimpleNamespace(**fire.Fire(lambda obj: obj))
-    import pdb
-    pdb.set_trace()
-
-    coords = None if not args.coords else string_coords_to_dict(args.coords)
+    coords = string_coords_to_dict(args.coords)
 
     old_font = DFont(os.path.abspath(args.old_font), suffix="old")
     new_font = DFont(os.path.abspath(args.new_font), suffix="new")
