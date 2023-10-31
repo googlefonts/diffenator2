@@ -8,7 +8,6 @@ from diffenator2.html import build_index_page
 from diffenator2.renderer import FONT_SIZE
 
 
-
 def main(**kwargs):
     if kwargs:
         args = Namespace(**kwargs)
@@ -27,7 +26,6 @@ def main(**kwargs):
         universal_options_parser.add_argument("--filter-styles", default=None)
         universal_options_parser.add_argument("--characters", "-ch", default=".*")
         universal_options_parser.add_argument("--pt-size", "-pt", default=20)
-        universal_options_parser.add_argument("--templates")
         universal_options_parser.add_argument(
             "--styles", "-s", choices=("instances", "cross_product", "masters"),
             default="instances",

@@ -19,7 +19,6 @@ THRESHOLD = 0.90  # Percent difference
 NINJA_BUILD_FILE = "build.ninja"
 
 
-
 class NinjaBuilder:
     NINJA_LOG_FILE = ".ninja_log"
     NINJA_BUILD_FILE = "build.ninja"
@@ -32,7 +31,7 @@ class NinjaBuilder:
         self.w.close()
         ninja._program("ninja", [])
 
-    def proof_fonts(self, fonts):
+    def proof_fonts(self):
         self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
         self.w.rule("proofing", '_diffbrowsers "$args"')
         self.w.newline()
@@ -74,18 +73,6 @@ class NinjaBuilder:
 #            self.build_rules(o, "diffenator", diff_vars)
 #        self.run()
 
-    def populate_cli_command(self, cmd):
-        cmd += f" {repr(self.cli_args)}"
-#        for k, v in vars(self).items():
-#            k = k.replace("_", "-")
-#            if any([not v, k == "w", k == "command"]):
-#                continue
-#            elif isinstance(v, bool):
-#                cmd += f" --{k}"
-#            elif isinstance(v, (str, int, float)):
-#                cmd += f' --{k} "${k}"'
-        return cmd
-
     def __enter__(self):
         return self
 
@@ -103,21 +90,21 @@ def ninja_proof(**kwargs):
 
     with NinjaBuilder(cli_args=kwargs) as builder:
         if kwargs["filter_styles"]:
-            builder.proof_fonts(kwargs["fonts"])
+            builder.proof_fonts()
             return
 
         dfonts = [DFont(f) for f in kwargs["fonts"]]
         font_styles = get_font_styles(dfonts, kwargs["styles"])
         partitioned = partition(font_styles, MAX_STYLES)
+        out = kwargs["out"]
         for font_styles in partitioned:
             filter_styles = "|".join(s.name for s in font_styles)
-            o = os.path.join(kwargs["out"], filter_styles.replace("|", "-"))
+            o = os.path.join(out, filter_styles.replace("|", "-"))
             if not os.path.exists(o):
                 os.mkdir(o)
-            builder.out = o
-            builder.filter_styles = filter_styles
-            builder.proof_fonts(kwargs["fonts"])
-
+            builder.cli_args["out"] = o
+            builder.cli_args["filter_styles"] = filter_styles
+            builder.proof_fonts()
 
 def ninja_diff(**kwargs):
     if not os.path.exists(kwargs["out"]):
