@@ -55,8 +55,6 @@ def main(**kwargs):
     if args.command == "proof":
         ninja_proof(**vars(args))
     elif args.command == "diff":
-        args.fonts_before = [DFont(f) for f in args.fonts_before]
-        args.fonts_after = [DFont(f) for f in args.fonts_after]
         ninja_diff(**vars(args))
     else:
         raise NotImplementedError(f"{args.command} not supported")

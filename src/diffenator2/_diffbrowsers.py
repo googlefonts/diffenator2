@@ -36,6 +36,7 @@ import types
 
 
 def main():
+    # Maybe json load/dump is better
     args = types.SimpleNamespace(**ast.literal_eval(sys.argv[1]))
 
     if args.command == "proof":
@@ -45,6 +46,7 @@ def main():
         characters = re_filter_characters(fonts[0], args.characters)
         proof_rendering(
             styles,
+            # chuck this into __main__
             glob(
                 os.path.join(
                     resource_filename("diffenator2", "templates"), "diffbrowsers*.html"
@@ -56,22 +58,27 @@ def main():
             pt_size=args.pt_size,
             user_wordlist=args.user_wordlist,
         )
-#
-#    elif args.command == "diff":
-#        fonts_before = [DFont(os.path.abspath(fp), suffix="old") for fp in args.fonts_before]
-#        fonts_after = [DFont(os.path.abspath(fp), suffix="new") for fp in args.fonts_after]
-#        matcher = FontMatcher(fonts_before, fonts_after)
-#        getattr(matcher, args.styles)(args.filter_styles)
-#        characters = re_filter_characters(fonts_before[0], args.characters)
-#        diff_rendering(
-#            matcher,
-#            args.templates,
-#            args.out,
-#            filter_styles=args.filter_styles,
-#            characters=characters,
-#            pt_size=args.pt_size,
-#            user_wordlist=args.user_wordlist,
-#        )
+
+    elif args.command == "diff":
+        fonts_before = [DFont(os.path.abspath(fp), suffix="old") for fp in args.fonts_before]
+        fonts_after = [DFont(os.path.abspath(fp), suffix="new") for fp in args.fonts_after]
+        matcher = FontMatcher(fonts_before, fonts_after)
+        getattr(matcher, args.styles)(args.filter_styles)
+        characters = re_filter_characters(fonts_before[0], args.characters)
+        diff_rendering(
+            matcher,
+            # chuck this into __main__
+            glob(
+                os.path.join(
+                    resource_filename("diffenator2", "templates"), "diffbrowsers*.html"
+                )
+            ),
+            args.out,
+            filter_styles=args.filter_styles,
+            characters=characters,
+            pt_size=args.pt_size,
+            user_wordlist=args.user_wordlist,
+        )
 #
 #    if args.imgs:
 #        imgs_out = os.path.join(args.out, "imgs")

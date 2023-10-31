@@ -38,20 +38,11 @@ class NinjaBuilder:
         self.w.build(self.cli_args["out"], "proofing", variables={"args": repr(self.cli_args)})
         self.run()
 
-#    def diff_fonts(self, fonts_before, fonts_after):
-#        self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
-#        self.add_rule(
-#            "diffbrowsers", "_diffbrowsers diff -fb $fonts_before -fa $fonts_after"
-#        )
-#        varss = {
-#            "fonts_before": [
-#                f'"{os.path.abspath(f.ttFont.reader.file.name)}"' for f in fonts_before
-#            ],
-#            "fonts_after": [
-#                f'"{os.path.abspath(f.ttFont.reader.file.name)}"' for f in fonts_after
-#            ],
-#        }
-#        self.build(self.out, "diffbrowsers", varss)
+    def diff_fonts(self, fonts_before, fonts_after):
+        self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
+        self.w.rule("diffbrowsers", '_diffbrowsers "$args"')
+        self.w.build(self.cli_args["out"], "diffbrowsers", variables={"args": repr(self.cli_args)})
+        self.run()
 #        
 #        self.add_rule(
 #            "diffenator", "_diffenator"
@@ -110,12 +101,14 @@ def ninja_diff(**kwargs):
     if not os.path.exists(kwargs["out"]):
         os.mkdir(kwargs["out"])
 
-    with NinjaBuilder(**kwargs) as builder:
+    with NinjaBuilder(cli_args=kwargs) as builder:
         if kwargs["filter_styles"]:
             builder.diff_fonts(kwargs["fonts_before"], kwargs["fonts_after"])
             return
 
-    matcher = FontMatcher(kwargs["fonts_before"], kwargs["fonts_after"])
+    fonts_before = [DFont(f) for f in kwargs["fonts_before"]]
+    fonts_after = [DFont(f) for f in kwargs["fonts_after"]]
+    matcher = FontMatcher(fonts_before, fonts_after)
     getattr(matcher, kwargs["styles"])()
     if not matcher.old_styles and not matcher.new_styles:
         raise ValueError(
@@ -126,11 +119,12 @@ def ninja_diff(**kwargs):
         )
 
     partitioned = partition(matcher.old_styles, MAX_STYLES)
+    out = kwargs["out"]
     for p in partitioned:
         filter_styles = "|".join(style.name for style in p)
-        o = os.path.join(kwargs["out"], filter_styles.replace("|", "-"))
+        o = os.path.join(out, filter_styles.replace("|", "-"))
         if not os.path.exists(o):
             os.mkdir(o)
-        builder.out = o
-        builder.filter_styles = filter_styles
+        builder.cli_args["out"] = o
+        builder.cli_args["filter_styles"] = filter_styles
         builder.diff_fonts(kwargs["fonts_before"], kwargs["fonts_after"])
