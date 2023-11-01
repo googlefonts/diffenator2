@@ -112,7 +112,7 @@ def main():
 
     characters = re_filter_characters(new_font, args.characters)
     diff.filter_characters(characters)
-    diff.to_html(args.template, args.out)
+    diff.to_html(args.diffenator_template, args.out)
 
 
 if __name__ == "__main__":

@@ -54,7 +54,7 @@ def main(**kwargs):
         diff_parser.add_argument("--no-tables", action="store_true", help="Skip diffing font tables")
         diff_parser.add_argument("--no-words", action="store_true", help="Skip diffing wordlists")
         parser.add_argument(
-        "--template",
+        "--diffenator-template",
         default=resource_filename(
             "diffenator2", os.path.join("templates", "diffenator.html")
         ),

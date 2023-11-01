@@ -41,26 +41,28 @@ class NinjaBuilder:
 
     def diff_fonts(self, fonts_before, fonts_after):
         self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
-        self.w.rule("diffbrowsers", '_diffbrowsers "$args"')
-        self.w.build(self.cli_args["out"], "diffbrowsers", variables={"args": repr(self.cli_args)})
+        if self.cli_args["diffbrowsers"]:
+            self.w.rule("diffbrowsers", '_diffbrowsers "$args"')
+            self.w.build(self.cli_args["out"], "diffbrowsers", variables={"args": repr(self.cli_args)})
         self.w.newline()
 
-        self.w.rule("diffenator", '_diffenator "$args"')
-        matcher = FontMatcher(fonts_before, fonts_after)
+        if self.cli_args["diffenator"]:
+            self.w.rule("diffenator", '_diffenator "$args"')
+            matcher = FontMatcher(fonts_before, fonts_after)
 
-        getattr(matcher, self.cli_args["styles"])(self.cli_args["filter_styles"])
-        for old_style, new_style in zip(matcher.old_styles, matcher.new_styles):
-            coords = new_style.coords
-            style = new_style.name.replace(" ", "-")
-            o = os.path.join(self.cli_args["out"], style.replace(" ", "-"))
-            self.w.build(o, "diffenator", variables={"args": repr(
-                {**self.cli_args, **{
-                    "coords": dict_coords_to_string(coords),
-                    "old_font": old_style.font.ttFont.reader.file.name,
-                    "new_font": new_style.font.ttFont.reader.file.name,
-                    "out": o,
-                }}
-            )})
+            getattr(matcher, self.cli_args["styles"])(self.cli_args["filter_styles"])
+            for old_style, new_style in zip(matcher.old_styles, matcher.new_styles):
+                coords = new_style.coords
+                style = new_style.name.replace(" ", "-")
+                o = os.path.join(self.cli_args["out"], style.replace(" ", "-"))
+                self.w.build(o, "diffenator", variables={"args": repr(
+                    {**self.cli_args, **{
+                        "coords": dict_coords_to_string(coords),
+                        "old_font": old_style.font.ttFont.reader.file.name,
+                        "new_font": new_style.font.ttFont.reader.file.name,
+                        "out": o,
+                    }}
+                )})
         self.run()
 
     def __enter__(self):
@@ -124,7 +126,7 @@ def ninja_diff(
     precision: int = FONT_SIZE,
     no_words: bool = False,
     no_tables: bool = False,
-    template = resource_filename(
+    diffenator_template = resource_filename(
         "diffenator2", os.path.join("templates", "diffenator.html")
     ),
     command="diff",
