@@ -26,7 +26,8 @@ class NinjaBuilder:
 
     def __init__(self, cli_args):
         self.cli_args = cli_args
-        self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
+        self.ninja_file = open(NINJA_BUILD_FILE, "w", encoding="utf8")
+        self.w = Writer(self.ninja_file)
 
     def run(self):
         self.w.close()
@@ -70,6 +71,7 @@ class NinjaBuilder:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # rm ninja cache files so we can rerun the tool
+        self.ninja_file.close()
         if os.path.exists(self.NINJA_BUILD_FILE):
             os.remove(self.NINJA_BUILD_FILE)
         if os.path.exists(self.NINJA_LOG_FILE):
