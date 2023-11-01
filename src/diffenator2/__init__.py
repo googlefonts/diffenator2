@@ -7,6 +7,7 @@ from diffenator2.utils import dict_coords_to_string
 from diffenator2.font import DFont, get_font_styles
 from diffenator2.utils import partition
 from diffenator2.matcher import FontMatcher
+from pkg_resources import resource_filename
 import shutil
 import ninja
 
@@ -73,19 +74,29 @@ class NinjaBuilder:
             os.remove(self.NINJA_LOG_FILE)
 
 
-def ninja_proof(**kwargs):
-    if not os.path.exists(kwargs["out"]):
-        os.mkdir(kwargs["out"])
+def ninja_proof(
+    fonts,
+    out: str = "out",
+    styles="instances",
+    filter_styles: str = "",
+    characters: str = ".*",
+    pt_size: int = 20,
+    command="proof",
+    user_wordlist: str = "",
+    **kwargs
+):
+    if not os.path.exists(out):
+        os.mkdir(out)
 
-    with NinjaBuilder(cli_args=kwargs) as builder:
-        if kwargs["filter_styles"]:
+    args = {**locals(), **locals().pop("kwargs")}
+    with NinjaBuilder(cli_args=args) as builder:
+        if filter_styles:
             builder.proof_fonts()
             return
 
-        dfonts = [DFont(f) for f in kwargs["fonts"]]
-        font_styles = get_font_styles(dfonts, kwargs["styles"])
+        dfonts = [DFont(f) for f in fonts]
+        font_styles = get_font_styles(dfonts, styles)
         partitioned = partition(font_styles, MAX_STYLES)
-        out = kwargs["out"]
         for font_styles in partitioned:
             filter_styles = "|".join(s.name for s in font_styles)
             o = os.path.join(out, filter_styles.replace("|", "-"))
@@ -95,29 +106,52 @@ def ninja_proof(**kwargs):
             builder.cli_args["filter_styles"] = filter_styles
             builder.proof_fonts()
 
-def ninja_diff(**kwargs):
-    if not os.path.exists(kwargs["out"]):
-        os.mkdir(kwargs["out"])
 
-    fonts_before = [DFont(f) for f in kwargs["fonts_before"]]
-    fonts_after = [DFont(f) for f in kwargs["fonts_after"]]
-    with NinjaBuilder(cli_args=kwargs) as builder:
-        if kwargs["filter_styles"]:
+def ninja_diff(
+    fonts_before: list[DFont],
+    fonts_after: list[DFont],
+    diffbrowsers: bool = True,
+    diffenator: bool = True,
+    out: str = "out",
+    imgs: bool = False,
+    styles: str = "instances",
+    characters: str = ".*",
+    user_wordlist: str = "",
+    filter_styles: str = "",
+    font_size: int = 20,
+    pt_size: int = 20,
+    threshold: float = THRESHOLD,
+    precision: int = FONT_SIZE,
+    no_words: bool = False,
+    no_tables: bool = False,
+    template = resource_filename(
+        "diffenator2", os.path.join("templates", "diffenator.html")
+    ),
+    command="diff",
+    **kwargs
+):
+    args = {**locals(), **locals().pop("kwargs")}
+    if not os.path.exists(out):
+        os.mkdir(out)
+
+    fonts_before = [DFont(f) for f in fonts_before]
+    fonts_after = [DFont(f) for f in fonts_after]
+    with NinjaBuilder(cli_args=args) as builder:
+        if filter_styles:
             builder.diff_fonts(fonts_before, fonts_after)
             return
 
     matcher = FontMatcher(fonts_before, fonts_after)
-    getattr(matcher, kwargs["styles"])()
+    getattr(matcher, styles)()
     if not matcher.old_styles and not matcher.new_styles:
         raise ValueError(
-            f"Matcher was not able to detect any matching styles for {kwargs['styles']} "
+            f"Matcher was not able to detect any matching styles for {styles} "
             "method.\nPlease ensure that variable fonts have fvar instances, "
             "both fonts have designspaces which overlap or ensure that both "
             "sets of static fonts have some matching styles."
         )
 
     partitioned = partition(matcher.old_styles, MAX_STYLES)
-    out = kwargs["out"]
     for p in partitioned:
         filter_styles = "|".join(style.name for style in p)
         o = os.path.join(out, filter_styles.replace("|", "-"))
