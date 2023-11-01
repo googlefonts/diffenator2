@@ -34,14 +34,18 @@ class NinjaBuilder:
         ninja._program("ninja", [])
 
     def proof_fonts(self):
-        self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
+        self.ninja_file = open(NINJA_BUILD_FILE, "w", encoding="utf8")
+        self.w = Writer(self.ninja_file)
         self.w.rule("proofing", '_diffbrowsers "$args"')
         self.w.newline()
         self.w.build(self.cli_args["out"], "proofing", variables={"args": repr(self.cli_args)})
         self.run()
+        self.w.close()
+        self.ninja_file.close()
 
     def diff_fonts(self, fonts_before, fonts_after):
-        self.w = Writer(open(NINJA_BUILD_FILE, "w", encoding="utf8"))
+        self.ninja_file = open(NINJA_BUILD_FILE, "w", encoding="utf8")
+        self.w = Writer(self.ninja_file)
         if self.cli_args["diffbrowsers"]:
             self.w.rule("diffbrowsers", '_diffbrowsers "$args"')
             self.w.build(self.cli_args["out"], "diffbrowsers", variables={"args": repr(self.cli_args)})
@@ -65,6 +69,8 @@ class NinjaBuilder:
                     }}
                 )})
         self.run()
+        self.w.close()
+        self.ninja_file.close()
 
     def __enter__(self):
         return self
