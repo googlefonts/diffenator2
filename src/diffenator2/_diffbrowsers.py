@@ -30,14 +30,67 @@ from diffenator2.matcher import FontMatcher
 from diffenator2.utils import re_filter_characters
 from glob import glob
 import os
-import sys
-import ast
-import types
+import argparse
 
 
 def main():
-    # Maybe json load/dump is better
-    args = types.SimpleNamespace(**ast.literal_eval(sys.argv[1]))
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(
+        dest="command", required=True, metavar='"proof" or "diff"'
+    )
+
+    # Optional args which can be used in all subparsers
+    universal_options_parser = argparse.ArgumentParser(add_help=False)
+    universal_options_parser.add_argument(
+        "--styles", "-s", choices=("instances", "cross_product", "masters"),
+        default="instances",
+        help="Show font instances, cross product or master styles"
+    )
+    universal_options_parser.add_argument(
+        "--pt-size", "-pt", help="Change pt size of document text", default=14
+    )
+    universal_options_parser.add_argument(
+        "--out", "-o", help="Output dir", default="out"
+    )
+    universal_options_parser.add_argument(
+        "--templates",
+        help="HTML templates. By default, diffenator/templates/diffbrowsers_*.html is used.",
+        default=glob(
+            os.path.join(
+                resource_filename("diffenator2", "templates"), "diffbrowsers*.html"
+            )
+        ),
+    )
+    universal_options_parser.add_argument(
+        "--imgs", action="store_true", help="Generate images using headless browsers"
+    )
+    universal_options_parser.add_argument("--filter-styles", default=None)
+    universal_options_parser.add_argument("--characters", "-ch", default=".*")
+    universal_options_parser.add_argument(
+        "--user-wordlist", help="File of strings to visually compare", default=None
+    )
+
+    proof_parser = subparsers.add_parser(
+        "proof",
+        parents=[universal_options_parser],
+        help="Generate html proofing documents for a family",
+    )
+    proof_parser.add_argument("fonts", nargs="+")
+
+    diff_parser = subparsers.add_parser(
+        "diff",
+        parents=[universal_options_parser],
+        help="Generate html diff documents which compares two families. "
+        "Variable fonts can be compared against static fonts because we "
+        "match the fvar instances against the static fonts. To Match fonts "
+        "we use the font's name table records. For static fonts, the fullname "
+        "is used e.g 'Maven Pro Medium'. For variable fonts, the family name "
+        "+ fvar instance subfamilyname is used e.g 'Maven Pro' + 'Medium'.",
+    )
+    diff_parser.add_argument("--fonts-before", "-fb", nargs="+", required=True)
+    diff_parser.add_argument("--fonts-after", "-fa", nargs="+", required=True)
+
+    args = parser.parse_args()
 
     if args.command == "proof":
         fonts = [DFont(os.path.abspath(fp)) for fp in args.fonts]
@@ -46,12 +99,7 @@ def main():
         characters = re_filter_characters(fonts[0], args.characters)
         proof_rendering(
             styles,
-            # chuck this into __main__
-            glob(
-                os.path.join(
-                    resource_filename("diffenator2", "templates"), "diffbrowsers*.html"
-                )
-            ),
+            args.templates,
             args.out,
             filter_styles=args.filter_styles,
             characters=characters,
@@ -67,12 +115,7 @@ def main():
         characters = re_filter_characters(fonts_before[0], args.characters)
         diff_rendering(
             matcher,
-            # chuck this into __main__
-            glob(
-                os.path.join(
-                    resource_filename("diffenator2", "templates"), "diffbrowsers*.html"
-                )
-            ),
+            args.templates,
             args.out,
             filter_styles=args.filter_styles,
             characters=characters,
