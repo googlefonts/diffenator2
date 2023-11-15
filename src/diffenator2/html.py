@@ -95,7 +95,7 @@ def proof_rendering(styles, templates, dst="out", filter_styles=None, characters
     font_faces = set(style.font.css_font_face for style in styles)
     font_styles = [style.css_font_style for style in styles]
     sample_text = filtered_font_sample_text(ttFont, characters)
-    test_strings = GFTestData.test_strings_in_font(ttFont)
+    test_strings = GFTestData.test_strings_in_font(ttFont, 0.1)
     characters = characters or [chr(c) for c in ttFont.getBestCmap()]
     characters = list(sorted(characters))
     user_words = None if not user_wordlist else parse_wordlist(user_wordlist)
@@ -123,7 +123,7 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, characters
     font_styles_new = [style.css_font_style for style in matcher.new_styles]
 
     sample_text=filtered_font_sample_text(ttFont, characters)
-    test_strings = GFTestData.test_strings_in_font(ttFont)
+    test_strings = GFTestData.test_strings_in_font(ttFont, 0.1)
     characters = characters or [chr(c) for c in ttFont.getBestCmap()]
     characters = list(sorted(characters))
     user_words = None if not user_wordlist else parse_wordlist(user_wordlist)
