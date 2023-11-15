@@ -25,7 +25,9 @@ def main(**kwargs):
             "--imgs", help="Generate images", action="store_true", default=False
         )
         universal_options_parser.add_argument("--filter-styles", default=None)
-        universal_options_parser.add_argument("--characters", "-ch", default=".*")
+        char_group = universal_options_parser.add_mutually_exclusive_group()
+        char_group.add_argument("--characters", "-ch", default=".*")
+        char_group.add_argument("--characters-file", "-chf")
         universal_options_parser.add_argument("--pt-size", "-pt", default=20)
         universal_options_parser.add_argument(
             "--styles", "-s", choices=("instances", "cross_product", "masters"),
@@ -52,6 +54,10 @@ def main(**kwargs):
         diff_parser.add_argument("--no-tables", action="store_true", help="Skip diffing font tables")
         diff_parser.add_argument("--no-words", action="store_true", help="Skip diffing wordlists")
         args = parser.parse_args()
+
+    if args.characters_file:
+        with open(args.characters_file, encoding="utf-8") as char_file:
+            args.characters = char_file.read()
 
     if os.path.exists(NINJA_BUILD_FILE):
         os.remove(NINJA_BUILD_FILE)

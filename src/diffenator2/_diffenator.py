@@ -101,7 +101,9 @@ def main():
     parser.add_argument("--coords", "-c", default={})
     parser.add_argument("--threshold", "-t", default=THRESHOLD, type=float)
     parser.add_argument("--font-size", "-pt", default=FONT_SIZE, type=int)
-    parser.add_argument("--characters", "-ch", default=".*")
+    char_group = parser.add_mutually_exclusive_group()
+    char_group.add_argument("--characters", "-ch", default=".*")
+    char_group.add_argument("--characters-file", "-chf")
     parser.add_argument("--no-words", action="store_true")
     parser.add_argument("--no-tables", action="store_true")
     parser.add_argument("--out", "-o", default="out", help="Output html path")
@@ -114,6 +116,10 @@ def main():
     matcher = FontMatcher([old_font], [new_font])
     matcher.diffenator(coords)
     matcher.upms()
+
+    if args.characters_file:
+        with open(args.characters_file, encoding="utf-8") as char_file:
+            args.characters = char_file.read()
 
     diff = DiffFonts(
         matcher,
