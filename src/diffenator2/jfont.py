@@ -39,10 +39,10 @@ def serialise_fvar_table(obj, root):
     instances = {
         nametbl.getName(i.subfamilyNameID, 3, 1, 0x409).toUnicode(): {
             "coordinates": i.coordinates,
-            # todo get ps name
-            #            "postscriptName": None if i.postscriptNameID == None else nametbl.getName(
-            #                i.postscriptNameID, 3, 1, 0x409
-            #            ).toUnicode(),
+            "postscriptName": None if i.postscriptNameID in (None, 0xFFFF) else \
+                nametbl.getName(
+                    i.postscriptNameID, 3, 1, 0x409
+                ).toUnicode(),
             "flags": i.flags,
         }
         for i in obj.instances
