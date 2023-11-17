@@ -119,10 +119,10 @@
 		if (Array.isArray(node)) {
 			var before = $("<span/>");
 			before.addClass("attr-before");
-			before.html(" " + node[0] + " ");
+			before.html(" " + String(node[0]) + " ");
 			var after = $("<span/>");
 			after.addClass("attr-after");
-			after.append(node[1]);
+			after.append(String(node[1]));
 			wrapper.append(before);
 			wrapper.append(after);
 			return wrapper
