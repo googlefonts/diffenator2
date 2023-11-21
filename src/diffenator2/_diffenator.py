@@ -34,10 +34,8 @@ class DiffFonts:
         self.font_size = font_size
 
     def diff_all(self):
-        skip = frozenset(["diff_strings", "diff_all"])
-        diff_funcs = [f for f in dir(self) if f.startswith("diff_") if f not in skip]
-        for f in diff_funcs:
-            getattr(self, f)()
+        self.diff_tables()
+        self.diff_words()
 
     def diff_tables(self):
         if not self.do_tables:

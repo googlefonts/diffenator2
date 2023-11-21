@@ -108,7 +108,8 @@ def proof_rendering(styles, templates, dst="out", filter_styles=None, characters
         characters=characters,
         test_strings=test_strings,
         pt_size=pt_size,
-        user_strings=user_words
+        user_strings=user_words,
+        filter_styles=filter_styles.replace("|", "-")
     )
 
 
@@ -140,6 +141,7 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, characters
         test_strings=test_strings,
         pt_size=pt_size,
         user_strings=user_words,
+        filter_styles=filter_styles.replace("|", "-")
     )
 
 
@@ -197,7 +199,7 @@ def _package(templates, dst, **kwargs):
         )
         template = env.get_template(os.path.basename(template_fp))
         doc = template.render(**kwargs)
-        dst_doc = os.path.join(dst, os.path.basename(template_fp))
+        dst_doc = os.path.join(dst, f'{kwargs["filter_styles"]}-{os.path.basename(template_fp)}')
         with open(dst_doc, "w", encoding="utf8") as out_file:
             out_file.write(doc)
 

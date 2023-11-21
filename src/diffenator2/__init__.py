@@ -11,6 +11,7 @@ from pkg_resources import resource_filename
 import shutil
 import ninja
 
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -58,14 +59,12 @@ class NinjaBuilder:
             getattr(matcher, self.cli_args["styles"])(self.cli_args["filter_styles"])
             for old_style, new_style in zip(matcher.old_styles, matcher.new_styles):
                 coords = new_style.coords
-                style = new_style.name.replace(" ", "-")
-                o = os.path.join(self.cli_args["out"], style.replace(" ", "-"))
                 self.w.build(o, "diffenator", variables={"args": repr(
                     {**self.cli_args, **{
                         "coords": dict_coords_to_string(coords),
                         "old_font": old_style.font.ttFont.reader.file.name,
                         "new_font": new_style.font.ttFont.reader.file.name,
-                        "out": o,
+                        "out": self.cli_args["out"],
                     }}
                 )})
         self.run()
@@ -112,10 +111,7 @@ def ninja_proof(
         partitioned = partition(font_styles, MAX_STYLES)
         for font_styles in partitioned:
             filter_styles = "|".join(s.name for s in font_styles)
-            o = os.path.join(out, filter_styles.replace("|", "-"))
-            if not os.path.exists(o):
-                os.mkdir(o)
-            builder.cli_args["out"] = o
+            builder.cli_args["out"] = out
             builder.cli_args["filter_styles"] = filter_styles
             builder.proof_fonts()
 
@@ -170,9 +166,6 @@ def ninja_diff(
     partitioned = partition(matcher.old_styles, MAX_STYLES)
     for p in partitioned:
         filter_styles = "|".join(style.name for style in p)
-        o = os.path.join(out, filter_styles.replace("|", "-"))
-        if not os.path.exists(o):
-            os.mkdir(o)
-        builder.cli_args["out"] = o
+        builder.cli_args["out"] = out
         builder.cli_args["filter_styles"] = filter_styles
         builder.diff_fonts(fonts_before, fonts_after)
