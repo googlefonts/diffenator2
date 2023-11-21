@@ -98,14 +98,17 @@ def ninja_proof(
     if not os.path.exists(out):
         os.mkdir(out)
 
-    args = {**locals(), **locals().pop("kwargs")}
+    args = {
+        **locals(),
+        **locals().pop("kwargs"),
+        **{"fonts": [f.path for f in fonts]}
+    }
     with NinjaBuilder(cli_args=args) as builder:
         if filter_styles:
             builder.proof_fonts()
             return
 
-        dfonts = [DFont(f) for f in fonts]
-        font_styles = get_font_styles(dfonts, styles)
+        font_styles = get_font_styles(fonts, styles)
         partitioned = partition(font_styles, MAX_STYLES)
         for font_styles in partitioned:
             filter_styles = "|".join(s.name for s in font_styles)
@@ -140,12 +143,15 @@ def ninja_diff(
     command="diff",
     **kwargs
 ):
-    args = {**locals(), **locals().pop("kwargs")}
+    args = {
+        **locals(),
+        **locals().pop("kwargs"),
+        **{"fonts_before": [f.path for f in fonts_before]},
+        **{"fonts_after": [f.path for f in fonts_after]}
+    }
     if not os.path.exists(out):
         os.mkdir(out)
 
-    fonts_before = [DFont(f) for f in fonts_before]
-    fonts_after = [DFont(f) for f in fonts_after]
     with NinjaBuilder(cli_args=args) as builder:
         if filter_styles:
             builder.diff_fonts(fonts_before, fonts_after)
