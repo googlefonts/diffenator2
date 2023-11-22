@@ -199,7 +199,11 @@ def _package(templates, dst, **kwargs):
         )
         template = env.get_template(os.path.basename(template_fp))
         doc = template.render(**kwargs)
-        dst_doc = os.path.join(dst, f'{kwargs["filter_styles"]}-{os.path.basename(template_fp)}')
+        if "filter_styles" in kwargs:
+            fp_prefix = kwargs.get("filter_styles")
+        elif "diff" in kwargs:
+            fp_prefix = kwargs.get("font_styles_new")[0].stylename
+        dst_doc = os.path.join(dst, f'{fp_prefix}-{os.path.basename(template_fp)}')
         with open(dst_doc, "w", encoding="utf8") as out_file:
             out_file.write(doc)
 

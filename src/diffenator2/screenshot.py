@@ -126,7 +126,7 @@ def screenshot_dir(
     screenshotter = ScreenShotter()
     for dirpath, _, filenames in os.walk(dir_fp):
         for filename in filenames:
-            if not filename.endswith(".html") or filename in skip:
+            if not filename.endswith(".html") or any([s in filename for s in skip]):
                 continue
             fp = os.path.join(dirpath, filename)
             fp = os.path.abspath(fp)

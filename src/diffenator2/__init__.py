@@ -59,6 +59,8 @@ class NinjaBuilder:
             getattr(matcher, self.cli_args["styles"])(self.cli_args["filter_styles"])
             for old_style, new_style in zip(matcher.old_styles, matcher.new_styles):
                 coords = new_style.coords
+                style = new_style.name.replace(" ", "-")
+                o = os.path.join(self.cli_args["out"], style.replace(" ", "-"))
                 self.w.build(o, "diffenator", variables={"args": repr(
                     {**self.cli_args, **{
                         "coords": dict_coords_to_string(coords),
