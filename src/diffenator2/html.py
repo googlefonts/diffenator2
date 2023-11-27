@@ -202,7 +202,9 @@ def _package(templates, dst, **kwargs):
         if "filter_styles" in kwargs:
             fp_prefix = kwargs.get("filter_styles")
         elif "diff" in kwargs:
-            fp_prefix = kwargs.get("font_styles_new")[0].stylename
+            filename = kwargs.get("font_faces_new")[0].filename.replace("new-", "").strip().replace(" ", "_")[:-4]
+            style = kwargs.get("font_styles_new")[0].stylename
+            fp_prefix = f"{filename}-{style}"
         dst_doc = os.path.join(dst, f'{fp_prefix}-{os.path.basename(template_fp)}')
         with open(dst_doc, "w", encoding="utf8") as out_file:
             out_file.write(doc)

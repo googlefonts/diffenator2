@@ -83,7 +83,7 @@ def test_diffenator_threshold(fp_before, fp_after, threshold, has, missing):
     with tempfile.TemporaryDirectory() as tmp_dir:
         subprocess.run(
             ["diffenator2", "diff", "-fb", fp_before, "-fa", fp_after, "-o", tmp_dir, "-t", str(threshold), "--filter-styles", "Regular"])
-        with open(os.path.join(tmp_dir, "wght-400_0-diffenator.html"), "r", encoding="utf8") as doc:
+        with open(os.path.join(tmp_dir, "MavenPro[wght].subset.mod-wght-400_0-diffenator.html"), "r", encoding="utf8") as doc:
             report = doc.read()
             for string in has:
                 assert string in report
@@ -127,7 +127,7 @@ def test_diffbrowsers_filter_characters(fp, cmd, pattern, has, missing):
 def test_diffenator_filter_characters(fp_before, fp_after, pattern, has, missing):
     with tempfile.TemporaryDirectory() as tmp_dir:
         subprocess.run(["diffenator2", "diff", "-fb", fp_before, "-fa", fp_after, "-o", tmp_dir, "-ch", pattern, "--filter-styles", "Regular"])
-        with open(os.path.join(tmp_dir, "wght-400_0-diffenator.html"), "r", encoding="utf8") as doc:
+        with open(os.path.join(tmp_dir, "MavenPro[wght].subset.mod-wght-400_0-diffenator.html"), "r", encoding="utf8") as doc:
             report = doc.read()
             for string in has:
                 assert string in report
