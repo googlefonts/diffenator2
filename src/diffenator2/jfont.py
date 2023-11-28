@@ -260,7 +260,7 @@ class Diff:
             res[k] = self.clean(v)
             if res[k] == False or not res[k]:
                 res.pop(k)
-        if len(res) >= 133:
+        if len(res) >= 200:
             return {"error": (f"There are {len(res)} changes, check manually!", "")}
         return res
 
