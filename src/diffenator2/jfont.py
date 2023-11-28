@@ -5,6 +5,8 @@ from fontTools.ttLib.tables._n_a_m_e import table__n_a_m_e
 from fontTools.ttLib.tables._f_v_a_r import table__f_v_a_r
 from fontTools.ttLib.tables.S_T_A_T_ import table_S_T_A_T_
 from fontTools.ttLib.tables._c_m_a_p import table__c_m_a_p
+from fontTools.ttLib.tables._g_l_y_f import Glyph
+from fontTools.ttLib.tables._g_l_y_f import flagOnCurve, flagOverlapSimple, flagCubic
 import json
 
 
@@ -80,7 +82,81 @@ def serialise_cmap(obj):
     return {f"0x{hex(k)[2:].zfill(4).upper()}": v for k, v in obj.getBestCmap().items()}
 
 
+def serialise_component(compo):
+    from fontTools.misc.fixedTools import (
+        fixedToFloat as fi2fl,
+        floatToFixed as fl2fi,
+        floatToFixedToStr as fl2str,
+        strToFixedToFloat as str2fl,
+    )
+    attrs = {"glyphName": compo.glyphName}
+    if not hasattr(compo, "firstPt"):
+        attrs["x"] = compo.x
+        attrs["y"] = compo.y
+    else:
+        attrs["firstPt"] = compo.firstPt
+        attrs["secondPt"] = compo.secondPt
+
+    if hasattr(compo, "transform"):
+        transform = compo.transform
+        if transform[0][1] or transform[1][0]:
+            attrs["scalex"] = fl2str(transform[0][0], 14)
+            attrs["scale01"] = fl2str(transform[0][1], 14)
+            attrs["scale10"] = fl2str(transform[1][0], 14)
+            attrs["scaley"] = fl2str(transform[1][1], 14)
+        elif transform[0][0] != transform[1][1]:
+            attrs["scalex"] = fl2str(transform[0][0], 14)
+            attrs["scaley"] = fl2str(transform[1][1], 14)
+        else:
+            attrs["scale"] = fl2str(transform[0][0], 14)
+    attrs["flags"] = hex(compo.flags)
+    return attrs
+
+
+def serialise_glyph(obj, root):
+    if obj.isComposite():
+        return [serialise_component(c) for c in obj.components]
+    elif obj.isVarComposite():
+        return [serialise_component(c) for c in obj.components]
+    else:
+        last = 0
+        contours = {}
+        for i in range(obj.numberOfContours):
+            path_key = f"Contour: {i}"
+            if i not in contours:
+                contours[path_key] = {}
+            contour = {}
+            for j in range(last, obj.endPtsOfContours[i] + 1):
+                node_key = f"Node: {j}"
+                attrs = {
+                    "x": obj.coordinates[j][0],
+                    "y": obj.coordinates[j][1],
+                    "on": obj.flags[j] & flagOnCurve,
+                }
+                if obj.flags[j] & flagOverlapSimple:
+                    # Apple's rasterizer uses flagOverlapSimple in the first contour/first pt to flag glyphs that contain overlapping contours
+                    attrs["overlap"] = 1
+                if obj.flags[j] & flagCubic:
+                    attrs["cubic"] = 1
+                contour[node_key] = attrs
+            last = obj.endPtsOfContours[i] + 1
+            contours[path_key] = contour
+        return contours
+#        haveInstructions = obj.numberOfContours > 0
+#    if haveInstructions:
+#        if obj.program:
+#            writer.begintag("instructions")
+#            writer.newline()
+#            self.program.toXML(writer, ttFont)
+#            writer.endtag("instructions")
+#        else:
+#            writer.simpletag("instructions")
+#        writer.newline()
+
+
 def TTJ(ttFont):
+    # we must compile the glyph in order to access coordinates etc
+    ttFont["glyf"].compile(ttFont)
     root = ttFont
     return _TTJ(ttFont, root)
 
@@ -101,17 +177,20 @@ def _TTJ(obj, root=None,depth=1):
 
     elif isinstance(obj, table__c_m_a_p):
         return serialise_cmap(obj)
+    
+    elif isinstance(obj, Glyph):
+        return serialise_glyph(obj, root)
 
     elif isinstance(obj, TTFont):
         if depth > 1:
             return None
         return {k: _TTJ(obj[k], root) for k in obj.keys() if k not in ["loca"]}
     elif isinstance(obj, dict):
-        return {k: _TTJ(v) for k, v in obj.items()}
+        return {k: _TTJ(v, root) for k, v in obj.items()}
     elif isinstance(obj, (list, tuple, set)):
-        return [_TTJ(i) for i in obj]
+        return [_TTJ(i, root) for i in obj]
     elif hasattr(obj, "__dict__"):
-        return {k: _TTJ(getattr(obj, k), depth=depth+1) for k in vars(obj)}
+        return {k: _TTJ(getattr(obj, k), root, depth=depth+1) for k in vars(obj)}
     return obj
 
 
