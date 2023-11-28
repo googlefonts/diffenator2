@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 from copy import deepcopy as copy
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._n_a_m_e import table__n_a_m_e
@@ -6,9 +7,24 @@ from fontTools.ttLib.tables._f_v_a_r import table__f_v_a_r
 from fontTools.ttLib.tables.S_T_A_T_ import table_S_T_A_T_
 from fontTools.ttLib.tables._c_m_a_p import table__c_m_a_p
 from fontTools.ttLib.tables._g_l_y_f import Glyph
-from fontTools.ttLib.tables._g_l_y_f import flagOnCurve, flagOverlapSimple, flagCubic
-import json
-
+from fontTools.ttLib.tables._g_l_y_f import (
+    flagOnCurve,
+    flagOverlapSimple,
+    flagCubic,
+    ARG_1_AND_2_ARE_WORDS,
+    ARGS_ARE_XY_VALUES,
+    ROUND_XY_TO_GRID,
+    WE_HAVE_A_SCALE,
+    NON_OVERLAPPING,
+    MORE_COMPONENTS,
+    WE_HAVE_AN_X_AND_Y_SCALE,
+    WE_HAVE_A_TWO_BY_TWO,
+    WE_HAVE_INSTRUCTIONS,
+    USE_MY_METRICS,
+    OVERLAP_COMPOUND,
+    SCALED_COMPONENT_OFFSET,
+    UNSCALED_COMPONENT_OFFSET,
+)
 
 class_defs = {
     1: "Base Glyph",
@@ -82,6 +98,14 @@ def serialise_cmap(obj):
     return {f"0x{hex(k)[2:].zfill(4).upper()}": v for k, v in obj.getBestCmap().items()}
 
 
+def bit_list(bits, cast_list):
+    res = []
+    for bit, name in cast_list:
+        if bits & bit == bit:
+            res.append((hex(bit), name))
+    return res
+
+
 def serialise_component(compo):
     from fontTools.misc.fixedTools import (
         fixedToFloat as fi2fl,
@@ -109,15 +133,29 @@ def serialise_component(compo):
             attrs["scaley"] = fl2str(transform[1][1], 14)
         else:
             attrs["scale"] = fl2str(transform[0][0], 14)
-    attrs["flags"] = hex(compo.flags)
+    compo_bit_list = [
+        (ARG_1_AND_2_ARE_WORDS, "ARG_1_AND_2_ARE_WORDS"),
+        (ARGS_ARE_XY_VALUES, "ARGS_ARE_XY_VALUES"),
+        (ROUND_XY_TO_GRID, "ROUND_XY_TO_GRID"),
+        (WE_HAVE_A_SCALE, "WE_HAVE_A_SCALE"),
+        (MORE_COMPONENTS, "MORE_COMPONENTS"),
+        (WE_HAVE_AN_X_AND_Y_SCALE, "WE_HAVE_AN_X_AND_Y_SCALE"),
+        (WE_HAVE_A_TWO_BY_TWO, "WE_HAVE_A_TWO_BY_TWO"),
+        (WE_HAVE_INSTRUCTIONS, "WE_HAVE_INSTRUCTIONS"),
+        (USE_MY_METRICS, "USE_MY_METRICS"),
+        (OVERLAP_COMPOUND, "OVERLAP_COMPOUND"),
+        (SCALED_COMPONENT_OFFSET, "SCALED_COMPONENT_OFFSET"),
+        (UNSCALED_COMPONENT_OFFSET, "UNSCALED_COMPONENT_OFFSET")
+    ]
+    attrs["flags"] = bit_list(compo.flags, compo_bit_list)
     return attrs
 
 
 def serialise_glyph(obj, root):
     if obj.isComposite():
-        return [serialise_component(c) for c in obj.components]
+        return {f"Component {i}: {c.glyphName}": serialise_component(c) for i, c in enumerate(obj.components)}
     elif obj.isVarComposite():
-        return [serialise_component(c) for c in obj.components]
+        return {f"Component {i}: {c.glyphName}": serialise_component(c) for i, c in enumerate(obj.components)}
     else:
         last = 0
         contours = {}
@@ -135,23 +173,13 @@ def serialise_glyph(obj, root):
                 }
                 if obj.flags[j] & flagOverlapSimple:
                     # Apple's rasterizer uses flagOverlapSimple in the first contour/first pt to flag glyphs that contain overlapping contours
-                    attrs["overlap"] = 1
+                    attrs["overlap bit"] = True
                 if obj.flags[j] & flagCubic:
-                    attrs["cubic"] = 1
+                    attrs["cubic"] = True
                 contour[node_key] = attrs
             last = obj.endPtsOfContours[i] + 1
             contours[path_key] = contour
         return contours
-#        haveInstructions = obj.numberOfContours > 0
-#    if haveInstructions:
-#        if obj.program:
-#            writer.begintag("instructions")
-#            writer.newline()
-#            self.program.toXML(writer, ttFont)
-#            writer.endtag("instructions")
-#        else:
-#            writer.simpletag("instructions")
-#        writer.newline()
 
 
 def TTJ(ttFont):
