@@ -212,7 +212,7 @@ def _TTJ(obj, root=None,depth=1):
     elif isinstance(obj, TTFont):
         if depth > 1:
             return None
-        return {k: _TTJ(obj[k], root) for k in obj.keys() if k not in ["loca"]}
+        return {k: _TTJ(obj[k], root) for k in obj.keys() if k not in ["loca", "GPOS", "GSUB", "GVAR"]}
     elif isinstance(obj, dict):
         return {k: _TTJ(v, root) for k, v in obj.items()}
     elif isinstance(obj, (list, tuple, set)):
