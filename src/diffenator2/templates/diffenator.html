@@ -38,7 +38,7 @@
   {% for font_class in font_styles or font_styles_old or font_styles_new %}
     <div class="box">
     <div class="box-title">Tables</div>
-     {{ diff.tables.render() }}
+      <div data-path="root" data-open="0" id="difftable"></div>
     </div>
     
     {% if diff.glyph_diff["glyphs"].new %}
@@ -111,39 +111,84 @@
 
     </div>
   {% endfor %}
+{{ diff.tables.render() }}
 {% endblock %}
 {% block js %}
-	function render(node, toplevel) {
-		var wrapper = $("<div> </div>");
-		if (!node) { return wrapper }
-		if (Array.isArray(node)) {
-			var before = $("<span/>");
-			before.addClass("attr-before");
-			before.html(" " + String(node[0]) + " ");
-			var after = $("<span/>");
-			after.addClass("attr-after");
-			after.append(String(node[1]));
-			wrapper.append(before);
-			wrapper.append(after);
-			return wrapper
-		}
-		for (const [key, value] of Object.entries(node)) {
-			var display = $("<div/>");
-			display.addClass("node")
-			if (!toplevel && ! key.match(/^\d+$/)) {
-				display.hide()
-			}
-			display.append(key);
-			display.append(render(value, false).children());
-			wrapper.append(display)
-		}
-		return wrapper
+  class Table {
+      constructor(data) {
+          this.data = {"root": data}
+          this.open("root")
+      }
 
-	}
-	$(function() {
-		$("#difftable").append(render(fontdiff, true).children())
-		$("#difftable .node").on("click", function(event){ $(this).children().toggle(); event.stopPropagation() })
-	});
+      createNode(key, label) {
+          let childElem = document.createElement("div")
+          let childKey = key
+          childElem.dataset.path = childKey
+          childElem.dataset.open = "0"
+          childElem.innerHTML = label
+          childElem.classList.add("node")
+          return childElem
+      }
+
+      close(key) {
+          let htmlParent = document.querySelector(`[data-path="${key}"]`)
+          let label = htmlParent.childNodes[0].nodeValue
+          htmlParent.replaceChildren()
+          htmlParent.textContent = label
+          htmlParent.dataset.open = "0"
+      }
+
+      open(key) {
+          let htmlParent = document.querySelector(`[data-path="${key}"]`)
+          htmlParent.dataset.open = "1"
+
+          // traverse to correct data level based on data-path
+          let path = key.split(".")
+          let data = this.data
+          for (var i=0; i<path.length; i++) {
+              data = data[path[i]];
+
+          }
+
+          // arrays containing two values are used as leaf nodes.
+          // The first item is the before value and the second
+          // is for after value.
+          if (Array.isArray(data)) {
+              let childElem = this.createNode("", "")
+              let before = document.createElement("span")
+              before.classList.add("attr-before")
+              before.textContent = String(data[0]) + " "
+              let after = document.createElement("span")
+              after.classList.add("attr-after")
+              after.textContent = String(data[1])
+              childElem.appendChild(before)
+              childElem.appendChild(after)
+              htmlParent.appendChild(childElem)
+              return
+          }
+          // Create next child nodes
+          for (var i in data) {
+              let childKey = key + "." + i
+              let childElem = this.createNode(childKey, i)
+              htmlParent.appendChild(childElem);
+              var that = this
+
+              // Toggle whether to open or close a node
+              childElem.addEventListener("click", function() {
+                  if (this.dataset.open === "0") {
+                      that.open(childKey)
+                      event.stopPropagation()
+                  } else {
+                      that.close(childKey)
+                      event.stopPropagation()
+                  }
+              })
+          }
+      }
+  }
+
+  let t = new Table(fontdiff, document.getElementById("difftable"))
+
 
 function wordBreaks() {
   words = document.getElementsByClassName("cell-word")

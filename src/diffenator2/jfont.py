@@ -293,7 +293,7 @@ class Diff:
         return res
 
     def render(self):
-        return f'<script>var fontdiff = {json.dumps(self.diff)};</script><div id="difftable"></div>'
+        return f'<script>var fontdiff = {json.dumps(self.diff)};</script>'
 
     def summary(self):
         raise NotImplementedError()
