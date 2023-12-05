@@ -9,7 +9,7 @@ enable = true
 source = "git-tag"
 
 [tool.poetry.dependencies]
-python = ">=3.7,<4.0"
+python = ">=3.8,<4.0"
 fontTools = { version = ">=4.37.3", extras = ["ufo"] }
 jinja2 = "*"
 Pillow = "*"
