@@ -134,3 +134,21 @@ def test_diffenator_filter_characters(fp_before, fp_after, pattern, has, missing
 
             for string in missing:
                 assert string not in report
+
+@pytest.mark.parametrize(
+    "cmd",
+    [
+        ["diffenator2", "proof", mavenpro_vf],
+        ["diffenator2", "diff", "-fb", mavenpro_vf, "-fa", mavenpro_vf_mod]
+    ]
+)
+def test_user_templates(cmd):
+    with tempfile.NamedTemporaryFile(suffix=".html") as doc, tempfile.TemporaryDirectory() as tmp_dir:
+        doc.write("<p>Hello world</p>".encode("utf-8"))
+        doc.seek(0)
+        subprocess.run(cmd + ["--diffbrowsers-templates", doc.name, "-o", tmp_dir])
+        html_filename = next(fp for fp in os.listdir(tmp_dir) if os.path.basename(doc.name) in fp)
+        html_fp = os.path.join(tmp_dir, html_filename)
+        assert html_fp
+        with open(html_fp) as html:
+            assert "<p>Hello world</p>" == html.read()
