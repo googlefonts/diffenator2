@@ -7,6 +7,7 @@ from diffenator2.font import DFont
 from diffenator2.html import build_index_page
 from diffenator2.renderer import FONT_SIZE
 from pkg_resources import resource_filename
+from glob import glob
 
 
 def main(**kwargs):
@@ -33,6 +34,7 @@ def main(**kwargs):
             help="Show font instances, cross product or master styles"
         )
         universal_options_parser.add_argument("--user-wordlist", default=None)
+        universal_options_parser.add_argument("--diffbrowsers-templates", nargs="+", default=[])
         proof_parser = subparsers.add_parser(
             "proof",
             parents=[universal_options_parser],
@@ -54,11 +56,11 @@ def main(**kwargs):
         diff_parser.add_argument("--no-tables", action="store_true", help="Skip diffing font tables")
         diff_parser.add_argument("--no-words", action="store_true", help="Skip diffing wordlists")
         parser.add_argument(
-        "--diffenator-template",
-        default=resource_filename(
-            "diffenator2", os.path.join("templates", "diffenator.html")
-        ),
-    )
+            "--diffenator-template",
+            default=resource_filename(
+                "diffenator2", os.path.join("templates", "diffenator.html")
+            ),
+        )
         args = parser.parse_args()
 
     if args.command == "proof":
