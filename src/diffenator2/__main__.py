@@ -29,12 +29,16 @@ def main(**kwargs):
         universal_options_parser.add_argument("--characters", "-ch", default=".*")
         universal_options_parser.add_argument("--pt-size", "-pt", default=20)
         universal_options_parser.add_argument(
-            "--styles", "-s", choices=("instances", "cross_product", "masters"),
+            "--styles",
+            "-s",
+            choices=("instances", "cross_product", "masters"),
             default="instances",
-            help="Show font instances, cross product or master styles"
+            help="Show font instances, cross product or master styles",
         )
         universal_options_parser.add_argument("--user-wordlist", default=None)
-        universal_options_parser.add_argument("--diffbrowsers-templates", nargs="+", default=[])
+        universal_options_parser.add_argument(
+            "--diffbrowsers-templates", nargs="+", default=[]
+        )
         proof_parser = subparsers.add_parser(
             "proof",
             parents=[universal_options_parser],
@@ -46,15 +50,23 @@ def main(**kwargs):
             "diff",
             parents=[universal_options_parser],
         )
-        diff_parser.add_argument("--fonts-before", "-fb", nargs="+", required=True, type=DFont)
-        diff_parser.add_argument("--fonts-after", "-fa", nargs="+", required=True, type=DFont)
+        diff_parser.add_argument(
+            "--fonts-before", "-fb", nargs="+", required=True, type=DFont
+        )
+        diff_parser.add_argument(
+            "--fonts-after", "-fa", nargs="+", required=True, type=DFont
+        )
         diff_parser.add_argument("--no-diffenator", default=False, action="store_true")
         diff_parser.add_argument("--threshold", "-t", type=float, default=THRESHOLD)
         diff_parser.add_argument("--precision", default=FONT_SIZE)
         # TODO this can just be precision
         diff_parser.add_argument("--font-size", default=FONT_SIZE)
-        diff_parser.add_argument("--no-tables", action="store_true", help="Skip diffing font tables")
-        diff_parser.add_argument("--no-words", action="store_true", help="Skip diffing wordlists")
+        diff_parser.add_argument(
+            "--no-tables", action="store_true", help="Skip diffing font tables"
+        )
+        diff_parser.add_argument(
+            "--no-words", action="store_true", help="Skip diffing wordlists"
+        )
         parser.add_argument(
             "--diffenator-template",
             default=resource_filename(

@@ -39,9 +39,7 @@ import shutil
 
 def _get_diffbrowser_templates(user_templates, out):
     existing_templates = glob(
-        os.path.join(
-            resource_filename("diffenator2", "templates"), "*.html"
-        )
+        os.path.join(resource_filename("diffenator2", "templates"), "*.html")
     )
     for fp in user_templates:
         if not fp.startswith("diffbrowsers"):
@@ -78,8 +76,12 @@ def main():
             )
 
         elif args.command == "diff":
-            fonts_before = [DFont(os.path.abspath(fp), suffix="old") for fp in args.fonts_before]
-            fonts_after = [DFont(os.path.abspath(fp), suffix="new") for fp in args.fonts_after]
+            fonts_before = [
+                DFont(os.path.abspath(fp), suffix="old") for fp in args.fonts_before
+            ]
+            fonts_after = [
+                DFont(os.path.abspath(fp), suffix="new") for fp in args.fonts_after
+            ]
             matcher = FontMatcher(fonts_before, fonts_after)
             getattr(matcher, args.styles)(args.filter_styles)
             characters = re_filter_characters(fonts_before[0], args.characters)
@@ -96,6 +98,7 @@ def main():
         if args.imgs:
             imgs_out = os.path.join(args.out, "imgs")
             from diffenator2.screenshot import screenshot_dir
+
             screenshot_dir(args.out, imgs_out)
 
 
