@@ -1,27 +1,4 @@
 #!/usr/bin/env python3
-"""
-gftools gen-html aka diffbrowsers2.
-
-Generate html documents to proof a font family, or generate documents to
-diff two families.
-
-Examples:
-# Generate proofing documents for a single font
-gftools gen-html proof font1.ttf
-
-# Generate proofing documents for a family of fonts
-gftools gen-html proof font1.ttf font2.ttf font3.ttf
-
-# Output test pages to a dir
-gftools gen-html proof font1.ttf -o ~/Desktop/myFamily
-
-# Generate proofing documents and output images using Browserstack
-# (a subscription is required)
-gftools gen-html proof font1.ttf --imgs
-
-# Generate diff documents
-gftools gen-html diff -fb ./fonts_before/font1.ttf -fa ./fonts_after/font1.ttf
-"""
 from __future__ import annotations
 from pkg_resources import resource_filename
 from diffenator2.html import proof_rendering, diff_rendering
