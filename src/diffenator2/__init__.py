@@ -94,6 +94,7 @@ def ninja_proof(
     pt_size: int = 20,
     command="proof",
     user_wordlist: str = "",
+    diffbrowsers_templates=[],
     **kwargs
 ):
     if not os.path.exists(out):
@@ -139,6 +140,7 @@ def ninja_diff(
         "diffenator2", os.path.join("templates", "diffenator.html")
     ),
     command="diff",
+    diffbrowsers_templates=[],
     **kwargs
 ):
     args = {
