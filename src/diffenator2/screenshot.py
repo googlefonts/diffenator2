@@ -100,7 +100,7 @@ class ScreenShotter:
                     browser_driver = getattr(driver, browser)(options=options)
                 else:
                     browser_driver = getattr(driver, browser)()
-                browser_driver.set_page_load_timeout(60)
+                browser_driver.set_page_load_timeout(180)
                 has.append(browser_driver)
             except:
                 pass
