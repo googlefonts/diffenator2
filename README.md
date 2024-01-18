@@ -66,55 +66,75 @@ usage: diffenator2 diff [-h] [--out OUT] [--imgs]
   --threshold THRESHOLD, -t THRESHOLD
 ```
 
-* The most typical usage is to compare two font families:
+#### Standard use: compare two families
 
-```
-# -fb == --fonts-before, -fa == --fonts-after
-diffenator2 diff -fb font1.ttf -fa font2.ttf -o out_dir
-```
+The most typical usage is to compare two font families:
 
-* Compare two font families and include a custom wordlist
+  ```
+  # -fb == --fonts-before, -fa == --fonts-after
+  diffenator2 diff -fb font1.ttf -fa font2.ttf -o out_dir
+  ```
 
-`diffenator2 diff -fb font1.ttf -fa font2.ttf --user-wordlist wordlist.txt -o out_dir`
+#### User Wordlist
 
-A wordlist is a csv file with the following columns:
+Compare two font families and include a custom wordlist
 
-`string, script, lang, ot features...`
+  `diffenator2 diff -fb font1.ttf -fa font2.ttf --user-wordlist wordlist.txt -o out_dir`
 
-script, lang and ot features are optional. An arbitrary number of ot features can be included e.g
+A wordlist could be
 
-```
-a,latn,dflt,ss01
-1/4,,,frac
-10/23,,,frac
-0123456789,,,numr,tnum
-```
+- A csv file with the following columns:
 
-* The `--filter-styles` option can be used to select which styles should be compared
+  `string, script, lang, ot features...`
+
+  script, lang and ot features are optional. An arbitrary number of ot features can be included e.g
+
+  ```
+  a,latn,dflt,ss01
+  1/4,,,frac
+  10/23,,,frac
+  0123456789,,,numr,tnum
+  ```
+
+- A .txt file with a paragraph of a desired sample to test specific words or languages. 
+  
+  Since a comma `,` is the key character to divide the provided sample into different lines, do not include commas if you want to see it as a single paragraph, e.g
+
+  ```
+  Trăm năm trong cõi người ta Ắ chữ Ắ tàichữ mệnh khéo là ghét nhau. Trải qua một Ắ cuộc bể dâu những điều trông thấy mà đau đớn lòng. Ắ Lạ gì bỉ sắc tư phong trời xanh quen thói má hồng đánh ghen. Cảo thơm lần giở trước đèn phong Tình có lục còn truyền sử xanh. Rằng năm Gia Tĩnh triều Minh bốn phương phẳng lặng hai kinh vững vàng. Có nhà viên ngoại họ Vương gia tư nghĩ cũng thường thường bực trung.
+  ```
+
+#### Filter Styles
+
+The `--filter-styles` option can be used to select which styles should be compared
 
 For example, to only diff regular and bold styles:
 
-`diffenator2 diff -fb font1.ttf -fa font2.ttf --filter-styles "Regular|Bold"`
+  `diffenator2 diff -fb font1.ttf -fa font2.ttf --filter-styles "Regular|Bold"`
 
-`--filter-styles` also accepts wildcards. To diff all Bold styles:
+- `--filter-styles` also accepts wildcards. To diff all Bold styles:
 
-`diffenator2 diff -fb font1.ttf -fa font2.ttf --filter-styles "Bold*"`
+  `diffenator2 diff -fb font1.ttf -fa font2.ttf --filter-styles "Bold*"`
 
-* `-s` is used to choose which locations of a variable font should be compared
+#### Choose locations 
 
-The default is to compare named instances. To only compare masters:
+`-s` is used to choose which locations of a variable font should be compared
 
-`diffenator2 diff -fb font1.ttf -fa font2.ttf -s masters`
+- The default is to compare named instances. To only compare masters:
 
-To compare the cross product of min/default/max for each axis:
+  `diffenator2 diff -fb font1.ttf -fa font2.ttf -s masters`
 
-`diffenator2 diff -fb font1.ttf -fa font2.ttf -s cross_product`
+- To compare the cross product of min/default/max for each axis:
 
-* `-ch` is used to select which characters to compare
+  `diffenator2 diff -fb font1.ttf -fa font2.ttf -s cross_product`
+
+#### Choose specific characters 
+
+`-ch` is used to select which characters to compare
 
 To compare only ascii characters:
 
-`diffenator2 diff -fb font2.ttf -fa font2.ttf -ch "[!-~]"`
+  `diffenator2 diff -fb font2.ttf -fa font2.ttf -ch "[!-~]"`
 
 ### `proof`
 
