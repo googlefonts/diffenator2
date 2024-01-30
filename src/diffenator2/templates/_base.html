@@ -193,10 +193,16 @@
 
 	POSITION = "old"
 	fontToggle = document.getElementById("font-toggle")
-	function switchFonts() {
+	function switchFonts(isClickEvent) {
+
+    // when a click triggers the action stop autoSwitching
+    if (isClickEvent && autoSwitch) {
+        clearInterval(autoSwitch);
+    }
+
 	boxTitles = document.getElementsByClassName("box-title")
 	items = document.getElementsByClassName("box-text");
-	  
+
 	if (POSITION === "old") {
 	  POSITION = "new"
 	  for (item of boxTitles) {
