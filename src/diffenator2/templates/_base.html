@@ -31,7 +31,7 @@
 	}
 	.box-text{
 	}
-	
+
 	#nav{
 	  position: fixed;
 	  right: 20px;
@@ -42,7 +42,7 @@
 	.nav-item{
 		display: block;
 		cursor: pointer;
-		-webkit-user-select: none; /* Safari */        
+		-webkit-user-select: none; /* Safari */
 		-moz-user-select: none; /* Firefox */
 			-ms-user-select: none; /* IE10+/Edge */
 		user-select: none; /* Standard */
@@ -193,6 +193,9 @@
 
 	POSITION = "old"
 	fontToggle = document.getElementById("font-toggle")
+
+    const autoSwitch = null;
+
 	function switchFonts(isClickEvent) {
 
     // when a click triggers the action stop autoSwitching
@@ -240,11 +243,11 @@ function buildFeatureList() {
 		'ss09', 'ss10', 'ss11', 'ss12', 'ss13', 'ss14',
 		'ss15', 'ss16', 'ss17', 'ss18', 'ss19', 'ss20'
 	]
-	
+
 	var otPanel = document.getElementById("ot-panel")
 	for (i=0; i<features.length; i++) {
 		var feat = features[i]
-		
+
 		var row = document.createElement("div");
 
 		var item = document.createElement("input");
@@ -277,7 +280,7 @@ function enableFeatures() {
 				disableKerning = true
 			}
 		}
-	}	
+	}
 
 	var boxText = document.getElementsByClassName("box-text")
 	var otString = res.join(", ")
@@ -302,7 +305,7 @@ var checkboxes = document.getElementsByClassName("ot-checkbox")
 for (i=0; i<checkboxes.length; i++) {
 	cb = checkboxes[i]
 	cb.addEventListener("click", enableFeatures)
-}	
+}
     {% block js %}
 	{% endblock %}
 

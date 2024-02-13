@@ -69,7 +69,7 @@
     {% endfor %}
     </div>
 
-    
+
 
 <div id="font-by-font" style="display: none;">
 {% for glyph_set, section in test_strings.items() %}
@@ -86,7 +86,7 @@
             </div>
         {% endfor %}
     {% endfor %}
-{% endfor %} 
+{% endfor %}
 </div>
 
 
@@ -108,13 +108,13 @@
             {% endfor %}
         </div>
     {% endfor %}
-{% endfor %} 
+{% endfor %}
 </div>
 
 
 {% endblock %}
 {% block js %}
-    
+
 state = "line-by-line"
 function viewMode() {
     var viewButton = document.getElementById("view-button")
@@ -140,7 +140,7 @@ function viewMode() {
     }
 }
 document.getElementById("view-button").addEventListener("click", viewMode)
-    
+
     var ptSelector = document.getElementById("pt-selector");
     ptSelector.addEventListener("change", function(e) {
         var newPtSize = e.target.value
@@ -266,7 +266,7 @@ function setWidth() {
     var width = longestLine()
     var container = document.getElementById("side-by-side")
     var subContainers = container.getElementsByClassName("box-side-by-side")
-    
+
     var containerWidth = (width * subContainers.length) + 100
     container.style.width = containerWidth + "pt"
 
@@ -277,7 +277,7 @@ function setWidth() {
     }
 }
 
-const autoSwitch = setInterval(function () {
+autoSwitch = setInterval(function () {
     switchFonts();
 }, 1250);
 
