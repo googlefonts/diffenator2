@@ -129,6 +129,11 @@ def gen_gifs(dir1: str, dir2: str, dst_dir: str):
 
 def gen_gif(img_a_path: str, img_b_path: str, dst: str):
     with Image.open(img_a_path) as img_a, Image.open(img_b_path) as img_b:
+        # Images must have same dimensions in order for PIL to gen gif
+        # 4-tuple defining the left, upper, right, and lower
+        crop_box = (0, 0, min(img_a.width, img_b.width), min(img_a.height, img_b.height))
+        img_a = img_a.crop(crop_box)
+        img_b = img_b.crop(crop_box)
         img_a.save(dst, save_all=True, append_images=[img_b], loop=10000, duration=1000)
 
 

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-MAX_STYLES = 4
+MAX_STYLES = 1
 THRESHOLD = 0.90  # Percent difference
 NINJA_BUILD_FILE = "build.ninja"
 
