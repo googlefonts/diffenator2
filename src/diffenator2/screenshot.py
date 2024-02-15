@@ -8,6 +8,7 @@ from diffenator2.utils import gen_gifs
 import shutil
 import tempfile
 import sys
+import time
 
 
 class ScreenShotter:
@@ -62,7 +63,6 @@ class ScreenShotter:
         if not os.path.exists(after_fp):
             os.mkdir(after_fp)
 
-        import time
         time.sleep(1)
         self.take_png(url, before_fp)
         time.sleep(1)
@@ -77,7 +77,7 @@ class ScreenShotter:
     def _get_browsers(self):
         """Determine which browsers we can screenshot which exist on the system"""
         # We can add more webdrivers if needed. Let's focus on these first
-        supported = ["Chrome", "Firefox", "Safari"]
+        supported = ["Chrome", "Firefox"]
         has = []
         driver = webdriver
         for browser in supported:
@@ -100,7 +100,7 @@ class ScreenShotter:
                     browser_driver = getattr(driver, browser)(options=options)
                 else:
                     browser_driver = getattr(driver, browser)()
-                browser_driver.set_page_load_timeout(180)
+                browser_driver.set_page_load_timeout(30)
                 has.append(browser_driver)
             except:
                 pass
