@@ -26,6 +26,7 @@ from io import BytesIO
 from fontTools.ttLib import TTFont
 from zipfile import ZipFile
 import re
+import json
 
 
 def dict_coords_to_string(coords: dict[str, float]) -> str:
@@ -85,28 +86,30 @@ def download_latest_github_release(
     return files
 
 
-def download_google_fonts_family(
-    name: str, dst: str = None, ignore_static: bool = True
-):
+def download_google_fonts_family(family, dst=None, ignore_static=True):
     """Download a font family from Google Fonts"""
-    if not google_fonts_has_family(name):
-        raise ValueError(f"No family on Google Fonts named {name}")
-
-    url = "https://fonts.google.com/download?family={}".format(name.replace(" ", "%20"))
-    dl = download_file(url)
-    zipfile = ZipFile(dl)
-    fonts = []
-    for filename in zipfile.namelist():
-        if ignore_static and "static" in filename:
+    # TODO (M Foley) update all dl_urls in .ini files.
+    if not google_fonts_has_family(family):
+        raise ValueError(f"Google Fonts does not have the family {family}")
+    url = "https://fonts.google.com/download?family={}".format(family.replace(" ", "%20"))
+    dl_url = url.replace("download?family=", "download/list?family=")
+    url = dl_url.format(family.replace(' ', '%20'))
+    data = json.loads(requests.get(url).text[5:])
+    res = []
+    for item in data["manifest"]["fileRefs"]:
+        filename = item["filename"]
+        dl_url = item["url"]
+        if "static" in filename and ignore_static:
             continue
-        if filename.endswith(".ttf"):
-            if dst:
-                target = os.path.join(dst, filename)
-                zipfile.extract(filename, dst)
-                fonts.append(target)
-            else:
-                fonts.append(BytesIO(zipfile.read(filename)))
-    return fonts
+        if not filename.endswith(("otf", "ttf")):
+            continue
+        if dst:
+            target = os.path.join(dst, filename)
+            download_file(dl_url, target)
+            res.append(target)
+        else:
+            res.append(download_file(dl_url))
+    return res
 
 
 # our images can be huge so disable this
