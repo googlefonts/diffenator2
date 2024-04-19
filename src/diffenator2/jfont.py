@@ -98,6 +98,12 @@ def serialise_cmap(obj):
     return {f"0x{hex(k)[2:].zfill(4).upper()}": v for k, v in obj.getBestCmap().items()}
 
 
+def serialise_kern(obj):
+    return [
+        {"/".join(k): v for k, v in table.kernTable.items()} for table in obj.kernTables
+    ]
+
+
 def bit_list(bits, cast_list):
     res = []
     for bit, name in cast_list:
@@ -205,7 +211,10 @@ def _TTJ(obj, root=None,depth=1):
 
     elif isinstance(obj, table__c_m_a_p):
         return serialise_cmap(obj)
-    
+
+    elif isinstance(obj, table__k_e_r_n):
+        return serialise_kern(obj)
+
     elif isinstance(obj, Glyph):
         return serialise_glyph(obj, root)
 
