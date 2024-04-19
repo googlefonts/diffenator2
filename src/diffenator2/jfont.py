@@ -1,30 +1,33 @@
 from __future__ import annotations
+
 import json
 from copy import deepcopy as copy
+
 from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables._n_a_m_e import table__n_a_m_e
-from fontTools.ttLib.tables._f_v_a_r import table__f_v_a_r
-from fontTools.ttLib.tables.S_T_A_T_ import table_S_T_A_T_
 from fontTools.ttLib.tables._c_m_a_p import table__c_m_a_p
-from fontTools.ttLib.tables._g_l_y_f import Glyph
+from fontTools.ttLib.tables._f_v_a_r import table__f_v_a_r
 from fontTools.ttLib.tables._g_l_y_f import (
-    flagOnCurve,
-    flagOverlapSimple,
-    flagCubic,
     ARG_1_AND_2_ARE_WORDS,
     ARGS_ARE_XY_VALUES,
-    ROUND_XY_TO_GRID,
-    WE_HAVE_A_SCALE,
-    NON_OVERLAPPING,
     MORE_COMPONENTS,
-    WE_HAVE_AN_X_AND_Y_SCALE,
-    WE_HAVE_A_TWO_BY_TWO,
-    WE_HAVE_INSTRUCTIONS,
-    USE_MY_METRICS,
+    NON_OVERLAPPING,
     OVERLAP_COMPOUND,
+    ROUND_XY_TO_GRID,
     SCALED_COMPONENT_OFFSET,
     UNSCALED_COMPONENT_OFFSET,
+    USE_MY_METRICS,
+    WE_HAVE_A_SCALE,
+    WE_HAVE_A_TWO_BY_TWO,
+    WE_HAVE_AN_X_AND_Y_SCALE,
+    WE_HAVE_INSTRUCTIONS,
+    Glyph,
+    flagCubic,
+    flagOnCurve,
+    flagOverlapSimple,
 )
+from fontTools.ttLib.tables._k_e_r_n import table__k_e_r_n
+from fontTools.ttLib.tables._n_a_m_e import table__n_a_m_e
+from fontTools.ttLib.tables.S_T_A_T_ import table_S_T_A_T_
 
 class_defs = {
     1: "Base Glyph",
@@ -48,7 +51,7 @@ def serialise_fvar_table(obj, root):
             "minValue": a.minValue,
             "maxValue": a.maxValue,
             "defaultValue": a.defaultValue,
-            "axisName": nametbl.getName(a.axisNameID, 3, 1, 0x409).toUnicode()
+            "axisName": nametbl.getName(a.axisNameID, 3, 1, 0x409).toUnicode(),
             # TODO get axis Name Value (will need ttFont obj)
         }
         for a in obj.axes
@@ -57,10 +60,11 @@ def serialise_fvar_table(obj, root):
     instances = {
         nametbl.getName(i.subfamilyNameID, 3, 1, 0x409).toUnicode(): {
             "coordinates": i.coordinates,
-            "postscriptName": None if i.postscriptNameID in (None, 0xFFFF) else \
-                nametbl.getName(
-                    i.postscriptNameID, 3, 1, 0x409
-                ).toUnicode(),
+            "postscriptName": (
+                None
+                if i.postscriptNameID in (None, 0xFFFF)
+                else nametbl.getName(i.postscriptNameID, 3, 1, 0x409).toUnicode()
+            ),
             "flags": i.flags,
         }
         for i in obj.instances
@@ -98,6 +102,12 @@ def serialise_cmap(obj):
     return {f"0x{hex(k)[2:].zfill(4).upper()}": v for k, v in obj.getBestCmap().items()}
 
 
+def serialise_kern(obj):
+    return [
+        {"/".join(k): v for k, v in table.kernTable.items()} for table in obj.kernTables
+    ]
+
+
 def bit_list(bits, cast_list):
     res = []
     for bit, name in cast_list:
@@ -107,12 +117,11 @@ def bit_list(bits, cast_list):
 
 
 def serialise_component(compo):
-    from fontTools.misc.fixedTools import (
-        fixedToFloat as fi2fl,
-        floatToFixed as fl2fi,
-        floatToFixedToStr as fl2str,
-        strToFixedToFloat as str2fl,
-    )
+    from fontTools.misc.fixedTools import fixedToFloat as fi2fl
+    from fontTools.misc.fixedTools import floatToFixed as fl2fi
+    from fontTools.misc.fixedTools import floatToFixedToStr as fl2str
+    from fontTools.misc.fixedTools import strToFixedToFloat as str2fl
+
     attrs = {"glyphName": compo.glyphName}
     if not hasattr(compo, "firstPt"):
         attrs["x"] = compo.x
@@ -145,7 +154,7 @@ def serialise_component(compo):
         (USE_MY_METRICS, "USE_MY_METRICS"),
         (OVERLAP_COMPOUND, "OVERLAP_COMPOUND"),
         (SCALED_COMPONENT_OFFSET, "SCALED_COMPONENT_OFFSET"),
-        (UNSCALED_COMPONENT_OFFSET, "UNSCALED_COMPONENT_OFFSET")
+        (UNSCALED_COMPONENT_OFFSET, "UNSCALED_COMPONENT_OFFSET"),
     ]
     attrs["flags"] = bit_list(compo.flags, compo_bit_list)
     return attrs
@@ -153,9 +162,15 @@ def serialise_component(compo):
 
 def serialise_glyph(obj, root):
     if obj.isComposite():
-        return {f"Component {i}: {c.glyphName}": serialise_component(c) for i, c in enumerate(obj.components)}
+        return {
+            f"Component {i}: {c.glyphName}": serialise_component(c)
+            for i, c in enumerate(obj.components)
+        }
     elif obj.isVarComposite():
-        return {f"Component {i}: {c.glyphName}": serialise_component(c) for i, c in enumerate(obj.components)}
+        return {
+            f"Component {i}: {c.glyphName}": serialise_component(c)
+            for i, c in enumerate(obj.components)
+        }
     else:
         last = 0
         contours = {}
@@ -189,7 +204,7 @@ def TTJ(ttFont):
     return _TTJ(ttFont, root)
 
 
-def _TTJ(obj, root=None,depth=1):
+def _TTJ(obj, root=None, depth=1):
     """Convert a TTFont to Basic python types"""
     if isinstance(obj, (float, int, str, bool)):
         return obj
@@ -205,20 +220,27 @@ def _TTJ(obj, root=None,depth=1):
 
     elif isinstance(obj, table__c_m_a_p):
         return serialise_cmap(obj)
-    
+
+    elif isinstance(obj, table__k_e_r_n):
+        return serialise_kern(obj)
+
     elif isinstance(obj, Glyph):
         return serialise_glyph(obj, root)
 
     elif isinstance(obj, TTFont):
         if depth > 1:
             return None
-        return {k: _TTJ(obj[k], root) for k in obj.keys() if k not in ["loca", "GPOS", "GSUB", "GVAR"]}
+        return {
+            k: _TTJ(obj[k], root)
+            for k in obj.keys()
+            if k not in ["loca", "GPOS", "GSUB", "GVAR"]
+        }
     elif isinstance(obj, dict):
         return {k: _TTJ(v, root) for k, v in obj.items()}
     elif isinstance(obj, (list, tuple, set)):
         return [_TTJ(i, root) for i in obj]
     elif hasattr(obj, "__dict__"):
-        return {k: _TTJ(getattr(obj, k), root, depth=depth+1) for k in vars(obj)}
+        return {k: _TTJ(getattr(obj, k), root, depth=depth + 1) for k in vars(obj)}
     return obj
 
 
@@ -293,7 +315,7 @@ class Diff:
         return res
 
     def render(self):
-        return f'<script>var fontdiff = {json.dumps(self.diff)};</script>'
+        return f"<script>var fontdiff = {json.dumps(self.diff)};</script>"
 
     def summary(self):
         raise NotImplementedError()
