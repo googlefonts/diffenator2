@@ -6,8 +6,7 @@ from fontTools.ttLib import TTFont
 import os
 import shutil
 from diffenator2.template_elements import CSSFontStyle, CSSFontFace
-from diffenator2.utils import font_sample_text, characters_in_string
-from glyphsets import GFTestData
+from diffenator2.utils import font_sample_text, characters_in_string, GFTestData
 import re
 from pathlib import Path
 from diffenator2.shape import parse_wordlist

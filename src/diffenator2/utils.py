@@ -27,6 +27,10 @@ from fontTools.ttLib import TTFont
 from zipfile import ZipFile
 import re
 import json
+from glyphsets import get_glyphsets_fulfilled
+
+
+TEST_STRINGS_DATA = os.path.join(os.path.dirname(__file__), "data", "test_strings.json")
 
 
 def dict_coords_to_string(coords: dict[str, float]) -> str:
@@ -195,3 +199,27 @@ def re_filter_characters(font, pattern):
 
 def characters_in_string(string, characters):
     return all(g in characters for g in string)
+
+
+
+class _TestDocData:
+    def __init__(
+        self,
+        data=json.load(open(TEST_STRINGS_DATA, encoding="utf8")),
+    ):
+        self._data = data
+
+    def test_strings_in_font(self, ttFont, threshold=0.95):
+        res = {}
+        glyphsets_in_font = get_glyphsets_fulfilled(ttFont)
+        for glyphset, coverage in glyphsets_in_font.items():
+            if coverage["percentage"] < threshold:
+                continue
+            test_strings = self._data.get(glyphset)
+            if not test_strings:
+                continue
+            res[glyphset] = test_strings
+        return res
+
+
+GFTestData = _TestDocData()
