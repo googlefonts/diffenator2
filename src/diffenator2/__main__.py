@@ -67,6 +67,9 @@ def main(**kwargs):
         diff_parser.add_argument(
             "--no-words", action="store_true", help="Skip diffing wordlists"
         )
+        diff_parser.add_argument(
+            "--debug-gifs", action="store_true", help="Generate debug gifs"
+        )
         parser.add_argument(
             "--diffenator-template",
             default=resource_filename(

@@ -22,7 +22,7 @@ import sys
 
 
 class DiffFonts:
-    def __init__(self, matcher, threshold=0.01, font_size=28, words=True, tables=True):
+    def __init__(self, matcher, threshold=0.01, font_size=28, words=True, tables=True, debug_gifs=False):
         self.old_font = matcher.old_fonts[0]
         self.new_font = matcher.new_fonts[0]
 
@@ -32,6 +32,7 @@ class DiffFonts:
         self.do_words = words
         self.do_tables = tables
         self.font_size = font_size
+        self.debug_gifs = debug_gifs
 
     def diff_all(self):
         self.diff_tables()
@@ -59,6 +60,7 @@ class DiffFonts:
             threshold=self.threshold,
             do_words=self.do_words,
             font_size=self.font_size,
+            debug_gifs=self.debug_gifs,
         )
 
     def filter_characters(self, characters):
@@ -102,7 +104,8 @@ def main():
         words=not args.no_words,
         tables=not args.no_tables,
         threshold=args.threshold,
-        font_size=args.font_size
+        font_size=args.font_size,
+        debug_gifs=args.debug_gifs,
     )
     diff.diff_all()
     if args.user_wordlist:
