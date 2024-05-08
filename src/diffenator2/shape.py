@@ -135,7 +135,7 @@ def parse_wordlist(fp):
             except IndexError:
                 results.append(
                     TemplateWord(
-                        string=items[0], script="dflt", lang=None, ot_features={}
+                        string=items[0], script=None, lang=None, ot_features={}
                     )
                 )
     return results
