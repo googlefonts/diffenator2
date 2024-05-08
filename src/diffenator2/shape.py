@@ -8,6 +8,7 @@ import os
 from diffenator2 import THRESHOLD
 from diffenator2.renderer import FONT_SIZE, PixelDiffer
 from diffenator2.template_elements import Word, WordDiff, Glyph, GlyphDiff
+from diffenator2.utils import gen_gif
 from pkg_resources import resource_filename
 import tqdm
 from diffenator2.segmenting import textSegments
@@ -46,12 +47,12 @@ class GlyphItems:
     modified: list
 
 
-def test_fonts(font_a, font_b, threshold=THRESHOLD, do_words=True, font_size=FONT_SIZE):
+def test_fonts(font_a, font_b, threshold=THRESHOLD, do_words=True, font_size=FONT_SIZE, debug_gifs=False):
     glyphs = test_font_glyphs(font_a, font_b, threshold=threshold, font_size=font_size)
     skip_glyphs = glyphs.missing + glyphs.new
     if do_words:
         words = test_font_words(
-            font_a, font_b, skip_glyphs, threshold=threshold, font_size=font_size
+            font_a, font_b, skip_glyphs, threshold=threshold, font_size=font_size, debug_gifs=debug_gifs
         )
     else:
         words = {}
@@ -82,7 +83,7 @@ def test_font_glyphs(font_a, font_b, threshold=THRESHOLD, font_size=FONT_SIZE):
 
 
 def test_font_words(
-    font_a, font_b, skip_glyphs=set(), threshold=THRESHOLD, font_size=FONT_SIZE
+    font_a, font_b, skip_glyphs=set(), threshold=THRESHOLD, font_size=FONT_SIZE, debug_gifs=False
 ):
     from youseedee import ucd_data
     from collections import defaultdict
@@ -111,6 +112,7 @@ def test_font_words(
             skip_glyphs,
             threshold=threshold,
             font_size=font_size,
+            debug_gifs=debug_gifs,
         )
     return res
 
@@ -149,6 +151,7 @@ def test_words(
     hash_func=gid_pos_hash,
     threshold=THRESHOLD,
     font_size=FONT_SIZE,
+    debug_gifs=False,
 ):
     res = set()
 
@@ -203,6 +206,12 @@ def test_words(
 
                 if pc < threshold:
                     continue
+                if debug_gifs:
+                    out_fp = "debug_gifs"
+                    if not os.path.exists("debug_gifs"):
+                        os.makedirs("debug_gifs")
+                    fp = os.path.join(out_fp, f"{pc:.2f}_{word.string}.gif".replace("/", "_"))
+                    differ.debug_gif(fp)
                 res.add(
                     (
                         pc,

@@ -141,6 +141,7 @@ def ninja_diff(
     ),
     command="diff",
     diffbrowsers_templates=[],
+    debug_gifs: bool = False,
     **kwargs
 ):
     args = {

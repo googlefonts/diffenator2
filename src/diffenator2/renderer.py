@@ -12,6 +12,7 @@ from blackrenderer.render import (
 from blackrenderer.backends import getSurfaceClass
 from PIL import Image, ImageOps, ImageChops
 from diffenator2.font import DFont
+from diffenator2.utils import gen_gif
 import numpy as np
 import freetype as ft
 from dataclasses import dataclass, field
@@ -244,6 +245,15 @@ class PixelDiffer:
         self.img_a = Image.fromarray(img_a)
         self.img_b = Image.fromarray(img_b)
         return pc, diff_map
+
+    def debug_gif(self, fp):
+        img_a = self.img_a.convert('RGBA')
+        img_a_background = Image.new('RGBA', img_a.size, (255,255,255))
+        img_a = Image.alpha_composite(img_a_background, img_a)
+        img_b = self.img_b.convert('RGBA')
+        img_b_background = Image.new('RGBA', img_b.size, (255,255,255))
+        img_b = Image.alpha_composite(img_b_background, img_b)
+        gen_gif(img_a, img_b, fp)
 
 
 if __name__ == "__main__":
