@@ -125,8 +125,6 @@ def gen_gifs(dir1: str, dir2: str, dst_dir: str):
     dir2_imgs = set(f for f in os.listdir(dir2) if f.endswith(("jpg", "png")))
     shared_imgs = dir1_imgs & dir2_imgs
     for img in shared_imgs:
-        # We use apng format since a gif's dimensions are limited to 64kx64k
-        # we have encountered many diffs which are taller than this.
         gif_filename = img[:-4] + ".gif"
         img_a_path = os.path.join(dir1, img)
         img_b_path = os.path.join(dir2, img)
@@ -146,6 +144,15 @@ def gen_gif(img_a, img_b, dst):
     img_a = img_a.crop(crop_box)
     img_b = img_b.crop(crop_box)
     img_a.save(dst, save_all=True, append_images=[img_b], loop=10000, duration=1000)
+    gen_img_difference(img_a, img_b, dst.replace(".gif", "_diff.png"))
+
+
+def gen_img_difference(img_a, img_b, dst: str):
+    from PIL import ImageChops
+    img_a = img_a.convert("RGB")
+    img_b = img_b.convert("RGB")
+    img = ImageChops.difference(img_a, img_b)
+    img.save(dst)
 
 
 @lru_cache()

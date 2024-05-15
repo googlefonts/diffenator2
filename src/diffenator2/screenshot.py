@@ -53,6 +53,7 @@ class ScreenShotter:
         body_el = browser.find_element(By.TAG_NAME, "html")
         browser.set_window_size(self.width, body_el.size["height"])
         browser.save_screenshot(filename)
+        return filename
 
     def take_gif(self, url: str, dst_dir: str, font_toggle):
         before_fp = os.path.join(dst_dir, "before")

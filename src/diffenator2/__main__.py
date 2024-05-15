@@ -58,9 +58,9 @@ def main(**kwargs):
         )
         diff_parser.add_argument("--no-diffenator", default=False, action="store_true")
         diff_parser.add_argument("--threshold", "-t", type=float, default=THRESHOLD)
-        diff_parser.add_argument("--precision", default=FONT_SIZE)
+        diff_parser.add_argument("--precision", default=FONT_SIZE, type=int)
         # TODO this can just be precision
-        diff_parser.add_argument("--font-size", default=FONT_SIZE)
+        diff_parser.add_argument("--font-size", default=FONT_SIZE, type=int)
         diff_parser.add_argument(
             "--no-tables", action="store_true", help="Skip diffing font tables"
         )
