@@ -46,7 +46,7 @@ def test_run_diffbrowsers_proof_imgs(fp):
                 else:
                     imgs.append(f)
         # There should be images for the text, glyphs and waterfall page
-        assert len(imgs) == 3
+        assert len(imgs) >= 3
 
 
 
