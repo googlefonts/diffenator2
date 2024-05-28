@@ -166,11 +166,6 @@ def serialise_glyph(obj, root):
             f"Component {i}: {c.glyphName}": serialise_component(c)
             for i, c in enumerate(obj.components)
         }
-    elif obj.isVarComposite():
-        return {
-            f"Component {i}: {c.glyphName}": serialise_component(c)
-            for i, c in enumerate(obj.components)
-        }
     else:
         last = 0
         contours = {}
