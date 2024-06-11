@@ -8,17 +8,12 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
         # test on same versions as fonttools
         python-version: ["3.10"]
-        platform: [ubuntu-latest, macos-latest, windows-latest]
-        exclude: # Only test on the latest supported stable Python on macOS and Windows.
-          - platform: macos-latest
-            python-version: 3.10
-          - platform: windows-latest
-            python-version: 3.10
+        platform: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}

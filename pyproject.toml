@@ -10,7 +10,7 @@ source = "git-tag"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"
-fontTools = { version = ">=4.37.3", extras = ["ufo"] }
+fontTools = { version = ">=4.52.1", extras = ["ufo"] }
 jinja2 = "*"
 Pillow = "*"
 glyphsets = ">=0.6.5"
