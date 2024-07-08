@@ -10,6 +10,7 @@ from diffenator2.utils import font_sample_text, characters_in_string, GFTestData
 import re
 from pathlib import Path
 from diffenator2.shape import parse_wordlist
+from urllib.parse import quote
 
 
 WIDTH_CLASS_TO_CSS = {
@@ -196,6 +197,9 @@ def _package(templates, dst, **kwargs):
         env = Environment(
             loader=FileSystemLoader(os.path.dirname(template_fp)),
         )
+        # jinja2 already has an escaping filter but it only escapes
+        # a few characters.
+        env.filters["super_escape"] = quote
         template = env.get_template(os.path.basename(template_fp))
         doc = template.render(**kwargs)
         if "filter_styles" in kwargs:
