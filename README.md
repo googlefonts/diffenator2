@@ -4,8 +4,9 @@ Compare two font families.
 
 This tool primarily checks two font families for visual differences by comparing fonts against real words (wordlists can be found in the `src/diffenator/data/wordlists` directory). It also provides an improved "ttx diff" by treating each font as a tree and then doing a tree comparison. The output is a plain html file which then allows us to screenshot the differences using [Selenium](https://www.selenium.dev/documentation/webdriver/).
 
-This tool replaces the original [fontdiffenator](https://github.com/googlefonts/fontdiffenator)
+This tool replaces the original [github.com/googlefonts/fontdiffenator](https://github.com/googlefonts/fontdiffenator)
 
+A next-generation of the tool, written in Rust, is in development at [github.com/simoncozens/diffenator3](https://github.com/simoncozens/diffenator3)
 
 ## Features
 
