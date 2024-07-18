@@ -1,6 +1,6 @@
 # Diffenator 2
 
-Compare two font families.
+Compare two font families. Currently, the tool only supports static ttfs and variable ttfs.
 
 This tool primarily checks two font families for visual differences by comparing fonts against real words (wordlists can be found in the `src/diffenator/data/wordlists` directory). It also provides an improved "ttx diff" by treating each font as a tree and then doing a tree comparison. The output is a plain html file which then allows us to screenshot the differences using [Selenium](https://www.selenium.dev/documentation/webdriver/).
 
