@@ -57,6 +57,7 @@ def main(**kwargs):
             "--fonts-after", "-fa", nargs="+", required=True, type=DFont
         )
         diff_parser.add_argument("--no-diffenator", default=False, action="store_true")
+        diff_parser.add_argument("--no-diffbrowsers", default=False, action="store_true")
         diff_parser.add_argument("--threshold", "-t", type=float, default=THRESHOLD)
         diff_parser.add_argument("--precision", default=FONT_SIZE, type=int)
         # TODO this can just be precision
@@ -81,6 +82,8 @@ def main(**kwargs):
     if args.command == "proof":
         ninja_proof(**vars(args))
     elif args.command == "diff":
+        args.diffbrowsers=False if args.no_diffbrowsers else True
+        args.diffenator=False if args.no_diffenator else True
         ninja_diff(**vars(args))
     else:
         raise NotImplementedError(f"{args.command} not supported")
