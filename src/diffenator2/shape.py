@@ -13,6 +13,7 @@ from pkg_resources import resource_filename
 import tqdm
 from diffenator2.segmenting import textSegments
 from collections import defaultdict
+import csv
 
 
 # Hashing strategies for elements of a Harfbuzz buffer
@@ -123,8 +124,10 @@ def parse_wordlist(fp):
     results = []
     with open(fp, encoding="utf8") as doc:
         lines = doc.read().split("\n")
-        for line in lines:
-            items = line.split(",")
+        parsed = csv.reader(lines)
+        for items in parsed:
+            if len(items) == 0:
+                continue
             try:
                 results.append(
                     TemplateWord(
