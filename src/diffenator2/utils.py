@@ -155,39 +155,53 @@ def gen_img_difference(img_a, img_b, dst: str):
     img.save(dst)
 
 
+def greedy_set_cover(universe, sets):
+    uncovered_elements = set(universe)
+    best_sets = set()
+
+    prev_count = float("inf")
+    while uncovered_elements:
+        if len(uncovered_elements) == prev_count:
+            break
+        prev_count = len(uncovered_elements)
+        best_set = max(sets, key=lambda s: len(set(s) & uncovered_elements))
+        uncovered_elements -= set(best_set)
+        best_sets.add(best_set)
+    return sorted(best_sets, key=lambda k: ord(k[-1]))
+
+
 @lru_cache()
-def font_sample_text(ttFont: TTFont) -> str:
+def font_sample_text(font_characters):
     """Collect words which exist in the Universal Declaration of Human Rights
     that can be formed using the ttFont instance.
     UDHR has been chosen due to the many languages it covers"""
     with open(
         resource_filename("diffenator2", "data/udhr_all.txt"), encoding="utf8"
     ) as doc:
-        uhdr = doc.read()
+        words = re.split(r"[\b\W\b]+", doc.read())
 
-    cmap = set(ttFont.getBestCmap())
-    words = []
-    seen_chars = set()
+    # GF languages sample text
+    languages = LoadLanguages()
+    for file, proto in languages.items():
+        if hasattr(proto, "sample_text"):
+            for _, text in proto.sample_text.ListFields():
+                words += re.split(r"[\b\W\b]+", text)
 
-    def _add_words(words, text, seen_chars):
-        for word in text.split():
-            chars = set(ord(l) for l in word)
-            if not chars.issubset(cmap):
-                continue
-            if chars & seen_chars == chars:
-                continue
-            seen_chars |= chars
-            words.append(word)
+    # remove all anagram words and words that are not in font cmap
+    seen = set()
+    new_words = set()
+    for word in sorted(words, key=lambda k: len(k), reverse=True):
+        word_set = set(word)
+        if len(word_set) != len(word):
+            continue
+        if word_set.issubset(seen):
+            continue
+        if word_set.issubset(font_characters):
+            seen |= word_set
+            new_words.add(word)
 
-    _add_words(words, uhdr, seen_chars)
-
-    if len(seen_chars) < len(cmap):
-        languages = LoadLanguages()
-        for file, proto in languages.items():
-            if hasattr(proto, "sample_text"):
-                for _, text in proto.sample_text.ListFields():
-                    _add_words(words, text, seen_chars)
-    return words
+    unique_words = greedy_set_cover(font_characters, new_words)
+    return unique_words
 
 
 def font_family_name(ttFont, suffix=""):

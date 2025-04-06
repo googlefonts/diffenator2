@@ -85,8 +85,9 @@ def diffenator_font_style(dfont, suffix=""):
 
 
 def filtered_font_sample_text(ttFont, characters):
-    sample_text = font_sample_text(ttFont)
-    sample_text = [w for w in sample_text if characters_in_string(w, characters)]
+    font_characters = set(chr(c) for c in ttFont.getBestCmap())
+    characters = set(characters) & font_characters
+    sample_text = font_sample_text(tuple(sorted(characters)))
     return " ".join(sample_text)
 
 
