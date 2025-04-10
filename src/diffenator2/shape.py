@@ -1,6 +1,7 @@
 """
 Check fonts for shaping regressions using real words.
 """
+
 from __future__ import annotations
 from dataclasses import dataclass
 import uharfbuzz as hb
@@ -48,12 +49,24 @@ class GlyphItems:
     modified: list
 
 
-def test_fonts(font_a, font_b, threshold=THRESHOLD, do_words=True, font_size=FONT_SIZE, debug_gifs=False):
+def test_fonts(
+    font_a,
+    font_b,
+    threshold=THRESHOLD,
+    do_words=True,
+    font_size=FONT_SIZE,
+    debug_gifs=False,
+):
     glyphs = test_font_glyphs(font_a, font_b, threshold=threshold, font_size=font_size)
     skip_glyphs = glyphs.missing + glyphs.new
     if do_words:
         words = test_font_words(
-            font_a, font_b, skip_glyphs, threshold=threshold, font_size=font_size, debug_gifs=debug_gifs
+            font_a,
+            font_b,
+            skip_glyphs,
+            threshold=threshold,
+            font_size=font_size,
+            debug_gifs=debug_gifs,
         )
     else:
         words = {}
@@ -84,7 +97,12 @@ def test_font_glyphs(font_a, font_b, threshold=THRESHOLD, font_size=FONT_SIZE):
 
 
 def test_font_words(
-    font_a, font_b, skip_glyphs=set(), threshold=THRESHOLD, font_size=FONT_SIZE, debug_gifs=False
+    font_a,
+    font_b,
+    skip_glyphs=set(),
+    threshold=THRESHOLD,
+    font_size=FONT_SIZE,
+    debug_gifs=False,
 ):
     from youseedee import ucd_data
     from collections import defaultdict
@@ -213,7 +231,9 @@ def test_words(
                     out_fp = "debug_gifs"
                     if not os.path.exists("debug_gifs"):
                         os.makedirs("debug_gifs")
-                    fp = os.path.join(out_fp, f"{pc:.2f}_{word.string}.gif".replace("/", "_"))
+                    fp = os.path.join(
+                        out_fp, f"{pc:.2f}_{word.string}.gif".replace("/", "_")
+                    )
                     differ.debug_gif(fp)
                 res.add(
                     (

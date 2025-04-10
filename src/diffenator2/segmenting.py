@@ -1,4 +1,4 @@
-# Taken from 
+# Taken from
 # https://github.com/justvanrossum/fontgoggles/blob/master/Lib/fontgoggles/misc/segmenting.py
 # TODO: write python bindings for ribraqm instead
 import itertools
@@ -8,14 +8,20 @@ from unicodedata2 import category
 # Monkeypatch bidi to use unicodedata2
 import unicodedata2
 import bidi.algorithm
+
 bidi.algorithm.bidirectional = unicodedata2.bidirectional
 bidi.algorithm.category = unicodedata2.category
 bidi.algorithm.mirrored = unicodedata2.mirrored
 from bidi.algorithm import (  # noqa: ignore E402
-    get_empty_storage, get_base_level, get_embedding_levels,
-    explicit_embed_and_overrides, resolve_weak_types,
-    resolve_neutral_types, resolve_implicit_levels,
-    reorder_resolved_levels, PARAGRAPH_LEVELS,
+    get_empty_storage,
+    get_base_level,
+    get_embedding_levels,
+    explicit_embed_and_overrides,
+    resolve_weak_types,
+    resolve_neutral_types,
+    resolve_implicit_levels,
+    reorder_resolved_levels,
+    PARAGRAPH_LEVELS,
 )
 from bidi.mirror import MIRRORED  # noqa: ignore E402
 from fontTools.unicodedata.OTTags import SCRIPT_EXCEPTIONS
@@ -29,10 +35,10 @@ def textSegments(txt):
     storage = getBiDiInfo(txt)
 
     levels = [None] * len(txt)
-    for ch in storage['chars']:
-        levels[ch['index']] = ch['level']
+    for ch in storage["chars"]:
+        levels[ch["index"]] = ch["level"]
 
-    prevLevel = storage['base_level']
+    prevLevel = storage["base_level"]
     for i, level in enumerate(levels):
         if level is None:
             levels[i] = prevLevel
@@ -57,7 +63,7 @@ def textSegments(txt):
         _, script, bidiLevel = segment[0]
         segments.append((runChars, script, bidiLevel, index))
         index = nextIndex
-    return segments, storage['base_level']
+    return segments, storage["base_level"]
 
 
 def reorderedSegments(segments, baseLevel):
@@ -83,7 +89,7 @@ def detectScript(txt):
         # Non-spacing mark (Mn) should always inherit script
         if scr in UNKNOWN_SCRIPT or cat == "Mn":
             if i:
-                scr = charScript[i-1]
+                scr = charScript[i - 1]
             else:
                 scr = None
             if ch in MIRRORED and cat == "Pe":
@@ -114,6 +120,7 @@ def detectScript(txt):
 
 # copied from bidi/algorthm.py and modified to be more useful for us.
 
+
 def getBiDiInfo(text, *, upper_is_rtl=False, base_dir=None, debug=False):
     """
     Set `upper_is_rtl` to True to treat upper case chars as strong 'R'
@@ -133,8 +140,8 @@ def getBiDiInfo(text, *, upper_is_rtl=False, base_dir=None, debug=False):
     else:
         base_level = PARAGRAPH_LEVELS[base_dir]
 
-    storage['base_level'] = base_level
-    storage['base_dir'] = ('L', 'R')[base_level]
+    storage["base_level"] = base_level
+    storage["base_dir"] = ("L", "R")[base_level]
 
     get_embedding_levels(text, storage, upper_is_rtl, debug)
     fix_bidi_type_for_unknown_chars(storage)
@@ -156,6 +163,6 @@ def fix_bidi_type_for_unknown_chars(storage):
     """Set any bidi type of '' (symptom of a character not known by unicode)
     to 'L', to prevent the other bidi code to fail (issue 313).
     """
-    for _ch in storage['chars']:
-        if _ch['type'] == '':
-            _ch['type'] = 'L'
+    for _ch in storage["chars"]:
+        if _ch["type"] == "":
+            _ch["type"] = "L"

@@ -39,7 +39,9 @@ class NinjaBuilder:
         self.w = Writer(self.ninja_file)
         self.w.rule("proofing", '_diffbrowsers "$args"')
         self.w.newline()
-        self.w.build(self.cli_args["out"], "proofing", variables={"args": repr(self.cli_args)})
+        self.w.build(
+            self.cli_args["out"], "proofing", variables={"args": repr(self.cli_args)}
+        )
         self.run()
         self.w.close()
         self.ninja_file.close()
@@ -49,7 +51,11 @@ class NinjaBuilder:
         self.w = Writer(self.ninja_file)
         if self.cli_args["diffbrowsers"]:
             self.w.rule("diffbrowsers", '_diffbrowsers "$args"')
-            self.w.build(self.cli_args["out"], "diffbrowsers", variables={"args": repr(self.cli_args)})
+            self.w.build(
+                self.cli_args["out"],
+                "diffbrowsers",
+                variables={"args": repr(self.cli_args)},
+            )
         self.w.newline()
 
         if self.cli_args["diffenator"]:
@@ -61,14 +67,23 @@ class NinjaBuilder:
                 coords = new_style.coords
                 style = new_style.name.replace(" ", "-")
                 o = os.path.join(self.cli_args["out"], style.replace(" ", "-"))
-                self.w.build(o, "diffenator", variables={"args": repr(
-                    {**self.cli_args, **{
-                        "coords": dict_coords_to_string(coords),
-                        "old_font": old_style.font.ttFont.reader.file.name,
-                        "new_font": new_style.font.ttFont.reader.file.name,
-                        "out": self.cli_args["out"],
-                    }}
-                )})
+                self.w.build(
+                    o,
+                    "diffenator",
+                    variables={
+                        "args": repr(
+                            {
+                                **self.cli_args,
+                                **{
+                                    "coords": dict_coords_to_string(coords),
+                                    "old_font": old_style.font.ttFont.reader.file.name,
+                                    "new_font": new_style.font.ttFont.reader.file.name,
+                                    "out": self.cli_args["out"],
+                                },
+                            }
+                        )
+                    },
+                )
         self.run()
         self.w.close()
         self.ninja_file.close()
@@ -95,16 +110,12 @@ def ninja_proof(
     command="proof",
     user_wordlist: str = "",
     diffbrowsers_templates=[],
-    **kwargs
+    **kwargs,
 ):
     if not os.path.exists(out):
         os.mkdir(out)
 
-    args = {
-        **locals(),
-        **locals().pop("kwargs"),
-        **{"fonts": [f.path for f in fonts]}
-    }
+    args = {**locals(), **locals().pop("kwargs"), **{"fonts": [f.path for f in fonts]}}
     with NinjaBuilder(cli_args=args) as builder:
         if filter_styles:
             builder.proof_fonts()
@@ -136,19 +147,19 @@ def ninja_diff(
     precision: int = FONT_SIZE,
     no_words: bool = False,
     no_tables: bool = False,
-    diffenator_template = resource_filename(
+    diffenator_template=resource_filename(
         "diffenator2", os.path.join("templates", "diffenator.html")
     ),
     command="diff",
     diffbrowsers_templates=[],
     debug_gifs: bool = False,
-    **kwargs
+    **kwargs,
 ):
     args = {
         **locals(),
         **locals().pop("kwargs"),
         **{"fonts_before": [f.path for f in fonts_before]},
-        **{"fonts_after": [f.path for f in fonts_after]}
+        **{"fonts_after": [f.path for f in fonts_after]},
     }
     if not os.path.exists(out):
         os.mkdir(out)
