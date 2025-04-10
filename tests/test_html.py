@@ -6,10 +6,16 @@ from diffenator2.html import CSSFontStyle
 @pytest.mark.parametrize(
     "fp, expected",
     [
-        (mavenpro_regular, CSSFontStyle("font", "style", {"wght": 400})),
-        (mavenpro_extra_bold, CSSFontStyle("font", "style", {"wght": 800})),
-        (mavenpro_black, CSSFontStyle("font", "style", {"wght": 900})),
-    ]
+        (
+            mavenpro_regular,
+            CSSFontStyle("font", "style", {"wght": 400}, variable=False),
+        ),
+        (
+            mavenpro_extra_bold,
+            CSSFontStyle("font", "style", {"wght": 800}, variable=False),
+        ),
+        (mavenpro_black, CSSFontStyle("font", "style", {"wght": 900}, variable=False)),
+    ],
 )
 def test_diffenator_font_style_static(fp, expected):
     from diffenator2.html import diffenator_font_style
@@ -22,10 +28,18 @@ def test_diffenator_font_style_static(fp, expected):
 @pytest.mark.parametrize(
     "fp, coords, expected",
     [
-        (mavenpro_vf, {}, CSSFontStyle("font", "style", {"wght": 400})),
-        (mavenpro_vf, {"wght": 800}, CSSFontStyle("font", "style", {"wght": 800})),
-        (mavenpro_vf, {"wght": 900}, CSSFontStyle("font", "style", {"wght": 900}))
-    ]
+        (mavenpro_vf, {}, CSSFontStyle("font", "style", {"wght": 400}, variable=True)),
+        (
+            mavenpro_vf,
+            {"wght": 800},
+            CSSFontStyle("font", "style", {"wght": 800}, variable=True),
+        ),
+        (
+            mavenpro_vf,
+            {"wght": 900},
+            CSSFontStyle("font", "style", {"wght": 900}, variable=True),
+        ),
+    ],
 )
 def test_diffenator_font_style_vf(fp, coords, expected):
     from diffenator2.html import diffenator_font_style
@@ -50,7 +64,7 @@ def test_diffenator_font_style_vf(fp, coords, expected):
         ([mavenpro_extra_bold], "Regular", 0),
         ([mavenpro_regular, mavenpro_extra_bold], "Regular", 1),
         ([mavenpro_regular, mavenpro_extra_bold], "Regular|.*", 2),
-    ]
+    ],
 )
 def test_get_font_style_filtering(fps, filters, style_count):
     from fontTools.ttLib import TTFont
@@ -71,24 +85,25 @@ def test_get_font_style_filtering(fps, filters, style_count):
             ],
             (
                 "<p><a href='text.html'>text.html</a></p>\n",
-                "<p><a href='waterfall.html'>waterfall.html</a></p>"
+                "<p><a href='waterfall.html'>waterfall.html</a></p>",
             ),
         ),
         (
             [
                 os.path.join("foo", "bar", "waterfall.html"),
-                os.path.join("cat", "baz", "fee", "text.html")
+                os.path.join("cat", "baz", "fee", "text.html"),
             ],
             (
                 "<p><a href='cat/baz/fee/text.html'>cat/baz/fee/text.html</a></p>\n",
-                "<p><a href='foo/bar/waterfall.html'>foo/bar/waterfall.html</a></p>"
+                "<p><a href='foo/bar/waterfall.html'>foo/bar/waterfall.html</a></p>",
             ),
         ),
-    ]
+    ],
 )
 def test_build_index_page(pages, expected):
     import tempfile
     from diffenator2.html import build_index_page
+
     with tempfile.TemporaryDirectory() as tmp:
         for path in pages:
             fp = os.path.join(tmp, path)

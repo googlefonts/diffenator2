@@ -31,6 +31,7 @@ class Style:
             self.name,
             self.coords,
             self.font.suffix,
+            self.font.is_variable(),
         )
 
     def _make_name(self):

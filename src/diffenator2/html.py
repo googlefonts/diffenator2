@@ -39,7 +39,7 @@ def get_font_styles(ttfonts, suffix="", filters=None):
                 coords = inst.coordinates
                 if filters and not re.match(filters, style_name):
                     continue
-                res.append(CSSFontStyle(family_name, style_name, coords, suffix))
+                res.append(CSSFontStyle(family_name, style_name, coords, suffix, True))
         else:
             if filters and not any(re.match(f, style_name) for f in filters):
                 continue
@@ -58,6 +58,7 @@ def static_font_style(ttfont, suffix=""):
             "wdth": WIDTH_CLASS_TO_CSS[ttfont["OS/2"].usWidthClass],
         },
         suffix,
+        False,
     )
 
 
@@ -75,12 +76,7 @@ def diffenator_font_style(dfont, suffix=""):
     else:
         style_name = ttfont["name"].getBestSubFamilyName()
         coords = {"wght": ttfont["OS/2"].usWeightClass}
-    return CSSFontStyle(
-        "font",
-        "style",
-        coords,
-        suffix,
-    )
+    return CSSFontStyle("font", style_name, coords, suffix, dfont.is_variable())
 
 
 def filtered_font_sample_text(ttFont, characters):

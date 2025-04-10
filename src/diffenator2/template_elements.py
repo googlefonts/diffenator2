@@ -103,6 +103,7 @@ class CSSFontStyle(Renderable):
     stylename: str
     coords: dict
     suffix: str = ""
+    variable: bool = False
 
     def __post_init__(self):
         self.full_name = f"{self.familyname} {self.stylename}"
@@ -137,6 +138,7 @@ class CSSFontFace(Renderable):
         self.classname = self.cssfamilyname.replace(" ", "-")
         self.font_style = "normal" if "Italic" not in self.stylename else "italic"
         self.font_weight = self.ttfont["OS/2"].usWeightClass
+        self.variable = "fvar" in self.ttfont
 
         if "fvar" in self.ttfont:
             fvar = self.ttfont["fvar"]
