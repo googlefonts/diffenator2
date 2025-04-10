@@ -1,7 +1,9 @@
 @font-face{
     src: url("{{ filename | super_escape }}");
     font-family: "{{ cssfamilyname }}";
+    {% if not variable %}
     font-weight: {{ font_weight }};
     {% if font_stretch %}font-stretch: {{ font_stretch }};{% endif %}
     font-style: {{ font_style }};
+    {% endif %}
 }
