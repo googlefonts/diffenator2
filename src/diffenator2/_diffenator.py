@@ -22,7 +22,15 @@ import sys
 
 
 class DiffFonts:
-    def __init__(self, matcher, threshold=0.01, font_size=28, words=True, tables=True, debug_gifs=False):
+    def __init__(
+        self,
+        matcher,
+        threshold=0.01,
+        font_size=28,
+        words=True,
+        tables=True,
+        debug_gifs=False,
+    ):
         self.old_font = matcher.old_fonts[0]
         self.new_font = matcher.new_fonts[0]
 

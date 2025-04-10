@@ -67,7 +67,9 @@ class ScreenShotter:
         time.sleep(1)
         self.take_png(url, before_fp)
         time.sleep(1)
-        self.take_png(url, after_fp, javascript="switchFonts();" if font_toggle else None)
+        self.take_png(
+            url, after_fp, javascript="switchFonts();" if font_toggle else None
+        )
         gen_gifs(before_fp, after_fp, dst_dir)
 
     def set_width(self, width: int):
@@ -113,13 +115,13 @@ class ScreenShotter:
 
 
 def screenshot_dir(
-        dir_fp: str,
-        out: str,
-        skip=[
-            "diffbrowsers_proofer.html",
-            "diffenator.html",
-            "diffbrowsers_user_strings.html"
-        ],
+    dir_fp: str,
+    out: str,
+    skip=[
+        "diffbrowsers_proofer.html",
+        "diffenator.html",
+        "diffbrowsers_user_strings.html",
+    ],
 ):
     """Screenshot a folder of html docs. Walk the damn things"""
     if not os.path.exists(out):

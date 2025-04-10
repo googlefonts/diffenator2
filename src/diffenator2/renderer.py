@@ -25,14 +25,13 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Renderer:
     font: DFont
-    font_size: int=250
-    margin: int=20
+    font_size: int = 250
+    margin: int = 20
     features: dict[str, bool] = None
     variations: dict[str, float] = None
     lang: str = None
     script: str = None
-    cache: dict[int,any] = field(default_factory=dict)
-
+    cache: dict[int, any] = field(default_factory=dict)
 
     def shape(self, text):
         hb_font = self.font.hbFont
@@ -87,9 +86,8 @@ class Renderer:
         surface = surfaceClass()
         # return empty canvas if either width or height == 0. Not doing so
         # causes Skia to raise a null pointer error
-        if orig_bounds[0] == orig_bounds[2] or \
-            orig_bounds[1] == orig_bounds[3]:
-            return Image.new("RGBA", (0,0)), 0
+        if orig_bounds[0] == orig_bounds[2] or orig_bounds[1] == orig_bounds[3]:
+            return Image.new("RGBA", (0, 0)), 0
         with surface.canvas(bounds) as canvas:
             canvas.scale(scaleFactor)
             for glyph in glyphLine:
@@ -146,6 +144,7 @@ class Renderer:
     #         pen.y += pos.y_advance
     #     return Image.fromarray(L)
 
+
 @dataclass
 class Bitmap:
     buffer: any
@@ -155,6 +154,7 @@ class Bitmap:
     left: int
     pitch: int
 
+
 def get_cached_bitmap(ft_face, codepoint, cache):
     if codepoint in cache:
         return cache[codepoint]
@@ -163,11 +163,11 @@ def get_cached_bitmap(ft_face, codepoint, cache):
     bitmap = ft_face.glyph.bitmap
     cache[codepoint] = Bitmap(
         buffer=bitmap.buffer,
-        width = bitmap.width,
-        rows = bitmap.rows,
-        top = ft_face.glyph.bitmap_top,
-        left = ft_face.glyph.bitmap_left,
-        pitch = ft_face.glyph.bitmap.pitch,
+        width=bitmap.width,
+        rows=bitmap.rows,
+        top=ft_face.glyph.bitmap_top,
+        left=ft_face.glyph.bitmap_left,
+        pitch=ft_face.glyph.bitmap.pitch,
     )
     return cache[codepoint]
 
@@ -176,9 +176,9 @@ def get_cached_bitmap(ft_face, codepoint, cache):
 class PixelDiffer:
     font_a: DFont
     font_b: DFont
-    script=None
-    lang=None
-    features=None
+    script = None
+    lang = None
+    features = None
     font_size: int = FONT_SIZE
 
     def __post_init__(self):
@@ -189,7 +189,7 @@ class PixelDiffer:
             features=self.features,
             script=self.script,
             lang=self.lang,
-            variations=getattr(self.font_a, "variations", None)
+            variations=getattr(self.font_a, "variations", None),
         )
         self.renderer_b = Renderer(
             self.font_b,
@@ -198,7 +198,7 @@ class PixelDiffer:
             features=self.features,
             script=self.script,
             lang=self.lang,
-            variations=getattr(self.font_b, "variations", None)
+            variations=getattr(self.font_b, "variations", None),
         )
 
     def set_script(self, script):
@@ -237,7 +237,7 @@ class PixelDiffer:
         img_a = np.asarray(img_a)
         img_b = np.asarray(img_b)
 
-        diff_map = np.abs(img_a-img_b)
+        diff_map = np.abs(img_a - img_b)
         if np.size(diff_map) == 0:
             return 0, []
         pc = np.sum(diff_map) / np.size(diff_map)
@@ -247,11 +247,11 @@ class PixelDiffer:
         return pc, diff_map
 
     def debug_gif(self, fp):
-        img_a = self.img_a.convert('RGBA')
-        img_a_background = Image.new('RGBA', img_a.size, (255,255,255))
+        img_a = self.img_a.convert("RGBA")
+        img_a_background = Image.new("RGBA", img_a.size, (255, 255, 255))
         img_a = Image.alpha_composite(img_a_background, img_a)
-        img_b = self.img_b.convert('RGBA')
-        img_b_background = Image.new('RGBA', img_b.size, (255,255,255))
+        img_b = self.img_b.convert("RGBA")
+        img_b_background = Image.new("RGBA", img_b.size, (255, 255, 255))
         img_b = Image.alpha_composite(img_b_background, img_b)
         gen_gif(img_a, img_b, fp)
 
@@ -294,6 +294,6 @@ if __name__ == "__main__":
         lang=args.lang,
         script=args.script,
         font_size=args.pt,
-        variations=variations
+        variations=variations,
     ).render(args.string)
     img.save(args.out)

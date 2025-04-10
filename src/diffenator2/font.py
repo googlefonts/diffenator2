@@ -46,7 +46,7 @@ def get_font_styles(fonts, method, filter_styles=None):
     for font in fonts:
         for style in getattr(font, method)():
             if filter_styles and not re.match(filter_styles, style.name):
-                    continue
+                continue
             results.append(style)
     return results
 
@@ -94,9 +94,11 @@ class DFont:
         self.ftFont.set_var_design_coords(ft_coords)
         self.variations = coords
         self.hbFont.set_variations(coords)
-    
+
     def closest_style(self, coords):
-        fvar_axes = {a.axisTag: (a.minValue, a.maxValue) for a in self.ttFont["fvar"].axes}
+        fvar_axes = {
+            a.axisTag: (a.minValue, a.maxValue) for a in self.ttFont["fvar"].axes
+        }
         found_coords = {}
         for axis, value in coords.items():
             if axis not in fvar_axes:
@@ -139,7 +141,7 @@ class DFont:
                 )
             )
         return results
-    
+
     def masters(self):
         assert self.is_variable(), "Needs to be a variable font"
         results = []
@@ -147,16 +149,13 @@ class DFont:
         for coords in master_coords:
             results.append(Style(self, coords))
         return results
-    
+
     def cross_product(self):
         assert self.is_variable(), "Needs to be a variable font"
         results = []
         axis_values = [
-            (
-                a.minValue,
-                (a.minValue+a.maxValue)/2,
-                a.maxValue
-            ) for a in self.ttFont["fvar"].axes
+            (a.minValue, (a.minValue + a.maxValue) / 2, a.maxValue)
+            for a in self.ttFont["fvar"].axes
         ]
         axis_tags = [a.axisTag for a in self.ttFont["fvar"].axes]
 

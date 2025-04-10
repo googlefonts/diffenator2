@@ -60,8 +60,8 @@ class WordDiff(Renderable):
 @dataclass
 class Glyph(Renderable):
     string: str
-    name: str=None
-    unicode: str=None
+    name: str = None
+    unicode: str = None
 
     def __post_init__(self):
         if self.name is None:
@@ -81,8 +81,8 @@ class GlyphDiff(Renderable):
     string: str
     changed_pixels: str
     diff_map: list[int]
-    name: str=None
-    unicode: str=None
+    name: str = None
+    unicode: str = None
 
     def __post_init__(self):
         if self.name is None:
@@ -106,12 +106,12 @@ class CSSFontStyle(Renderable):
 
     def __post_init__(self):
         self.full_name = f"{self.familyname} {self.stylename}"
-        self.font_variation_settings = ", ".join(f'"{k}" {v}' for k, v in self.coords.items())
+        self.font_variation_settings = ", ".join(
+            f'"{k}" {v}' for k, v in self.coords.items()
+        )
         if self.suffix:
             self.cssfamilyname = f"{self.suffix} {self.familyname}"
-            self.class_name = (
-                f"{self.suffix} {self.stylename}".replace(" ", "-")
-            )
+            self.class_name = f"{self.suffix} {self.stylename}".replace(" ", "-")
         else:
             self.cssfamilyname = self.familyname
             self.class_name = f"{self.stylename}".replace(" ", "-")

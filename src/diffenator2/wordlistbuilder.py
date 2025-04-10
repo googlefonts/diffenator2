@@ -8,29 +8,29 @@ DEFAULT_NGRAM_SIZE = 4
 
 def all_ngrams(word, size=None):
     if size is None:
-      size = DEFAULT_NGRAM_SIZE
-    for i in range(max(1,len(word)-size)):
-        yield word[i:i+size]
+        size = DEFAULT_NGRAM_SIZE
+    for i in range(max(1, len(word) - size)):
+        yield word[i : i + size]
 
 
-def maybe_add_word(bank, word, ngram_set, keep_chars: set[str]=None, size=None):
+def maybe_add_word(bank, word, ngram_set, keep_chars: set[str] = None, size=None):
     if word in bank:
-      return False
+        return False
 
     if keep_chars and not all(c in keep_chars for c in word):
-      return False
+        return False
 
     if all(ngram in ngram_set for ngram in all_ngrams(word, size=size)):
-      return False
+        return False
 
     bank.add(word)
 
-    for ngram in all_ngrams(word,size=size):
+    for ngram in all_ngrams(word, size=size):
         ngram_set.add(ngram)
     return True
 
 
-def build_words(fps: list[str], out: str, keep_chars: set[str]=None):
+def build_words(fps: list[str], out: str, keep_chars: set[str] = None):
     keep_chars |= set("'")  # used for quoting obscure words in wikipedia
     bank = set()
     seen_keep_chars = set()
@@ -62,7 +62,7 @@ def build_words(fps: list[str], out: str, keep_chars: set[str]=None):
         doc.write("\n".join(res))
 
 
-def remove_substring_words(words:set[str]) -> set[str]:
+def remove_substring_words(words: set[str]) -> set[str]:
     res = set()
     auto = ahocorasick.Automaton()
     for word in sorted(words, key=lambda w: -len(w)):
@@ -78,7 +78,6 @@ def remove_substring_words(words:set[str]) -> set[str]:
                 except:
                     all
     return res
-
 
 
 def main():
