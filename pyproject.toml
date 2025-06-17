@@ -18,7 +18,7 @@ uharfbuzz = "*"
 pyahocorasick = "*"
 selenium = ">=4.4.3"
 ninja = "*"
-protobuf = ">=3.19.2, <=3.20.3"
+protobuf = ">=3.19.2,<=4.25.8"
 gflanguages = "*"
 freetype-py = "*"
 blackrenderer = {extras = ["skia"], version = "^0.6.0"}
