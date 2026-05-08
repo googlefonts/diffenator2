@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-from pkg_resources import resource_filename
 from diffenator2.html import proof_rendering, diff_rendering
 from diffenator2.font import DFont, get_font_styles
 from diffenator2.matcher import FontMatcher
-from diffenator2.utils import re_filter_characters
+from diffenator2.utils import re_filter_characters, resource_filename
 from glob import glob
 import os
 import sys

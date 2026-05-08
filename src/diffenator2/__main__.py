@@ -6,7 +6,7 @@ from diffenator2 import ninja_diff, ninja_proof, THRESHOLD, NINJA_BUILD_FILE
 from diffenator2.font import DFont
 from diffenator2.html import build_index_page
 from diffenator2.renderer import FONT_SIZE
-from pkg_resources import resource_filename
+from diffenator2.utils import resource_filename
 from glob import glob
 
 

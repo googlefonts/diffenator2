@@ -11,7 +11,6 @@ from diffenator2.utils import (
 )
 from diffenator2.font import DFont
 from diffenator2.matcher import FontMatcher
-from pkg_resources import resource_filename
 import os
 from diffenator2.shape import test_words, test_fonts
 from diffenator2 import jfont, THRESHOLD
