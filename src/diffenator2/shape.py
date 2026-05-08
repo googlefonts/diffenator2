@@ -8,8 +8,7 @@ import os
 from diffenator2 import THRESHOLD
 from diffenator2.renderer import FONT_SIZE, PixelDiffer
 from diffenator2.template_elements import Word, WordDiff, Glyph, GlyphDiff
-from diffenator2.utils import gen_gif
-from pkg_resources import resource_filename
+from diffenator2.utils import gen_gif, resource_filename
 import tqdm
 from diffenator2.segmenting import textSegments
 from collections import defaultdict

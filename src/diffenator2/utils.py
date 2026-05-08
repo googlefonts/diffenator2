@@ -15,7 +15,7 @@
 #
 from __future__ import annotations
 import os
-from pkg_resources import resource_filename
+from importlib.resources import files
 from PIL import Image
 from gflanguages import LoadLanguages
 from functools import lru_cache
@@ -31,6 +31,10 @@ from glyphsets import get_glyphsets_fulfilled
 
 
 TEST_STRINGS_DATA = os.path.join(os.path.dirname(__file__), "data", "test_strings.json")
+
+
+def resource_filename(package: str, resource: str) -> str:
+    return str(files(package).joinpath(resource))
 
 
 def dict_coords_to_string(coords: dict[str, float]) -> str:

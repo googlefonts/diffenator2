@@ -3,11 +3,9 @@ import logging
 import os
 from ninja.ninja_syntax import Writer
 from diffenator2.renderer import FONT_SIZE
-from diffenator2.utils import dict_coords_to_string
+from diffenator2.utils import dict_coords_to_string, partition, resource_filename
 from diffenator2.font import DFont, get_font_styles
-from diffenator2.utils import partition
 from diffenator2.matcher import FontMatcher
-from pkg_resources import resource_filename
 import shutil
 import ninja
 
