@@ -1,5 +1,5 @@
-"""
-"""
+""" """
+
 from __future__ import annotations
 from jinja2 import Environment, FileSystemLoader
 from fontTools.ttLib import TTFont
@@ -26,7 +26,6 @@ WIDTH_CLASS_TO_CSS = {
 }
 
 
-
 def get_font_styles(ttfonts, suffix="", filters=None):
     res = []
     for ttfont in ttfonts:
@@ -40,7 +39,7 @@ def get_font_styles(ttfonts, suffix="", filters=None):
                 coords = inst.coordinates
                 if filters and not re.match(filters, style_name):
                     continue
-                res.append(CSSFontStyle(family_name, style_name, coords, suffix))
+                res.append(CSSFontStyle(family_name, style_name, coords, suffix, True))
         else:
             if filters and not any(re.match(f, style_name) for f in filters):
                 continue
@@ -59,6 +58,7 @@ def static_font_style(ttfont, suffix=""):
             "wdth": WIDTH_CLASS_TO_CSS[ttfont["OS/2"].usWidthClass],
         },
         suffix,
+        False,
     )
 
 
@@ -76,12 +76,7 @@ def diffenator_font_style(dfont, suffix=""):
     else:
         style_name = ttfont["name"].getBestSubFamilyName()
         coords = {"wght": ttfont["OS/2"].usWeightClass}
-    return CSSFontStyle(
-        "font",
-        "style",
-        coords,
-        suffix,
-    )
+    return CSSFontStyle("font", style_name, coords, suffix, dfont.is_variable())
 
 
 def filtered_font_sample_text(ttFont, characters):
@@ -90,7 +85,15 @@ def filtered_font_sample_text(ttFont, characters):
     return " ".join(sample_text)
 
 
-def proof_rendering(styles, templates, dst="out", filter_styles=None, characters=set(), pt_size=20, user_wordlist=None):
+def proof_rendering(
+    styles,
+    templates,
+    dst="out",
+    filter_styles=None,
+    characters=set(),
+    pt_size=20,
+    user_wordlist=None,
+):
     ttFont = styles[0].font.ttFont
     font_faces = set(style.font.css_font_face for style in styles)
     font_styles = [style.css_font_style for style in styles]
@@ -109,21 +112,28 @@ def proof_rendering(styles, templates, dst="out", filter_styles=None, characters
         test_strings=test_strings,
         pt_size=pt_size,
         user_strings=user_words,
-        filter_styles=filter_styles.replace("|", "-")
+        filter_styles=filter_styles.replace("|", "-"),
     )
 
 
-
-def diff_rendering(matcher, templates, dst="out", filter_styles=None, characters=set(), pt_size=20, user_wordlist=None):
+def diff_rendering(
+    matcher,
+    templates,
+    dst="out",
+    filter_styles=None,
+    characters=set(),
+    pt_size=20,
+    user_wordlist=None,
+):
     dFont = matcher.old_styles[0].font
     ttFont = matcher.old_styles[0].font.ttFont
     font_faces_old = set(style.font.css_font_face for style in matcher.old_styles)
     font_styles_old = [style.css_font_style for style in matcher.old_styles]
-    
+
     font_faces_new = set(style.font.css_font_face for style in matcher.new_styles)
     font_styles_new = [style.css_font_style for style in matcher.new_styles]
 
-    sample_text=filtered_font_sample_text(ttFont, characters)
+    sample_text = filtered_font_sample_text(ttFont, characters)
     test_strings = GFTestData.test_strings_in_font(ttFont, 0.1)
     characters = characters or [chr(c) for c in ttFont.getBestCmap()]
     characters = list(sorted(characters))
@@ -141,7 +151,7 @@ def diff_rendering(matcher, templates, dst="out", filter_styles=None, characters
         test_strings=test_strings,
         pt_size=pt_size,
         user_strings=user_words,
-        filter_styles=filter_styles.replace("|", "-")
+        filter_styles=filter_styles.replace("|", "-"),
     )
 
 
@@ -205,10 +215,15 @@ def _package(templates, dst, **kwargs):
         if "filter_styles" in kwargs:
             fp_prefix = kwargs.get("filter_styles")
         elif "diff" in kwargs:
-            filename = kwargs.get("font_faces_new")[0].filename.replace("new-", "").strip().replace(" ", "_")[:-4]
+            filename = (
+                kwargs.get("font_faces_new")[0]
+                .filename.replace("new-", "")
+                .strip()
+                .replace(" ", "_")[:-4]
+            )
             style = kwargs.get("font_styles_new")[0].stylename
             fp_prefix = f"{filename}-{style}"
-        dst_doc = os.path.join(dst, f'{fp_prefix}-{os.path.basename(template_fp)}')
+        dst_doc = os.path.join(dst, f"{fp_prefix}-{os.path.basename(template_fp)}")
         with open(dst_doc, "w", encoding="utf8") as out_file:
             out_file.write(doc)
 

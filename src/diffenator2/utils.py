@@ -99,9 +99,11 @@ def download_google_fonts_family(family, dst=None, ignore_static=True):
     # TODO (M Foley) update all dl_urls in .ini files.
     if not google_fonts_has_family(family):
         raise ValueError(f"Google Fonts does not have the family {family}")
-    url = "https://fonts.google.com/download?family={}".format(family.replace(" ", "%20"))
+    url = "https://fonts.google.com/download?family={}".format(
+        family.replace(" ", "%20")
+    )
     dl_url = url.replace("download?family=", "download/list?family=")
-    url = dl_url.format(family.replace(' ', '%20'))
+    url = dl_url.format(family.replace(" ", "%20"))
     data = json.loads(requests.get(url).text[5:])
     res = []
     for item in data["manifest"]["fileRefs"]:
@@ -153,6 +155,7 @@ def gen_gif(img_a, img_b, dst):
 
 def gen_img_difference(img_a, img_b, dst: str):
     from PIL import ImageChops
+
     img_a = img_a.convert("RGB")
     img_b = img_b.convert("RGB")
     img = ImageChops.difference(img_a, img_b)
@@ -214,7 +217,6 @@ def re_filter_characters(font, pattern):
 
 def characters_in_string(string, characters):
     return all(g in characters for g in string)
-
 
 
 class _TestDocData:
