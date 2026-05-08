@@ -95,9 +95,9 @@ def test_diffenator_threshold(fp_before, fp_after, threshold, has, missing):
 @pytest.mark.parametrize(
     "fp, cmd, pattern, has, missing",
     [
-        (mavenpro_vf, "proof", ".*", ['>an tan</div>'], []),
+        (mavenpro_vf, "proof", ".*", ['>tan</div>'], []),
         (mavenpro_vf, "proof", "[an]{1,2}", ['>an</div>'], []),
-        (mavenpro_vf, "diff", ".*", ['>an tan</div>'], []),
+        (mavenpro_vf, "diff", ".*", ['>tan</div>'], []),
         (mavenpro_vf, "diff", "[an]{1,2}", ['>an</div>'], []),
     ]
 )
