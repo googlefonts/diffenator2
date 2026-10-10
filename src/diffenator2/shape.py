@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import uharfbuzz as hb
 import os
+import sys
 from diffenator2 import THRESHOLD
 from diffenator2.renderer import FONT_SIZE, PixelDiffer
 from diffenator2.template_elements import Word, WordDiff, Glyph, GlyphDiff
@@ -13,6 +14,11 @@ import tqdm
 from diffenator2.segmenting import textSegments
 from collections import defaultdict
 import csv
+
+
+def _progress_bar(iterable, **kwargs):
+    kwargs.setdefault("disable", not getattr(sys.stderr, "isatty", lambda: False)())
+    return tqdm.tqdm(iterable, **kwargs)
 
 
 # Hashing strategies for elements of a Harfbuzz buffer
@@ -68,7 +74,7 @@ def test_font_glyphs(font_a, font_b, threshold=THRESHOLD, font_size=FONT_SIZE):
     skip_glyphs = missing_glyphs | new_glyphs
     modified_glyphs = []
     differ = PixelDiffer(font_a, font_b, font_size=font_size)
-    for g in tqdm.tqdm(same_glyphs):
+    for g in _progress_bar(same_glyphs):
         pc, diff_map = differ.diff(g)
         if pc > threshold:
             glyph = GlyphDiff(g, "%.2f" % pc, diff_map)
@@ -161,7 +167,7 @@ def test_words(
 
     differ = PixelDiffer(font_a, font_b, font_size=font_size)
     word_list = parse_wordlist(word_file)
-    for i, word in tqdm.tqdm(enumerate(word_list), total=len(word_list)):
+    for i, word in _progress_bar(enumerate(word_list), total=len(word_list)):
         differ.set_script(word.script)
         differ.set_lang(word.lang)
         differ.set_features(word.ot_features)
